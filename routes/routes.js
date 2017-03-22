@@ -11,6 +11,11 @@ router.get('/students', function(req, res, next) {
     res.render('students', {});
 });
 
+router.get('/students/:student_id', function(req, res, next) {
+    //res.send('respond with a resource');
+    res.render('student_detail', {});
+});
+
 router.get('/courses', function(req, res, next) {
     //res.send('respond with a resource');
     res.render('courses', {});
@@ -24,6 +29,11 @@ router.get('/courses/CS345', function(req, res, next) {
 router.get('/teachers', function(req, res, next) {
     //res.send('respond with a resource');
     res.render('teachers', {});
+});
+
+router.get('/teachers/:teachers_id', function(req, res, next) {
+    //res.send('respond with a resource');
+    res.render('teacher_detail', {});
 });
 
 router.get('/statistics', function(req, res, next) {

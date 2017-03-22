@@ -1,0 +1,127 @@
+extends layout
+
+block stylesheet
+	<!-- Datatables -->
+	<link href="../vendors/datatables.net-bs/css/dataTables.bootstrap.min.css" rel="stylesheet">
+	<link href="../vendors/datatables.net-buttons-bs/css/buttons.bootstrap.min.css" rel="stylesheet">
+	<link href="../vendors/datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css" rel="stylesheet">
+	<link href="../vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css" rel="stylesheet">
+	<link href="../vendors/datatables.net-scroller-bs/css/scroller.bootstrap.min.css" rel="stylesheet">
+
+block content
+	<div class="">
+		<div class="page-title">
+			<div class="title_left">
+				<h3>Teacher Profile</h3>
+			</div>
+
+			<div class="title_right">
+			<div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
+				<div class="input-group">
+				<input type="text" class="form-control" placeholder="Search for...">
+				<span class="input-group-btn">
+					<button class="btn btn-default" type="button">Go!</button>
+				</span>
+				</div>
+			</div>
+			</div>
+		</div>
+		
+		<div class="clearfix"></div>
+
+		<div class="row">
+			<div class="col-md-12 col-sm-12 col-xs-12">
+				<div class="x_panel">
+				<div class="x_content">
+				<div class="col-md-3 col-sm-3 col-xs-12 profile_left">
+					<h3>Đinh Bá Tiến</h3>
+
+					<ul class="list-unstyled user_data" style="font-size: medium;">
+						<li>
+							<i class="fa fa-phone user-profile-icon"></i> 090123456
+						</li>
+						<li>
+							<i class="fa fa-envelope-o user-profile-icon"></i> dbtien@fit.hcmus.edu.vn
+						</li>
+					</ul>
+
+					<a class="btn btn-success"><i class="fa fa-edit m-right-xs"></i> Edit Profile</a>
+					<br />
+
+				</div>
+				<div class="col-md-9 col-sm-9 col-xs-12">
+
+					<div class="" role="tabpanel" data-example-id="togglable-tabs">
+					<ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+						<li role="presentation" class="active"><a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">Current courses</a>
+						</li>
+					</ul>
+					<div id="myTabContent" class="tab-content">
+						<div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+
+						<!-- start recent activity -->
+						<table class="data table table-striped no-margin">
+							<thead>
+								<tr>
+									<th>#</th>
+									<th>Code</th>
+									<th>Name</th>
+									<th>Action</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<th>1</th>
+									<td><a href="/courses/CS345">CS345</a></td>
+									<td>System Architect</td>
+									<td>
+										<a href="/courses/CS345" class="btn btn-primary btn-xs"><i class="fa fa-folder"></i> View </a>
+										<a href="#" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i> Option </a>
+									</td>
+								</tr>
+								<tr>
+									<td>2</td>
+									<td>CTT511</td>
+									<td>Accountant</td>
+									<td>
+										<a href="/courses/CS345" class="btn btn-primary btn-xs"><i class="fa fa-folder"></i> View </a>
+										<a href="#" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i> Option </a>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+						<!-- end recent activity -->
+						</div>
+					</div>
+					</div>
+				</div>
+				</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+block script
+	<!-- ECharts -->
+	<script src="../vendors/echarts/dist/echarts.min.js"></script>
+	<!-- Datatables -->
+	<script src="../vendors/datatables.net/js/jquery.dataTables.min.js"></script>
+	<script src="../vendors/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+	<script src="../vendors/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
+	<script src="../vendors/datatables.net-buttons-bs/js/buttons.bootstrap.min.js"></script>
+	<script src="../vendors/datatables.net-buttons/js/buttons.flash.min.js"></script>
+	<script src="../vendors/datatables.net-buttons/js/buttons.html5.min.js"></script>
+	<script src="../vendors/datatables.net-buttons/js/buttons.print.min.js"></script>
+	<script src="../vendors/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js"></script>
+	<script src="../vendors/datatables.net-keytable/js/dataTables.keyTable.min.js"></script>
+	<script src="../vendors/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+	<script src="../vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js"></script>
+	<script src="../vendors/datatables.net-scroller/js/dataTables.scroller.min.js"></script>
+	<script src="../vendors/jszip/dist/jszip.min.js"></script>
+	<script src="../vendors/pdfmake/build/pdfmake.min.js"></script>
+	<script src="../vendors/pdfmake/build/vfs_fonts.js"></script>
+	<!-- NProgress -->
+	<script src="../vendors/nprogress/nprogress.js"></script>
+	<!-- morris.js -->
+	<script src="../vendors/raphael/raphael.min.js"></script>
+	<script src="../vendors/morris.js/morris.min.js"></script>
