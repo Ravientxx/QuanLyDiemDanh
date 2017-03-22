@@ -11,6 +11,11 @@ router.get('/students', function(req, res, next) {
     res.render('students', {});
 });
 
+router.get('/students/:student_id', function(req, res, next) {
+    //res.send('respond with a resource');
+    res.render('student_detail', {});
+});
+
 router.get('/courses', function(req, res, next) {
     //res.send('respond with a resource');
     res.render('courses', {});
