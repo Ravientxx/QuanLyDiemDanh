@@ -4888,7 +4888,7 @@ ul.notifications {
 
 .div-square {
     padding: 5px;
-    border: 3px double blue;
+    border: 3px double #2A3F54;
     -webkit-border-radius: 8px;
     -moz-border-radius: 8px;
     border-radius: 8px;
