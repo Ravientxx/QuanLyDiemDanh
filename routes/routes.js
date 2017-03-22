@@ -31,6 +31,11 @@ router.get('/teachers', function(req, res, next) {
     res.render('teachers', {});
 });
 
+router.get('/teachers/:teachers_id', function(req, res, next) {
+    //res.send('respond with a resource');
+    res.render('teacher_detail', {});
+});
+
 router.get('/statistics', function(req, res, next) {
     //res.send('respond with a resource');
     res.render('statistics', {});
