@@ -46,6 +46,11 @@ router.get('/absence-requests', function(req, res, next) {
     res.render('absence_requests', {});
 });
 
+router.get('/settings', function(req, res, next) {
+    //res.send('respond with a resource');
+    res.render('absence_requests', {});
+});
+
 router.get('/login', function(req, res, next) {
     res.render('login', {});
 });
