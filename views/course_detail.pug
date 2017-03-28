@@ -50,8 +50,8 @@ block content
 						<thead>
 							<tr>
 								<th rowspan="2">No</th>
-								<th rowspan="2">Code</th>
 								<th rowspan="2">Name</th>
+								<th rowspan="2">Code</th>
 								each val in ['Week 1', 'Week 2','Week 3','Week 4','Week 5','Week 6', 'Week 7','Week 8','Week 9','Week 10']
 									th(colspan="2" scope="colgroup")= val
 							</tr>
@@ -75,8 +75,24 @@ block content
 									td X
 								else
 									td 
+						<tr>
+							td 11
+							<td>
+								<input type="text" name="name">
+							</td>
+							<td>
+								<input type="text" name="id">
+							</td>
+								- var i = 0;
+								while i < 20
+									- i++
+									td
+						</tr>
 						</tbody>
 					</table>
+					<div style="text-align: right;">
+						<button class="btn btn-round btn-primary" type="button">Save</button>
+					</div>
 				</div>
 			</div>
 		</div>
