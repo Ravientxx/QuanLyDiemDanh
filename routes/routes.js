@@ -55,4 +55,8 @@ router.get('/login', function(req, res, next) {
     res.render('login', {});
 });
 
+router.get('/timetable', function(req, res, next) {
+    res.render('timetable', {});
+});
+
 module.exports = router;
