@@ -3,25 +3,27 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 import { RouterModule, Routes } from '@angular/router';
-import { Ng2TableModule } from 'ng2-table/ng2-table';
-
 
 import { AppComponent } from './app.component';
-import { FooterComponent } from './footer/footer.component';
-import { SideMenuComponent } from './side-menu/side-menu.component';
-import { TopNavigationComponent } from './top-navigation/top-navigation.component';
-import { StudentsComponent } from './students/students.component';
+import { FooterComponent } from './layout/footer/footer.component';
+import { SideMenuComponent } from './layout/side-menu/side-menu.component';
+import { TopNavigationComponent } from './layout/top-navigation/top-navigation.component';
 import { HomePageComponent } from './home-page/home-page.component';
+import { PageNotFoundComponent } from './others/page-not-found.component';
+
+import { StudentsModule } from './students/students.module';
+import { CoursesModule } from './courses/courses.module';
+import { TeachersModule } from './teachers/teachers.module';
 
 const ROUTES = [
   {
     path: '',
     component: HomePageComponent
   },
-  {
-    path: 'students',
-    component: StudentsComponent
-  }
+    {
+    path: '**',
+    component: PageNotFoundComponent
+  },
 ];
 
 @NgModule({
@@ -30,15 +32,17 @@ const ROUTES = [
     FooterComponent,
     SideMenuComponent,
     TopNavigationComponent,
-    StudentsComponent,
-    HomePageComponent
+    HomePageComponent,
+    PageNotFoundComponent
   ],
   imports: [
     BrowserModule,
     FormsModule,
     HttpModule,
-    Ng2TableModule,
-    RouterModule.forRoot(ROUTES) // Add routes to the app
+    CoursesModule,
+    StudentsModule,
+    TeachersModule,
+    RouterModule.forRoot(ROUTES), // Add routes to the app
   ],
   providers: [],
   bootstrap: [AppComponent]
