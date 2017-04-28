@@ -43,8 +43,8 @@
  * and open the template in the editor.
  */
 
-var CURRENT_URL = window.location.href.split('#')[0].split('?')[0];
-
+//var CURRENT_PATH = window.location.href.split('#')[0].split('?')[0];
+var CURRENT_PATH = window.location.protocol + "//" + window.location.host + window.location.pathname;
 
 // Sidebar
 function init_sidebar() {
@@ -68,6 +68,10 @@ function init_sidebar() {
         console.log('clicked - sidebar_menu');
         var $li = $(this).parent();
 
+
+        $('#sidebar-menu').find('li').removeClass('current-page');
+
+
         if ($li.is('.active')) {
             $li.removeClass('active active-sm');
             $('ul:first', $li).slideUp(function() {
@@ -84,7 +88,7 @@ function init_sidebar() {
                     $('#sidebar-menu').find("li ul").slideUp();
                 }
             }
-            $li.addClass('active');
+            $li.addClass('active').addClass('current-page');
 
             $('ul:first', $li).slideDown(function() {
                 setContentHeight();
@@ -109,10 +113,10 @@ function init_sidebar() {
     });
 
     // check active menu
-    $('#sidebar-menu').find('a[href="' + CURRENT_URL + '"]').parent('li').addClass('current-page');
+    $('#sidebar-menu').find('a[href="' + CURRENT_PATH + '"]').parent('li').addClass('current-page');
 
     $('#sidebar-menu').find('a').filter(function() {
-        return this.href == CURRENT_URL;
+        return this.href == CURRENT_PATH;
     }).parent('li').addClass('current-page').parents('ul').slideDown(function() {
         setContentHeight();
     }).parent().addClass('active');

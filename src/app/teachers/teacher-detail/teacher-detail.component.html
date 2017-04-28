@@ -1,43 +1,90 @@
-    <div class="page-title">
-        <div class="title_left">
-            <h3>Teacher Detail</h3>
-        </div>
-    </div>
+    <div class="">
+        <div class="page-title">
+            <div class="title_left">
+                <h3>Teacher Profile</h3>
+            </div>
 
-    <div class="clearfix"></div>
-
-    <div class="row">
-        <div class="col-md-12">
-            <div class="x_panel">
-                <div class="x_title">
-                    <div class="row">
-                        <div class="col-xs-6">
-                            <h2>CSS345 - System Architecture</h2>
-                        </div>
-                        <div class="col-xs-4">
-                            <h2>Semester : HK2-2016-2017</h2>
-                        </div>
-                        <div class="col-xs-2">
-                            <button class="btn btn-success">Add</button>
-                        </div>                      
-                    </div>
-                    <div class="row">
-                        <div class="col-xs-6">
-                            <h2>Teacher : Đinh Bá Tiến</h2>
-                        </div>
-                        <div class="col-xs-4">
-                            <h2>Total Students : 30</h2>
-                        </div>
-                        <div class="col-xs-2">
-                            <button class="btn btn-primary">Export</button>
-                        </div>                                          
-                    </div>              
-                    <div class="clearfix"></div>
+            <div class="title_right">
+            <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
+                <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search for...">
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button">Go!</button>
+                </span>
                 </div>
+            </div>
+            </div>
+        </div>
+        
+        <div class="clearfix"></div>
+
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
                 <div class="x_content">
-                    <div style="text-align: right;">
-                        <button class="btn btn-round btn-primary" type="button">Save</button>
+                <div class="col-md-3 col-sm-3 col-xs-12 profile_left">
+                    <h3>Đinh Bá Tiến</h3>
+
+                    <ul class="list-unstyled user_data" style="font-size: medium;">
+                        <li>
+                            <i class="fa fa-phone user-profile-icon"></i> 090123456
+                        </li>
+                        <li>
+                            <i class="fa fa-envelope-o user-profile-icon"></i> dbtien@fit.hcmus.edu.vn
+                        </li>
+                    </ul>
+
+                    <a class="btn btn-success"><i class="fa fa-edit m-right-xs"></i> Edit Profile</a>
+                    <br />
+
+                </div>
+                <div class="col-md-9 col-sm-9 col-xs-12">
+
+                    <div class="" role="tabpanel" data-example-id="togglable-tabs">
+                    <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+                        <li role="presentation" class="active"><a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">Current Courses</a>
+                        </li>
+                    </ul>
+                    <div id="myTabContent" class="tab-content">
+                        <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+
+                        <!-- start recent activity -->
+                        <table class="data table table-striped no-margin">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Code</th>
+                                    <th>Name</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th>1</th>
+                                    <td><a href="/courses/CS345">CS345</a></td>
+                                    <td>System Architect</td>
+                                    <td>
+                                        <a href="/courses/CS345" class="btn btn-primary btn-xs"><i class="fa fa-folder"></i> View </a>
+                                        <a href="#" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i> Option </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>CTT511</td>
+                                    <td>Accountant</td>
+                                    <td>
+                                        <a href="/courses/CS345" class="btn btn-primary btn-xs"><i class="fa fa-folder"></i> View </a>
+                                        <a href="#" class="btn btn-info btn-xs"><i class="fa fa-pencil"></i> Option </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <!-- end recent activity -->
+                        </div>
                     </div>
+                    </div>
+                </div>
+                </div>
                 </div>
             </div>
         </div>

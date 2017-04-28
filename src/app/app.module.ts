@@ -14,6 +14,7 @@ import { PageNotFoundComponent } from './others/page-not-found.component';
 import { StudentsModule } from './students/students.module';
 import { CoursesModule } from './courses/courses.module';
 import { TeachersModule } from './teachers/teachers.module';
+import { ScheduleModule } from './schedule/schedule.module';
 
 const ROUTES = [
   {

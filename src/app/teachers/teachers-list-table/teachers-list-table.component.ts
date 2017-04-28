@@ -13,18 +13,21 @@ export class TeachersListTableComponent implements OnInit {
         'name': 'Đinh Bá Tiến',
         'current-courses': '3',
         'phone': '0904xxxxx',
+        'email':'dbtien@fit.hcmus.edu.vn'
     }, {
         'code': '2',
         'name': 'Lâm Quang Vũ',
         'current-courses': '2',
         'phone': '0903xxxxx',
+        'email':'lqvu@fit.hcmus.edu.vn'
     }];
     public rows: Array < any > = [];
     public columns: Array < any > = [
         { title: 'Code', name: 'code' },
         { title: 'Name',name: 'name'},
         { title: 'Current Courses', name: 'current-courses' },
-        { title: 'Phone', name: 'phone' }
+        { title: 'Phone', name: 'phone' },
+        { title: 'Email', name: 'email' }
     ];
     public page: number = 1;
     public itemsPerPage: number = 10;
