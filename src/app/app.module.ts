@@ -15,6 +15,7 @@ import { StudentsModule } from './students/students.module';
 import { CoursesModule } from './courses/courses.module';
 import { TeachersModule } from './teachers/teachers.module';
 import { ScheduleModule } from './schedule/schedule.module';
+import { AbsenceRequestsModule } from './absence-requests/absence-requests.module';
 
 const ROUTES = [
   {
@@ -43,6 +44,7 @@ const ROUTES = [
     CoursesModule,
     StudentsModule,
     TeachersModule,
+    AbsenceRequestsModule,
     RouterModule.forRoot(ROUTES), // Add routes to the app
   ],
   providers: [],
