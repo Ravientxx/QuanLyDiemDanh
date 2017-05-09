@@ -11,6 +11,7 @@ import { Ng2TableModule } from 'ng2-table/ng2-table';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
 
+import { TeacherService } from './teachers.service';
 const teachersRoutes: Routes = [
   { path: 'teachers',  component: TeachersComponent },
   { path: 'teachers/:id', component: TeacherDetailComponent }
@@ -27,9 +28,10 @@ const teachersRoutes: Routes = [
   ],
   declarations: [
     TeachersComponent,
-    TeachersListTableComponent,
     TeacherDetailComponent
   ],
-  providers: []
+  providers: [
+    TeacherService
+  ]
 })
 export class TeachersModule {}

@@ -270,7 +270,7 @@ table.tile_info td p {
 .nav-sm .nav.side-menu li.active-sm ul ul,
 .nav-sm ul.nav.child_menu ul {
     position: static;
-    width: 200px;
+    width: 230px;
     background: 0 0
 }
 
@@ -427,7 +427,7 @@ table.tile_info td p {
 
 .nav-md .container.body .col-md-3.left_col {
     min-height: 100%;
-    width: 200px;
+    width: 230px;
     padding: 0;
     position: absolute;
     display: -ms-flexbox;
@@ -446,12 +446,12 @@ body .container.body .right_col {
 
 .nav-md .container.body .right_col {
     padding: 10px 20px 0;
-    margin-left: 200px;
+    margin-left: 230px;
     padding-top: 70px;
 }
 
 .nav_title {
-    width: 200px;
+    width: 230px;
     float: left;
     background: #2A3F54;
     border-radius: 0;
@@ -616,11 +616,11 @@ body {
 
 .main_container .top_nav {
     display: block;
-    margin-left: 200px;
+    margin-left: 230px;
     z-index: 10;
     position: fixed;
     width: 100%;
-    padding-right: 200px;
+    padding-right: 230px;
 }
 
 .no-padding {
@@ -1985,7 +1985,7 @@ span.right {
     display: block;
     padding: 5px 0 0;
     position: fixed;
-    width: 200px;
+    width: 230px;
     background: #2A3F54;
     z-index: 999
 }
@@ -2027,7 +2027,7 @@ span.right {
 
 @media (min-width:992px) {
     footer {
-        margin-left: 200px
+        margin-left: 230px
     }
     .tile_count .tile_stats_count {
         margin-bottom: 10px;
@@ -4921,3 +4921,35 @@ ul.notifications {
 th {
     text-align: center;
 }
+
+.table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
+  background-color: #337AB7;
+  color : white;
+}
+
+.no_margin {
+    margin: 0 !important;
+}
+
+/*Make modal vertical center*/
+.vertical-alignment-helper {
+    display:table;
+    height: 100%;
+    width: 100%;
+    pointer-events:none;
+}
+.vertical-align-center {
+    /* To center vertically */
+    display: table-cell;
+    vertical-align: middle;
+    pointer-events:none;
+}
+.modal-content {
+    /* Bootstrap sets the size of the modal in the modal-dialog class, we need to inherit it */
+    width:inherit;
+    height:inherit;
+    /* To center horizontally */
+    margin: 0 auto;
+    pointer-events:all;
+}
+/*Make modal vertical center*/

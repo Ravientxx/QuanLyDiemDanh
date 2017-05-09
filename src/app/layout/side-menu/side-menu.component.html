@@ -11,8 +11,14 @@
                 <li><a routerLink="/students" routerLinkActive="active"><i class="fa fa-users"></i> Students</a></li>
                 <li><a routerLink="/courses" routerLinkActive="active"><i class="fa fa-book"></i> Courses</a></li>
                 <li><a routerLink="/teachers" routerLinkActive="active"><i class="fa fa-graduation-cap"></i> Teachers</a></li>
-                <li><a routerLink="/schedule" routerLinkActive="active"><i class="fa fa-calendar"></i> Time Table</a></li>
-                <li><a routerLink="/absence-requests" routerLinkActive="active"><i class="fa fa-envelope"></i> Absence Requests </a></li>
+                <li><a routerLink="/schedule" routerLinkActive="active"><i class="fa fa-calendar"></i> Schedule</a></li>
+                <li>
+                    <a><i class="fa fa-envelope"></i> Absence Requests <span class="fa fa-chevron-down"></span> </a>
+                    <ul class="nav child_menu">
+                        <li><a routerLink="/absence-requests/student">Student</a></li>
+                        <li><a routerLink="/absence-requests/teacher">Teacher</a></li>
+                    </ul>
+                </li>
                 <li>
                     <a><i class="fa fa-key"></i> Admin <span class="fa fa-chevron-down"></span> </a>
                     <ul class="nav child_menu">

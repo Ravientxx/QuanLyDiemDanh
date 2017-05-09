@@ -15,6 +15,9 @@ import { StudentsModule } from './students/students.module';
 import { CoursesModule } from './courses/courses.module';
 import { TeachersModule } from './teachers/teachers.module';
 import { ScheduleModule } from './schedule/schedule.module';
+import { AbsenceRequestsModule } from './absence-requests/absence-requests.module';
+
+import {EmitterService} from './emitter.service';
 
 const ROUTES = [
   {
@@ -43,9 +46,13 @@ const ROUTES = [
     CoursesModule,
     StudentsModule,
     TeachersModule,
+    ScheduleModule,
+    AbsenceRequestsModule,
     RouterModule.forRoot(ROUTES), // Add routes to the app
   ],
-  providers: [],
+  providers: [
+    EmitterService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

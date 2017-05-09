@@ -3,6 +3,7 @@ import { CommonModule }   from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 
+import { CollapseModule } from 'ngx-bootstrap';
 
 import { CoursesComponent } from './courses.component'
 import { CoursesListTableComponent } from './courses-list-table/courses-list-table.component'
@@ -22,6 +23,7 @@ const coursesRoutes: Routes = [
     CommonModule,
     FormsModule,
     RouterModule.forChild(coursesRoutes),
+    CollapseModule.forRoot(),
     Ng2TableModule,
     PaginationModule.forRoot(),
     TabsModule,

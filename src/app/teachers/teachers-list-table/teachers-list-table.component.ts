@@ -1,5 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
+import { Teacher } from '../teacher.model';
+import { TeacherService } from '../teachers.service';
 
 @Component({
     selector: 'teachers-list-table',
@@ -7,25 +9,11 @@ import { Router, ActivatedRoute, Params } from '@angular/router';
 })
 export class TeachersListTableComponent implements OnInit {
     @Input() type: string;
-
-    public CurrentTableData: Array < any > = [{
-        'code': '1',
-        'name': 'Đinh Bá Tiến',
-        'current-courses': '3',
-        'phone': '0904xxxxx',
-        'email':'dbtien@fit.hcmus.edu.vn'
-    }, {
-        'code': '2',
-        'name': 'Lâm Quang Vũ',
-        'current-courses': '2',
-        'phone': '0903xxxxx',
-        'email':'lqvu@fit.hcmus.edu.vn'
-    }];
     public rows: Array < any > = [];
     public columns: Array < any > = [
-        { title: 'Code', name: 'code' },
-        { title: 'Name',name: 'name'},
-        { title: 'Current Courses', name: 'current-courses' },
+        { title: 'ID', name: 'id' },
+        { title: 'Name', name: 'name' },
+        { title: 'Current Courses', name: 'current_courses' },
         { title: 'Phone', name: 'phone' },
         { title: 'Email', name: 'email' }
     ];
@@ -42,16 +30,12 @@ export class TeachersListTableComponent implements OnInit {
         className: ['table-striped', 'table-bordered', 'text-center', 'table-hover']
     };
 
-    private data: Array < any > = [];
+    private data: Array<any> = [];
 
-    public constructor(private router: Router) {
-        this.data = this.CurrentTableData;
-        this.length = this.data.length;
+    public constructor(private router: Router, private TeacherService: TeacherService) {
     }
 
-    public ngOnInit(): void {
-        this.onChangeTable(this.config);
-    }
+    public ngOnInit(): void {}
 
     public changePage(page: any, data: Array < any > = this.data): Array < any > {
         let start = (page.page - 1) * page.itemsPerPage;

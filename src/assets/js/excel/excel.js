@@ -87,52 +87,6 @@ function xw(data, cb) {
     else xw_noxfer(data, cb);
 }
 
-function get_radio_value(radioName) {
-    var radios = document.getElementsByName(radioName);
-    for (var i = 0; i < radios.length; i++) {
-        if (radios[i].checked || radios.length === 1) {
-            return radios[i].value;
-        }
-    }
-}
-
-function to_json(workbook) {
-    var result = {};
-    workbook.SheetNames.forEach(function(sheetName) {
-        var roa = X.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
-        if (roa.length > 0) {
-            result[sheetName] = roa;
-        }
-    });
-    return result;
-}
-
-function to_csv(workbook) {
-    var result = [];
-    workbook.SheetNames.forEach(function(sheetName) {
-        var csv = X.utils.sheet_to_csv(workbook.Sheets[sheetName]);
-        if (csv.length > 0) {
-            result.push("SHEET: " + sheetName);
-            result.push("");
-            result.push(csv);
-        }
-    });
-    return result.join("\n");
-}
-
-function to_formulae(workbook) {
-    var result = [];
-    workbook.SheetNames.forEach(function(sheetName) {
-        var formulae = X.utils.get_formulae(workbook.Sheets[sheetName]);
-        if (formulae.length > 0) {
-            result.push("SHEET: " + sheetName);
-            result.push("");
-            result.push(formulae.join("\n"));
-        }
-    });
-    return result.join("\n");
-}
-
 var tarea = document.getElementById('b64data');
 
 function b64it() {
@@ -182,8 +136,6 @@ function setfmt() {
     if (global_wb) process_wb(global_wb);
 }
 
-var drop = document.getElementById('file-drop');
-
 function handleDrop(e) {
     e.stopPropagation();
     e.preventDefault();
@@ -220,14 +172,15 @@ function handleDragover(e) {
     e.dataTransfer.dropEffect = 'copy';
 }
 
+var drop = document.getElementById('file-drop');
 if (drop.addEventListener) {
     drop.addEventListener('dragenter', handleDragover, false);
     drop.addEventListener('dragover', handleDragover, false);
     drop.addEventListener('drop', handleDrop, false);
 }
 
-
 var xlf = document.getElementById('xlf');
+if (xlf.addEventListener) xlf.addEventListener('change', handleFile, false);
 
 function handleFile(e) {
     rABS = false;
@@ -257,4 +210,3 @@ function handleFile(e) {
     }
 }
 
-if (xlf.addEventListener) xlf.addEventListener('change', handleFile, false);

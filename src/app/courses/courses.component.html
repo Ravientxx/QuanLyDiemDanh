@@ -36,15 +36,19 @@
         <div class="x_title">
             <h2>Previous Courses</h2>
             <ul class="nav navbar-right panel_toolbox">
-                <li><a class="collapse-link"><i class="fa fa-chevron-down"></i> <span>Explan all</span></a></li>
+                <li>
+                    <a (click)="isCollapsed = !isCollapsed">
+                        <i *ngIf="isCollapsed" class="fa fa-chevron-down"><span>Exspand</span></i>
+                        <i *ngIf="!isCollapsed" class="fa fa-chevron-up"><span>Collapse</span></i>
+                    </a>
+                </li>
             </ul>
             <div class="clearfix"></div>
         </div>
-        <div class="x_content" style="display: none">
+        <div class="x_content" (collapsed)="collapsed($event)" (expanded)="expanded($event)" [collapse]="isCollapsed">
             <ul class="pull-right">
                 <select class="form-control">
                     <option>All Semesters</option>
-
                     <option>HK2 (2016-2017)</option>
                     <option>HK1 (2016-2017)</option>
                     <option>HK3 (2015-2016)</option>
