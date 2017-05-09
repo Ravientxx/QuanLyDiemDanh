@@ -6,7 +6,7 @@ import { RouterModule, Routes } from '@angular/router';
 import {StudentAbsenceRequestComponent} from './student/student-absence-request.component';
 import { AbsenceRequestService } from './absence-request.service';
 
-const teachersRoutes: Routes = [
+const AbsenceRequestsRoutes: Routes = [
   { path: 'absence-requests/student',  component: StudentAbsenceRequestComponent },
   //{ path: 'absence-requests/teacher', component: TeacherDetailComponent }
 ];
@@ -15,7 +15,7 @@ const teachersRoutes: Routes = [
   imports: [
     CommonModule,
     FormsModule,
-    RouterModule.forChild(teachersRoutes),
+    RouterModule.forChild(AbsenceRequestsRoutes),
   ],
   declarations: [
   	StudentAbsenceRequestComponent
