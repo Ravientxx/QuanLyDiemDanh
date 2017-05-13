@@ -11,10 +11,10 @@ export class TeacherService {
     constructor(private http: Http) {}
         // private instance variable to hold base url
     private getListTeachersUrl = globalVariables.apiHost + '/teacher/list';
-    getListTeachers(searchText: string = null, page: number = 1, limit: number = 10): Observable <{result: string, total_items : number , teacher_list : Teacher[] }> {
+    getListTeachers(searchText: string = null, page: number = 1, limit: number = 10): Observable < { result: string, total_items: number, teacher_list: Teacher[] } > {
         var params = {
-            'searchText' : searchText,
-            'page' : page,
+            'searchText': searchText,
+            'page': page,
             'limit': limit
         };
         return this.http.post(this.getListTeachersUrl, params)
@@ -24,11 +24,20 @@ export class TeacherService {
             .catch((error: any) => Observable.throw(error || 'Server error'));
     }
 
+    private getTeacherDetailsUrl = globalVariables.apiHost + '/teacher/detail';
+    getTeacherDetail(id: number): Observable < { result: string, teacher: Teacher} > {
+        return this.http.get(`${this.getTeacherDetailsUrl}/${id}`)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => Observable.throw(error || 'Server error'));
+    }
+
     private addTeacherUrl = globalVariables.apiHost + '/teacher/add';
-    addTeacher(name: string , email: string, phone: string = null): Observable <{result: string, message: string}> {
+    addTeacher(name: string, email: string, phone: string = null): Observable < { result: string, message: string } > {
         var params = {
-            'name' : name,
-            'email' : email,
+            'name': name,
+            'email': email,
             'phone': phone
         };
         return this.http.post(this.addTeacherUrl, params)

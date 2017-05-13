@@ -4,7 +4,6 @@ import { FormsModule }    from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 
 import { TeachersComponent }    from './teachers.component';
-import { TeachersListTableComponent } from './teachers-list-table/teachers-list-table.component';
 import { TeacherDetailComponent } from './teacher-detail/teacher-detail.component';
 
 import { Ng2TableModule } from 'ng2-table/ng2-table';
@@ -24,7 +23,7 @@ const teachersRoutes: Routes = [
     RouterModule.forChild(teachersRoutes),
     Ng2TableModule,
     PaginationModule.forRoot(),
-    TabsModule,
+    TabsModule.forRoot(),
   ],
   declarations: [
     TeachersComponent,

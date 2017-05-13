@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
+import { TeacherService } from '../teachers.service';
+import { Teacher } from '../teacher.model';
 
 @Component({
     selector: 'teacher-detail',
@@ -7,15 +9,19 @@ import { Router, ActivatedRoute, Params } from '@angular/router';
 })
 export class TeacherDetailComponent implements OnInit {
 
-    course_id : string;
+    teacher_id : number;
+    public teacher : Teacher = new Teacher(0,"","","",0);
 
-    public constructor(private route: ActivatedRoute,private router : Router) {
+    public constructor(private route: ActivatedRoute,private router : Router,private TeacherService: TeacherService) {
         
     }
 
     public ngOnInit(): void {
-        this.route.params.subscribe(params => {this.course_id = params['id']});
-        //get course from database
-        console.log(this.course_id);
+        this.route.params.subscribe(params => {this.teacher_id = params['id']});
+        this.TeacherService.getTeacherDetail(this.teacher_id)
+            .subscribe(result => {
+                this.teacher = result.teacher;
+                console.log(this.teacher);
+            }, err => { console.log(err) });
     }
 }

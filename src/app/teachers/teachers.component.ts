@@ -16,10 +16,10 @@ export class TeachersComponent implements OnInit {
     public currentPage: number = 1;
     public totalItems: number = 0;
     public itemsPerPage: number = 10;
-    public apiCallResult :string;
     public newTeacherName :string = ""; newTeacherPhone:string = "" ; newTeacherEmail:string = "";
-
-    public error : any;
+    public apiCallResult :string;
+    public error_message : any;
+    public success_message : any;
     ngOnInit() {}
 
     constructor(private TeacherService: TeacherService, private router: Router) {
@@ -47,39 +47,46 @@ export class TeachersComponent implements OnInit {
                 this.totalItems = list.total_items;
             }, err => { console.log(err) });
     }
+
     public onCellClick(id: any) {
-        this.router.navigate(['/teachers', id]);
+        this.router.navigate(['/teachers/',id]);
     }
     public onCancelAddTeacher(){
     	jQuery("#addTeacherModal").modal("hide");
-    	this.newTeacherEmail = this.newTeacherName = this.newTeacherPhone = this.error = "";
+    	this.newTeacherEmail = this.newTeacherName = this.newTeacherPhone = this.error_message = "";
     }
     public onAddTeacher(){
     	var error_check = false;
     	if(this.newTeacherName == ""){
-    		this.error = "Name is required";
+    		this.error_message = "Name is required";
     		return;
     	}
     	if(this.newTeacherEmail == ""){
-    		this.error = "Email is required";
+    		this.error_message = "Email is required";
     		return;
     	}
     	if(this.newTeacherEmail.indexOf('@') == -1){
-    		this.error = "Invalid Email";
+    		this.error_message = "Invalid Email";
     		return;
     	}
     	if (isNaN(Number(this.newTeacherPhone))) {
-        	this.error = "Invalid Phone Number";
+        	this.error_message = "Invalid Phone Number";
     		return;
     	}
+    	jQuery("#progressModal").modal("show");
+    	this.error_message = "";
     	this.TeacherService.addTeacher(this.newTeacherName, this.newTeacherEmail, this.newTeacherPhone)
             .subscribe(list => {
             	this.apiCallResult = list.result;
             	if(this.apiCallResult == 'failure'){
-            		this.error = list.message;
+            		this.error_message = list.message;
             	}
+            	if(this.apiCallResult == 'success'){
+            		this.success_message = list.message;
+            		this.newTeacherEmail = this.newTeacherName = this.newTeacherPhone = "";
+            		this.onSearchChange();
+            	}
+            	jQuery("#progressModal").modal("hide");
             }, err => { console.log(err) });
-    	//jQuery("#addTeacherModal").modal("hide");
-    	//jQuery("#progressModal").modal("show");
     }
 }
