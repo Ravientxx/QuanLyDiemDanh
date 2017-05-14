@@ -6,6 +6,10 @@ module.exports = {
 		database: 'qldd'
 	},
 
+    sendError: function(res, detail = null, message = "Server error") {
+        res.send({ result: 'failure', detail: detail, message: message });
+    },
+
     filterListByPage: function (page, limit, list) {
         var result = [];
         var length = list.length;
@@ -23,5 +27,8 @@ module.exports = {
             }
             return result;
         }
-    }
+    },
+
+    default_page: 1,
+    default_limit: 10,
 };
