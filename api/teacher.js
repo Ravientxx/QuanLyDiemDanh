@@ -36,16 +36,16 @@ router.post('/add', function(req, res, next) {
 
             //new teacher data
             var new_password = new_email.split('@')[0];
-            var new_user = { 
-                firstname: new_firstname, 
+            var new_user = {
+                firstname: new_firstname,
                 lastname: new_lastname,
-                email: new_email, 
-                phone: new_phone, 
-                password: bcrypt.hashSync(new_password, 10), 
+                email: new_email,
+                phone: new_phone,
+                password: bcrypt.hashSync(new_password, 10),
                 role_id: 2 
             };
             
-            //begin add teacher
+            //begin adding teacher
             connection.beginTransaction(function(error) {
                 if (error){
                     _global.sendError(res, error.message);

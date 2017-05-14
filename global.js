@@ -6,6 +6,12 @@ module.exports = {
 		database: 'qldd'
 	},
 
+    role: {
+        student: 1,
+        teacher: 2,
+        staff: 3,
+    },
+
     sendError: function(res, detail = null, message = "Server error") {
         res.send({ result: 'failure', detail: detail, message: message });
     },

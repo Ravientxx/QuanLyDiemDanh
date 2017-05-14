@@ -1,16 +1,13 @@
 var express = require('express');
 var router = express.Router();
 var bcrypt = require('bcrypt');
-var absence_request_api = require('./absence-request');
-var teacher_api = require('./teacher');
-var student_api = require('./student');
 var _global = require('../global.js');
 var mysql = require('mysql');
 var pool = mysql.createPool(_global.db);
 
-router.use('/teacher', teacher_api);
-router.use('/absence-request', absence_request_api);
-router.use('/student', student_api);
+router.use('/teacher', require('./teacher'));
+router.use('/absence-request', require('./absence-request'));
+router.use('/student', require('./student'));
 var insert_roles = [
     { name: 'Student' },
     { name: 'Teacher' },
