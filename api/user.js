@@ -6,7 +6,7 @@ var connection = mysql.createConnection(_global.db);
 var pool = mysql.createPool(_global.db);
 var bcrypt = require('bcrypt');
 
-router.get(['/detail/:id', '/detail?'],function(req,res,next){
+router.get(['/detail/:id', '/detail?'], function (req,res,next){
 	var user_id;
 	if (req.query.id != null){
 		user_id = req.query.id;
@@ -45,7 +45,7 @@ router.get(['/detail/:id', '/detail?'],function(req,res,next){
     });
 });
 
-router.put(['/update/:id', '/update?'], function(req, res, next){
+router.put(['/update/:id', '/update?'], function (req, res, next){
 	var user_id;
 	if (req.query.id != null){
 		user_id = req.query.id;
@@ -114,7 +114,7 @@ router.put(['/update/:id', '/update?'], function(req, res, next){
     });
 });
 
-router.delete(['/delete/:id', '/delete?'],function(req,res,next){
+router.delete(['/delete/:id', '/delete?'], function (req,res,next){
 	var user_id;
 	if (req.query.id != null){
 		user_id = req.query.id;
@@ -191,7 +191,7 @@ router.delete(['/delete/:id', '/delete?'],function(req,res,next){
     });
 });
 
-router.put(['/changePassword/:id', '/changePassword?'], function(req, res, next){
+router.put(['/changePassword/:id', '/changePassword?'], function (req, res, next){
 	var user_id;
 	if (req.query.id == null){
 		if (req.body.id == null){

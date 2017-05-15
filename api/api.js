@@ -5,6 +5,12 @@ var _global = require('../global.js');
 var mysql = require('mysql');
 var pool = mysql.createPool(_global.db);
 
+router.use('/',function(req, res, next){
+    res.redirect('/doc');
+});
+
+router.use('/doc', require('./swagger'));
+
 router.use('/teacher', require('./teacher'));
 router.use('/absence-request', require('./absence-request'));
 router.use('/student', require('./student'));

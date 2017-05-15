@@ -6,7 +6,7 @@ var pool = mysql.createPool(_global.db);
 var bcrypt = require('bcrypt');
 var teacher_list = [];
 
-router.post('/add', function(req, res, next) {
+router.post('/add', function (req, res, next) {
     if (req.body.name == null || req.body.email == null || req.body.password == null){
         _global.sendError(res, null, "Fill all required fields");
         return;
@@ -86,7 +86,7 @@ router.post('/add', function(req, res, next) {
     });
 });
 
-router.post('/list', function(req, res, next) {
+router.post('/list', function (req, res, next) {
     var searchText = req.body.searchText;
     var page = req.body.page != null ? req.body.page : _global.default_page;
     var limit = req.body.limit != null ? req.body.limit : _global.detail_limit;
@@ -128,7 +128,7 @@ router.post('/list', function(req, res, next) {
     });
 });
 
-router.get('/detail/:id', function(req, res, next) {
+router.get('/detail/:id', function (req, res, next) {
     var id = req.params['id'];
     pool.getConnection(function(error, connection) {
         if (error) {
