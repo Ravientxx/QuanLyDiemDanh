@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve && supervisor ./bin/www",
+    "start": "ng build && supervisor ./bin/www",
     "client": "ng serve",
     "server": "supervisor ./bin/www",
     "build": "ng build",
@@ -41,7 +41,7 @@
     "serve-favicon": "~2.3.2",
     "ts-xlsx": "0.0.10",
     "zone.js": "^0.8.4",
-    "swagger-node-express": "*"
+    "swagger-node-express": "~2.1.3"
   },
   "devDependencies": {
     "@angular/cli": "1.0.0",

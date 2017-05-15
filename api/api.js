@@ -5,11 +5,14 @@ var _global = require('../global.js');
 var mysql = require('mysql');
 var pool = mysql.createPool(_global.db);
 
-router.use('/',function(req, res, next){
-    res.redirect('/doc');
+var pref = 'api';
+
+router.get('/',function(req, res, next){
+    res.redirect(pref + '/document/v' + _global.api_ver);
+    //res.send('doc');
 });
 
-router.use('/doc', require('./swagger'));
+router.use('/document', require('../swagger'));
 
 router.use('/teacher', require('./teacher'));
 router.use('/absence-request', require('./absence-request'));
