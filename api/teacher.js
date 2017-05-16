@@ -6,6 +6,91 @@ var pool = mysql.createPool(_global.db);
 var bcrypt = require('bcrypt');
 var teacher_list = [];
 
+/**
+* @swagger
+* /:
+*   get:
+*     description: Returns the homepage
+*     responses:
+*       200:
+*         description: hello world
+*/
+
+/**
+* @swagger
+* definitions:
+*   Login:
+*     required:
+*       - username
+*       - password
+*     properties:
+*       username:
+*         type: string
+*       password:
+*         type: string
+*       path:
+*         type: string
+*/
+
+/**
+* @swagger
+* tags:
+*   name: Users
+*   description: User management and login
+*/
+
+/**
+* @swagger
+* tags:
+*   - name: Login
+*     description: Login
+*   - name: Accounts
+*     description: Accounts
+*/
+
+/**
+* @swagger
+* /login:
+*   post:
+*     summary: Login to the application
+*     description: 
+*     tags: [Users, Login]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: username
+*         description: User's name.
+*         in: formData
+*         required: true
+*         type: string
+*       - name: password
+*         description: User's password.
+*         in: formData
+*         required: true
+*         type: string
+*     responses:
+*       200:
+*         description: login
+*         schema:
+*           type: object
+*           $ref: '#/definitions/Login'
+*/
+
+/**
+* @swagger
+* /users:
+*   get:
+*     description: Returns users
+*     tags:
+*      - Users
+*     produces:
+*      - application/json
+*     responses:
+*       200:
+*         description: users
+*/
+
+
 router.post('/add', function (req, res, next) {
     if (req.body.name == null || req.body.email == null || req.body.password == null){
         _global.sendError(res, null, "Fill all required fields");
