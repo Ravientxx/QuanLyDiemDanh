@@ -156,15 +156,6 @@ var insert_users = [
     { name: 'Trần Duy Quang', email: 'tdquang@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
     { name: 'Tuấn Nguyên Đức Hoài', email: 'tndhoai@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
     { name: 'Trần Hoàng Khanh', email: 'thkhanh@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-
-
-    { name: 'Huỳnh Hữu Nghĩa', email: '1353019@student.hcmus.edu.vn', phone: '01228718705', password: '', role_id: 1 },
-    { name: 'Lê Văn Tín', email: '1353020@fit.hcmus.edu.vn', phone: '01228718705', password: '', role_id: 1 },
-    { name: 'Trần Lê Công Hậu', email: '1353021@fit.hcmus.edu.vn', phone: '01228718705', password: '', role_id: 1 },
-    { name: 'Lê Minh Thiện', email: '1353022@fit.hcmus.edu.vn', phone: '01228718705', password: '', role_id: 1 },
-    { name: 'Hoàng Hồ Hải Đăng', email: '1353023@fit.hcmus.edu.vn', phone: '01228718705', password: '', role_id: 1 },
-    { name: 'Phạm Hoàng Tuấn', email: '1353024@fit.hcmus.edu.vn', phone: '01228718705', password: '', role_id: 1 },
-    { name: 'Đào Thị Thanh Trang', email: '1353025@fit.hcmus.edu.vn', phone: '01228718705', password: '', role_id: 1 },
 ];
 
 var insert_teacher_teach_course = [
