@@ -17,7 +17,7 @@ import { TeachersModule } from './teachers/teachers.module';
 import { ScheduleModule } from './schedule/schedule.module';
 import { AbsenceRequestsModule } from './absence-requests/absence-requests.module';
 
-import {EmitterService} from './emitter.service';
+import {AppService} from './app.service';
 
 const ROUTES = [
   {
@@ -51,7 +51,7 @@ const ROUTES = [
     RouterModule.forRoot(ROUTES), // Add routes to the app
   ],
   providers: [
-    EmitterService
+    AppService
   ],
   bootstrap: [AppComponent]
 })

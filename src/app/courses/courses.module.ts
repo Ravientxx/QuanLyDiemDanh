@@ -3,6 +3,8 @@ import { CommonModule }   from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 
+import { CoursesService } from './courses.service';
+
 import { CollapseModule } from 'ngx-bootstrap';
 
 import { CoursesComponent } from './courses.component'
@@ -34,6 +36,8 @@ const coursesRoutes: Routes = [
     CourseDetailComponent,
     AttendanceListTableComponent
   ],
-  providers: []
+  providers: [
+    CoursesService
+  ]
 })
 export class CoursesModule {}

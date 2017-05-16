@@ -83,9 +83,16 @@ router.post('/list', function(req, res, next) {
 router.get('/detail/:id', function(req, res, next) {
     var id = req.params['id'];
     pool.getConnection(function(error, connection) {
-        connection.query(`SELECT * FROM users WHERE id = ?`,id,function(error, rows, fields) {
+        connection.query(`SELECT * FROM users WHERE id = ?`, id, function(error, rows, fields) {
             var teacher = rows[0];
-            res.send({ result: 'success', teacher: teacher});
+            connection.query(`SELECT teacher_teach_course.teacher_role, courses.code AS course_code, courses.name AS course_name,courses.attendance_count,programs.name AS program_name, semesters.name AS semester_name 
+                FROM teacher_teach_course , courses, programs , semesters 
+                WHERE teacher_teach_course.course_id = courses.id AND teacher_teach_course.teacher_id = ? AND programs.id = courses.program_id 
+                GROUP BY courses.code`, id, function(error, rows, fields) {
+                res.send({ result: 'success', teacher: teacher,teaching_courses: rows});
+                connection.release();
+                if (error) throw error;
+            });
             connection.release();
             if (error) throw error;
         });

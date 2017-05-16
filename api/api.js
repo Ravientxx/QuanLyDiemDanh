@@ -1,26 +1,49 @@
 var express = require('express');
 var router = express.Router();
 var bcrypt = require('bcrypt');
-var absence_request_api = require('./absence-request');
-var teacher_api = require('./teacher');
-var student_api = require('./student');
 var _global = require('../global.js');
 var mysql = require('mysql');
 var pool = mysql.createPool(_global.db);
 
-router.use('/teacher', teacher_api);
-router.use('/absence-request', absence_request_api);
-router.use('/student', student_api);
+router.use('/teacher', require('./teacher'));
+router.use('/absence-request', require('./absence-request'));
+router.use('/student', require('./student'));
+router.use('/schedule',require('./schedule'));
+router.use('/course',require('./course'));
+
+router.get('/semesters-programs-classes', function(req, res, next) {
+    var program_id = req.body.program_id;
+    var class_id = req.body.class_id;
+    var semester_id = req.body.semester_id;
+    pool.getConnection(function(error, connection) {
+        connection.query(`SELECT * FROM semesters`, function(error, rows, fields) {
+            var semesters = rows;
+            connection.query(`SELECT * FROM programs`, function(error, rows, fields) {
+                var programs = rows;
+                connection.query(`SELECT * FROM classes`, function(error, rows, fields) {
+                    var classes = rows;
+                    res.send({ result: 'success',semesters: semesters, programs: programs, classes: classes });
+                    connection.release();
+                    if (error) throw error;
+                });
+                if (error) throw error;
+            });
+            if (error) throw error;
+        });
+    });
+});
+
+
 var insert_roles = [
     { name: 'Student' },
     { name: 'Teacher' },
     { name: 'Staff' },
 ]
 var insert_semesters = [
-    { name: 'HK1 2015-2016', start_date: '10/1/2015', end_date: '12/23/2015', vacation_time: '12/24/2015 - 1/5/2016' },
-    { name: 'HK2 2015-2016', start_date: '1/15/2016', end_date: '4/28/2016', vacation_time: '4/30/2016 - 5/2/2016' },
-    { name: 'HK3 2015-2016', start_date: '5/5/2016', end_date: '8/8/2016', vacation_time: '8/16/2016 - 9/25/2016' },
-    { name: 'HK1 2016-2017', start_date: '10/2/2016', end_date: '12/25/2016', vacation_time: '12/24/2016 - 1/6/2017' },
+    { name: 'HK1 2015-2016', start_date: '10-1-2015', end_date: '12-23-2015', vacation_time: '12/24/2015 - 1/5/2016' },
+    { name: 'HK2 2015-2016', start_date: '1-15-2016', end_date: '4-28-2016', vacation_time: '4/30/2016 - 5/2/2016' },
+    { name: 'HK3 2015-2016', start_date: '5-5-2016', end_date: '8-8-2016', vacation_time: '8/16/2016 - 9/25/2016' },
+    { name: 'HK1 2016-2017', start_date: '10-2-2016', end_date: '12-25-2016', vacation_time: '12/24/2016 - 1/6/2017' },
 ];
 var insert_programs = [
     { name: 'Chất lượng cao', code: 'CLC' },
@@ -182,16 +205,17 @@ var insert_teacher_teach_course = [
     { teacher_id: '27', course_id: '12', teacher_role: '1' },
     { teacher_id: '28', course_id: '12', teacher_role: '1' },
 
-    { teacher_id: '13', course_id: '13', teacher_role: '0' },
+    { teacher_id: '2', course_id: '13', teacher_role: '0' },
+    { teacher_id: '6', course_id: '13', teacher_role: '0' },
     { teacher_id: '22', course_id: '13', teacher_role: '1' },
     { teacher_id: '23', course_id: '13', teacher_role: '1' },
     { teacher_id: '29', course_id: '13', teacher_role: '1' },
 
-    { teacher_id: '14', course_id: '14', teacher_role: '0' },
+    { teacher_id: '13', course_id: '14', teacher_role: '0' },
     { teacher_id: '31', course_id: '14', teacher_role: '1' },
     { teacher_id: '30', course_id: '14', teacher_role: '1' },
 
-    { teacher_id: '15', course_id: '15', teacher_role: '0' },
+    { teacher_id: '14', course_id: '15', teacher_role: '0' },//
     { teacher_id: '22', course_id: '15', teacher_role: '1' },
 
     { teacher_id: '16', course_id: '16', teacher_role: '0' },
@@ -201,19 +225,20 @@ var insert_teacher_teach_course = [
     { teacher_id: '33', course_id: '16', teacher_role: '1' },
     { teacher_id: '34', course_id: '16', teacher_role: '1' },
 
-    { teacher_id: '17', course_id: '17', teacher_role: '0' },
+    { teacher_id: '15', course_id: '17', teacher_role: '0' },
     { teacher_id: '38', course_id: '17', teacher_role: '1' },
     { teacher_id: '37', course_id: '17', teacher_role: '1' },
     { teacher_id: '36', course_id: '17', teacher_role: '1' },
     { teacher_id: '35', course_id: '17', teacher_role: '1' },
 
-    { teacher_id: '18', course_id: '18', teacher_role: '0' },
+    { teacher_id: '16', course_id: '18', teacher_role: '0' },
     { teacher_id: '40', course_id: '18', teacher_role: '1' },
     { teacher_id: '39', course_id: '18', teacher_role: '1' },
 
-    { teacher_id: '19', course_id: '19', teacher_role: '0' },
+    { teacher_id: '16', course_id: '19', teacher_role: '0' },
     { teacher_id: '31', course_id: '19', teacher_role: '1' },
     { teacher_id: '43', course_id: '19', teacher_role: '1' },
+    { teacher_id: '17', course_id: '19', teacher_role: '1' },
     { teacher_id: '42', course_id: '19', teacher_role: '1' },
     { teacher_id: '40', course_id: '19', teacher_role: '1' },
 ];

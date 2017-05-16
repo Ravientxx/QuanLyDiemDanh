@@ -25,7 +25,7 @@ export class TeacherService {
     }
 
     private getTeacherDetailsUrl = globalVariables.apiHost + '/teacher/detail';
-    getTeacherDetail(id: number): Observable < { result: string, teacher: Teacher} > {
+    getTeacherDetail(id: number): Observable < { result: string, teacher: Teacher, teaching_courses: Array<any>} > {
         return this.http.get(`${this.getTeacherDetailsUrl}/${id}`)
             // ...and calling .json() on the response to return data
             .map((res: Response) => res.json())

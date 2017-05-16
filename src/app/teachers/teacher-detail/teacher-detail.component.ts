@@ -9,19 +9,18 @@ import { Teacher } from '../teacher.model';
 })
 export class TeacherDetailComponent implements OnInit {
 
-    teacher_id : number;
-    public teacher : Teacher = new Teacher(0,"","","",0);
+    teacher_id: number;
+    public teacher: Teacher = new Teacher(0, "", "", "", 0);
+    public teaching_courses: Array < any > ;
+    public constructor(private route: ActivatedRoute, private router: Router, private TeacherService: TeacherService) {
 
-    public constructor(private route: ActivatedRoute,private router : Router,private TeacherService: TeacherService) {
-        
     }
-
     public ngOnInit(): void {
-        this.route.params.subscribe(params => {this.teacher_id = params['id']});
+        this.route.params.subscribe(params => { this.teacher_id = params['id'] });
         this.TeacherService.getTeacherDetail(this.teacher_id)
             .subscribe(result => {
                 this.teacher = result.teacher;
-                console.log(this.teacher);
+                this.teaching_courses = result.teaching_courses;
             }, err => { console.log(err) });
     }
 }
