@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 import { AppService } from '../app.service';
-import { CoursesService } from './courses.service';
+import { CourseService } from './courses.service';
 declare var jQuery:any;
 
 @Component({
@@ -30,7 +30,7 @@ export class CoursesComponent implements OnInit {
     public error_message : any;
     public success_message : any;
 
-    constructor(private appService: AppService, private coursesService: CoursesService,private router:Router) {}
+    constructor(private appService: AppService, private courseService: CourseService,private router:Router) {}
 
     public onChangeProgram() {
         this.filteredClasses = [{ id: 0, name: 'All Classes' }];

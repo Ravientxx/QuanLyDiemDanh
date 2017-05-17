@@ -26,4 +26,9 @@ export class AppService {
             //...errors if any
             .catch((error: any) => Observable.throw(error || 'Server error'));
     }
+
+    navigationData = {
+        current_teacher_id : 0,
+        current_student_id : 0,
+    }
 }

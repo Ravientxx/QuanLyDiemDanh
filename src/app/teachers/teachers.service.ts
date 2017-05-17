@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { Http, Response, Headers, RequestOptions } from '@angular/http';
-import { Teacher } from './teacher.model';
 import { Observable } from 'rxjs';
 
 import * as globalVariables from '../global-variable';
@@ -11,11 +10,12 @@ export class TeacherService {
     constructor(private http: Http) {}
         // private instance variable to hold base url
     private getListTeachersUrl = globalVariables.apiHost + '/teacher/list';
-    getListTeachers(searchText: string = null, page: number = 1, limit: number = 10): Observable < { result: string, total_items: number, teacher_list: Teacher[] } > {
+    getListTeachers(searchText: string = null, page: number = 1, limit: number = 10, sort: string = 'none'): Observable < { result: string, total_items: number, teacher_list: Array<any> } > {
         var params = {
             'searchText': searchText,
             'page': page,
-            'limit': limit
+            'limit': limit,
+            'sort': sort,
         };
         return this.http.post(this.getListTeachersUrl, params)
             // ...and calling .json() on the response to return data
@@ -25,7 +25,7 @@ export class TeacherService {
     }
 
     private getTeacherDetailsUrl = globalVariables.apiHost + '/teacher/detail';
-    getTeacherDetail(id: number): Observable < { result: string, teacher: Teacher, teaching_courses: Array<any>} > {
+    getTeacherDetail(id: number): Observable < { result: string, teacher: Array<any>, teaching_courses: Array<any>} > {
         return this.http.get(`${this.getTeacherDetailsUrl}/${id}`)
             // ...and calling .json() on the response to return data
             .map((res: Response) => res.json())
@@ -34,9 +34,10 @@ export class TeacherService {
     }
 
     private addTeacherUrl = globalVariables.apiHost + '/teacher/add';
-    addTeacher(name: string, email: string, phone: string = null): Observable < { result: string, message: string } > {
+    addTeacher(first_name: string, last_name: string, email: string, phone: string = null): Observable < { result: string, message: string } > {
         var params = {
-            'name': name,
+            'first_name': first_name,
+            'last_name': last_name,
             'email': email,
             'phone': phone
         };

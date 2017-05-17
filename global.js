@@ -1,10 +1,10 @@
 module.exports = {
-	db : {
-		host: 'localhost',
-		user: 'root',
-		password: '',
-		database: 'qldd'
-	},
+    db: {
+        host: 'localhost',
+        user: 'root',
+        password: '',
+        database: 'qldd'
+    },
 
     role: {
         student: 1,
@@ -16,7 +16,7 @@ module.exports = {
         res.send({ result: 'failure', detail: detail, message: message });
     },
 
-    filterListByPage: function (page, limit, list) {
+    filterListByPage: function(page, limit, list) {
         var result = [];
         var length = list.length;
         if (length < limit) {
@@ -32,6 +32,18 @@ module.exports = {
                 }
             }
             return result;
+        }
+    },
+
+    sortListByName: function(sort, list) {
+        for (var i = 0; i < list.length; i++) {
+            for (var j = 0; j < list.length; j++) {
+                if (sort == 'dsc' && list[i].last_name.toLowerCase() > list[j].last_name.toLowerCase() || sort == 'asc' && list[i].last_name.toLowerCase() < list[j].last_name.toLowerCase()) {
+                    var temp = list[i];
+                    list[i] = list[j];
+                    list[j] = temp;
+                }
+            }
         }
     },
 

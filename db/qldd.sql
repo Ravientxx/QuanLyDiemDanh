@@ -87,6 +87,8 @@ CREATE TABLE `courses` (
   `program_id` int(11) DEFAULT NULL,
   `attendance_count` tinyint(1) NOT NULL DEFAULT '0',
   `total_stud` tinyint(1) NOT NULL DEFAULT '0',
+  `note` varchar(255) NULL,
+  `office_hour` varchar(50) NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
@@ -211,8 +213,8 @@ CREATE TABLE `teacher_teach_course` (
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `lastname` varchar(50) CHARACTER SET utf8 DEFAULT NULL,
-  `fisrtname` varchar(50) CHARACTER SET utf8 DEFAULT NULL,
+  `last_name` varchar(50) CHARACTER SET utf8 DEFAULT NULL,
+  `first_name` varchar(50) CHARACTER SET utf8 DEFAULT NULL,
   `email` varchar(50) CHARACTER SET utf8 DEFAULT NULL,
   `phone` varchar(12) CHARACTER SET utf8 DEFAULT NULL,
   `password` varchar(255) DEFAULT NULL,
@@ -247,3 +249,124 @@ CREATE TABLE `class_has_course` (
   `schedules` varchar(255) CHARACTER SET utf8 DEFAULT NULL,
   PRIMARY KEY (`class_id`,`course_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+
+-- ----------------------------
+-- Trigger for insert user to create teacher
+-- ----------------------------
+DELIMITER //
+DROP TRIGGER IF EXISTS trigger_insert_user_create_teacher//
+CREATE TRIGGER trigger_insert_user_create_teacher
+    AFTER INSERT ON users
+    FOR EACH ROW
+BEGIN
+	IF NEW.role_id = 2 THEN
+		INSERT INTO teachers SET id = NEW.id;
+	END IF;
+END//
+DELIMITER ;
+
+-- ----------------------------
+-- Trigger for delete teacher current courses
+-- ----------------------------
+DELIMITER //
+DROP TRIGGER IF EXISTS trigger_delete_teacher_teach_course//
+CREATE TRIGGER trigger_delete_teacher_teach_course
+    AFTER DELETE ON teacher_teach_course
+    FOR EACH ROW
+BEGIN
+    UPDATE teachers
+	SET current_courses = current_courses - 1
+	WHERE id = OLD.teacher_id;
+END//
+DELIMITER ;
+
+-- ----------------------------
+-- Trigger for insert teacher current courses
+-- ----------------------------
+DELIMITER //
+DROP TRIGGER IF EXISTS trigger_insert_teacher_teach_course//
+CREATE TRIGGER trigger_insert_teacher_teach_course
+    AFTER INSERT ON teacher_teach_course
+    FOR EACH ROW
+BEGIN
+    UPDATE teachers
+	SET current_courses = current_courses + 1
+	WHERE id = NEW.teacher_id;
+END//
+DELIMITER ;
+
+-- ----------------------------
+-- Trigger for update teacher current courses
+-- ----------------------------
+DELIMITER //
+DROP TRIGGER IF EXISTS trigger_update_teacher_teach_course//
+CREATE TRIGGER trigger_update_teacher_teach_course
+    AFTER UPDATE ON teacher_teach_course
+    FOR EACH ROW
+BEGIN
+    IF NEW.teacher_id <> OLD.teacher_id THEN
+		UPDATE teacher
+		SET current_courses = current_courses + 1
+		WHERE id = NEW.teacher_id;
+
+		UPDATE teacher
+		SET current_courses = current_courses - 1
+		WHERE id = OLD.teacher_id;
+	END IF;
+END//
+DELIMITER ;
+
+
+
+
+-- ----------------------------
+-- Trigger for delete student current courses
+-- ----------------------------
+DELIMITER //
+DROP TRIGGER IF EXISTS trigger_delete_student_enroll_course//
+CREATE TRIGGER trigger_delete_student_enroll_course
+    AFTER DELETE ON student_enroll_course
+    FOR EACH ROW
+BEGIN
+    UPDATE students
+	SET current_courses = current_courses - 1
+	WHERE id = OLD.student_id;
+	UPDATE courses
+	SET total_stud = total_stud + 1
+	WHERE id = OLD.course_id;
+END//
+DELIMITER ;
+
+-- ----------------------------
+-- Trigger for insert student current courses
+-- ----------------------------
+DELIMITER //
+DROP TRIGGER IF EXISTS trigger_insert_student_enroll_course//
+CREATE TRIGGER trigger_insert_student_enroll_course
+    AFTER INSERT ON student_enroll_course
+    FOR EACH ROW
+BEGIN
+    UPDATE students
+	SET current_courses = current_courses + 1
+	WHERE id = NEW.student_id;
+	UPDATE courses
+	SET total_stud = total_stud + 1
+	WHERE id = NEW.course_id;
+END//
+DELIMITER ;
+
+-- ----------------------------
+-- Trigger for update course attendance count
+-- ----------------------------
+DELIMITER //
+DROP TRIGGER IF EXISTS trigger_insert_attendance//
+CREATE TRIGGER trigger_insert_attendance
+    AFTER INSERT ON attendance
+    FOR EACH ROW
+BEGIN
+    UPDATE courses
+	SET attendance_count = attendance_count + 1
+	WHERE id = NEW.course_id;
+END//
+DELIMITER ;

@@ -8,8 +8,8 @@ var pool = mysql.createPool(_global.db);
 router.use('/teacher', require('./teacher'));
 router.use('/absence-request', require('./absence-request'));
 router.use('/student', require('./student'));
-router.use('/schedule',require('./schedule'));
-router.use('/course',require('./course'));
+router.use('/schedule', require('./schedule'));
+router.use('/course', require('./course'));
 
 router.get('/semesters-programs-classes', function(req, res, next) {
     var program_id = req.body.program_id;
@@ -22,7 +22,7 @@ router.get('/semesters-programs-classes', function(req, res, next) {
                 var programs = rows;
                 connection.query(`SELECT * FROM classes`, function(error, rows, fields) {
                     var classes = rows;
-                    res.send({ result: 'success',semesters: semesters, programs: programs, classes: classes });
+                    res.send({ result: 'success', semesters: semesters, programs: programs, classes: classes });
                     connection.release();
                     if (error) throw error;
                 });
@@ -33,205 +33,210 @@ router.get('/semesters-programs-classes', function(req, res, next) {
     });
 });
 
-
+//[name]
 var insert_roles = [
-    { name: 'Student' },
-    { name: 'Teacher' },
-    { name: 'Staff' },
-]
+    ['Student'],
+    ['Teacher'],
+    ['Staff'],
+];
+//[name, start_date, end_date, vacation_time]
 var insert_semesters = [
-    { name: 'HK1 2015-2016', start_date: '10-1-2015', end_date: '12-23-2015', vacation_time: '12/24/2015 - 1/5/2016' },
-    { name: 'HK2 2015-2016', start_date: '1-15-2016', end_date: '4-28-2016', vacation_time: '4/30/2016 - 5/2/2016' },
-    { name: 'HK3 2015-2016', start_date: '5-5-2016', end_date: '8-8-2016', vacation_time: '8/16/2016 - 9/25/2016' },
-    { name: 'HK1 2016-2017', start_date: '10-2-2016', end_date: '12-25-2016', vacation_time: '12/24/2016 - 1/6/2017' },
+    ['HK1 2015-2016', '10-1-2015 00:00:00', '12-23-2015 00:00:00', '12/24/2015 - 1/5/2016'],
+    ['HK2 2015-2016', '1-15-2016 00:00:00', '4-28-2016 00:00:00', '4/30/2016 - 5/2/2016'],
+    ['HK3 2015-2016', '5-5-2016 00:00:00', '8-8-2016 00:00:00', '8/16/2016 - 9/25/2016'],
+    ['HK1 2016-2017', '10-2-2016 00:00:00', '12-25-2016 00:00:00', '12/24/2016 - 1/6/2017'],
 ];
+//[name,code]
 var insert_programs = [
-    { name: 'Chất lượng cao', code: 'CLC' },
-    { name: 'Việt Pháp', code: 'VP' },
-    { name: 'APCS', code: 'APCS' },
+    ['Chất lượng cao','CLC' ],
+    ['Việt Pháp','VP' ],
+    ['APCS','APCS' ],
 ];
+//[code,email,program_id]
 var insert_classes = [
-    { name: '16CTT', email: '16apcs@student.hcmus.edu.vn', program_id: 3 },
-    { name: '15CTT', email: '15apcs@student.hcmus.edu.vn', program_id: 3 },
-    { name: '14CTT', email: '14apcs@student.hcmus.edu.vn', program_id: 3 },
-    { name: '13CTT', email: '13apcs@student.hcmus.edu.vn', program_id: 3 },
-    { name: '16VP', email: '16vp@student.hcmus.edu.vn', program_id: 2 },
-    { name: '15VP', email: '15vp@student.hcmus.edu.vn', program_id: 2 },
-    { name: '14VP', email: '14vp@student.hcmus.edu.vn', program_id: 2 },
-    { name: '13VP', email: '13vp@student.hcmus.edu.vn', program_id: 2 },
-    { name: '16CLC1', email: '16clc@student.hcmus.edu.vn', program_id: 1 },
-    { name: '16CLC2', email: '16clc@student.hcmus.edu.vn', program_id: 1 },
-    { name: '15CLC', email: '15clc@student.hcmus.edu.vn', program_id: 1 },
-    { name: '14CLC', email: '14clc@student.hcmus.edu.vn', program_id: 1 },
-    { name: '13CLC', email: '13clc@student.hcmus.edu.vn', program_id: 1 },
+    ['16CTT', '16apcs@student.hcmus.edu.vn', 3],
+    ['15CTT', '15apcs@student.hcmus.edu.vn', 3],
+    ['14CTT', '14apcs@student.hcmus.edu.vn', 3],
+    ['13CTT', '13apcs@student.hcmus.edu.vn', 3],
+    ['16VP', '16vp@student.hcmus.edu.vn', 2],
+    ['15VP', '15vp@student.hcmus.edu.vn', 2],
+    ['14VP', '14vp@student.hcmus.edu.vn', 2],
+    ['13VP', '13vp@student.hcmus.edu.vn', 2],
+    ['16CLC1', '16clc@student.hcmus.edu.vn', 1],
+    ['16CLC2', '16clc@student.hcmus.edu.vn', 1],
+    ['15CLC', '15clc@student.hcmus.edu.vn', 1],
+    ['14CLC', '14clc@student.hcmus.edu.vn', 1],
+    ['13CLC', '13clc@student.hcmus.edu.vn', 1],
 ];
+//[code, name, semester_id,program_id]
 var insert_courses = [
-    { code: 'CS162', name: 'Introduction to Computer Science II', semester_id: '4', program_id: '3' }, //
-    { code: 'MTH252', name: 'Calculus II', semester_id: '4', program_id: '3' }, //
-    { code: 'PH212', name: 'General Physics II', semester_id: '4', program_id: '3' }, //
-    { code: 'CTH001', name: 'Fundamental principles of  Marxism and Leninism', semester_id: '4', program_id: '3' }, //
-    { code: 'TC001', name: 'Physical Education', semester_id: '4', program_id: '3' }, //
-    { code: 'WR227', name: 'Technical Writing', semester_id: '4', program_id: '3' },
-    { code: 'STAT451', name: 'Applied Statistics for Engineers and Scientists I', semester_id: '4', program_id: '3' },
-    { code: 'CS251', name: 'Logical Structures', semester_id: '4', program_id: '3' },
-    { code: 'CTH003', name: "Ho Chi Minh's Ideology", semester_id: '4', program_id: '3' },
-    { code: 'ECE341', name: 'Computer Hardware', semester_id: '4', program_id: '3' },
-    { code: 'CS322', name: 'Languages and Compiler Design II', semester_id: '4', program_id: '3' },
-    { code: 'CS333', name: 'Introduction to Operating Systems', semester_id: '4', program_id: '3' },
-    { code: 'CS350', name: 'Introduction to Computer Science II', semester_id: '4', program_id: '3' },
-    { code: 'CS411', name: 'Computer Graphics', semester_id: '4', program_id: '3' },
-    { code: 'CS419', name: 'Introduction to Information Retrieval', semester_id: '4', program_id: '3' },
-    { code: 'CS422', name: 'Software analysis and design', semester_id: '4', program_id: '3' },
-    { code: 'CS407', name: 'Technology Innovation and Leadership', semester_id: '4', program_id: '3' },
-    { code: 'CS423', name: 'Software Testing', semester_id: '4', program_id: '3' },
-    { code: 'CS488', name: 'Software Engineering Capstone II', semester_id: '4', program_id: '3' },
+    ['CS162', 'Introduction to Computer Science II', '4', '3'], //
+    ['MTH252', 'Calculus II', '4', '3'], //
+    ['PH212', 'General Physics II', '4', '3'], //
+    ['CTH001', 'Fundamental principles of  Marxism and Leninism', '4', '3'], //
+    ['TC001', 'Physical Education', '4', '3'], //
+    ['WR227', 'Technical Writing', '4', '3'],
+    ['STAT451', 'Applied Statistics for Engineers and Scientists I', '4', '3'],
+    ['CS251', 'Logical Structures', '4', '3'],
+    ['CTH003', "Ho Chi Minh's Ideology", '4', '3'],
+    ['ECE341', 'Computer Hardware', '4', '3'],
+    ['CS322', 'Languages and Compiler Design II', '4', '3'],
+    ['CS333', 'Introduction to Operating Systems', '4', '3'],
+    ['CS350', 'Introduction to Computer Science II', '4', '3'],
+    ['CS411', 'Computer Graphics', '4', '3'],
+    ['CS419', 'Introduction to Information Retrieval', '4', '3'],
+    ['CS422', 'Software analysis and design', '4', '3'],
+    ['CS407', 'Technology Innovation and Leadership', '4', '3'],
+    ['CS423', 'Software Testing', '4', '3'],
+    ['CS488', 'Software Engineering Capstone II', '4', '3'],
 ];
-
+//[class_id,course_id,schedules]
 var insert_class_has_course = [
-    { class_id: '1', course_id: '1', schedules: '5-I44-LT;9-I41-LT;15-I11C-TH;16-I11C-TH;23-I44-LT' },
-    { class_id: '1', course_id: '2', schedules: '3-I42-TH;4-I42-TH;6-I44-LT;13-I44-LT' },
-    { class_id: '1', course_id: '3', schedules: '14-I42-LT;16-I42-TH;19-I42-LT;20-I42-TH' },
-    { class_id: '1', course_id: '4', schedules: '17-I44-LT;18-I44-LT' },
-    { class_id: '1', course_id: '5', schedules: '21-OUT-TH;22-OUT-TH' },
+    ['1', '1', '5-I44-LT;9-I41-LT;15-I11C-TH;16-I11C-TH;23-I44-LT'],
+    ['1', '2', '3-I42-TH;4-I42-TH;6-I44-LT;13-I44-LT'],
+    ['1', '3', '14-I42-LT;16-I42-TH;19-I42-LT;20-I42-TH'],
+    ['1', '4', '17-I44-LT;18-I44-LT'],
+    ['1', '5', '21-OUT-TH;22-OUT-TH'],
 
-    { class_id: '2', course_id: '6', schedules: '13-I42-LT;21-I42-LT' },
-    { class_id: '2', course_id: '7', schedules: '9-I42-LT;10-I42-LT;19-B11A-TH' },
-    { class_id: '2', course_id: '8', schedules: '2-I42-LT;11-I23-TH;12-I23-TH;18-I23-LT' },
-    { class_id: '2', course_id: '9', schedules: '15-I23-LT;16-I23-LT' },
-    { class_id: '2', course_id: '10', schedules: '7-B11A-LT;8-B11A-LT;14-I11C-TH' },
+    ['2', '6', '13-I42-LT;21-I42-LT'],
+    ['2', '7', '9-I42-LT;10-I42-LT;19-B11A-TH'],
+    ['2', '8', '2-I42-LT;11-I23-TH;12-I23-TH;18-I23-LT'],
+    ['2', '9', '15-I23-LT;16-I23-LT'],
+    ['2', '10', '7-B11A-LT;8-B11A-LT;14-I11C-TH'],
 
-    { class_id: '3', course_id: '11', schedules: '2-I23-LT;6-I23-LT;13-I11C-TH;13-I44-LT' },
-    { class_id: '3', course_id: '12', schedules: '1-I23-LT;7-I11C-TH;8-I11C-TH;17-I23-LT' },
-    { class_id: '3', course_id: '13', schedules: '5-I23-LT;14-I23-LT;23-I23-TH' },
-    { class_id: '3', course_id: '14', schedules: '3-I11C-TH;12-I44-LT;20-I44-LT' },
-    { class_id: '3', course_id: '15', schedules: '4-I44-LT;21-I44-LT;24-I23-TH' },
-    { class_id: '3', course_id: '16', schedules: '9-I23-LT;10-I23-LT' },
+    ['3', '11', '2-I23-LT;6-I23-LT;13-I11C-TH;13-I44-LT'],
+    ['3', '12', '1-I23-LT;7-I11C-TH;8-I11C-TH;17-I23-LT'],
+    ['3', '13', '5-I23-LT;14-I23-LT;23-I23-TH'],
+    ['3', '14', '3-I11C-TH;12-I44-LT;20-I44-LT'],
+    ['3', '15', '4-I44-LT;21-I44-LT;24-I23-TH'],
+    ['3', '16', '9-I23-LT;10-I23-LT'],
 
-    { class_id: '4', course_id: '17', schedules: '7-I44-LT;8-I41-LT' },
-    { class_id: '4', course_id: '18', schedules: '3-I44-LT;11-I44-LT' },
-    { class_id: '4', course_id: '19', schedules: '13-I41-LT;14-I41-LT' },
+    ['4', '17', '7-I44-LT;8-I41-LT'],
+    ['4', '18', '3-I44-LT;11-I44-LT'],
+    ['4', '19', '13-I41-LT;14-I41-LT'],
 ];
+//[first_name,last_name,email,phone,password,role_id]
 var insert_users = [
-    { name: 'Đinh Bá Tiến', email: 'dbtien@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Nguyễn Hữu Anh', email: 'nhanh@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Nguyễn Hữu Nhã', email: 'nhnha@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Nguyễn Ngọc Thu', email: 'nnthu@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Nguyễn Văn Hùng', email: 'nvhung@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Trần Minh Triết', email: 'tmtriet@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Phạm Hoàng Uyên', email: 'phuyen@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Nguyễn Phúc Sơn', email: 'npson@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Ngô Tuấn Phương', email: 'ntphuong@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Nguyễn Tuấn Nam', email: 'ntnam@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Nguyễn Thanh Phương', email: 'ntphuong1@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Trần Trung Dũng', email: 'ttdung@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Trần Thái Sơn', email: 'ttson@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Ngô Đức Thành', email: 'ndthanh@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Dương Nguyên Vũ', email: 'dnvu@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Lâm Quang Vũ', email: 'lqvu@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Hồ Tuấn Thanh', email: 'htthanh@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Trương Phước Lộc', email: 'tploc@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Nguyễn Hữu Trí Nhật', email: 'nhtnhat@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Nguyễn Duy Hoàng Minh', email: 'ndhminh@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Lương Vĩ Minh', email: 'lvminh@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Nguyễn Vinh Tiệp', email: 'nvtiep@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Phạm Việt Khôi', email: 'pvkhoi@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Nguyễn Văn Thìn', email: 'nvthin@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Nguyễn Thị Thanh Huyền', email: 'ntthuyen@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Vũ Quốc Hoàng', email: 'vqhoang@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Lê Quốc Hòa', email: 'lqhoa@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Chung Thùy Linh', email: 'ctlinh@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Lê Yên Thanh', email: 'lythanh@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Võ Hoài Việt', email: 'vhviet@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Phạm Thanh Tùng', email: 'pttung@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Nguyễn Đức Huy', email: 'ndhuy@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Nguyễn Khắc Huy', email: 'nkhuy@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Trần Duy Quang', email: 'tdquang@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Trần Ngọc Đạt Thành', email: 'tndthanh@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Lê Minh Quốc', email: 'lmquoc@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Phạm Đức Thịnh', email: 'pdthinh@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Bùi Quốc Minh', email: 'bqminh@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Võ Duy Anh', email: 'vdanh@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Trần Thị Bích Hạnh', email: 'ttbhanh@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Trương Phước Lộc', email: 'tploc@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Trần Duy Quang', email: 'tdquang@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Tuấn Nguyên Đức Hoài', email: 'tndhoai@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
-    { name: 'Trần Hoàng Khanh', email: 'thkhanh@fit.hcmus.edu.vn', phone: '090xxxx', password: '', role_id: 2 },
+    ['Đinh Bá', 'Tiến', 'dbtien@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('dbtien', 10) , 2],
+    ['Nguyễn Hữu', 'Anh', 'nhanh@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('nhanh', 10), 2],
+    ['Nguyễn Hữu', 'Nhã', 'nhnha@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('nhnha', 10), 2],
+    ['Nguyễn Ngọc', 'Thu', 'nnthu@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('nnthu', 10), 2],
+    ['Nguyễn Văn', 'Hùng', 'nvhung@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('nvhung', 10), 2],
+    ['Trần Minh', 'Triết', 'tmtriet@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('tmtriet', 10), 2],
+    ['Phạm Hoàng', 'Uyên', 'phuyen@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('phuyen', 10), 2],
+    ['Nguyễn Phúc', 'Sơn', 'npson@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('npson', 10), 2],
+    ['Ngô Tuấn', 'Phương', 'ntphuong@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('ntphuong', 10), 2],
+    ['Nguyễn Tuấn', 'Nam', 'ntnam@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('ntnam', 10), 2],
+    ['Nguyễn Thanh', 'Phương', 'ntphuong1@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('ntphuong1', 10), 2],
+    ['Trần Trung', 'Dũng', 'ttdung@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('ttdung', 10), 2],
+    ['Trần Thái', 'Sơn', 'ttson@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('ttson', 10), 2],
+    ['Ngô Đức', 'Thành', 'ndthanh@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('ndthanh', 10), 2],
+    ['Dương Nguyên', 'Vũ', 'dnvu@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('dnvu', 10), 2],
+    ['Lâm Quang', 'Vũ', 'lqvu@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('lqvu', 10), 2],
+    ['Hồ Tuấn', 'Thanh', 'htthanh@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('htthanh', 10), 2],
+    ['Trương Phước', 'Lộc', 'tploc@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('tploc', 10), 2],
+    ['Nguyễn Hữu Trí', 'Nhật', 'nhtnhat@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('nhtnhat', 10), 2],
+    ['Nguyễn Duy Hoàng', 'Minh', 'ndhminh@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('ndhminh', 10), 2],
+    ['Lương Vĩ', 'Minh', 'lvminh@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('lvminh', 10), 2],
+    ['Nguyễn Vinh', 'Tiệp', 'nvtiep@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('nvtiep', 10), 2],
+    ['Phạm Việt', 'Khôi', 'pvkhoi@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('pvkhoi', 10), 2],
+    ['Nguyễn Văn', 'Thìn', 'nvthin@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('nvthin', 10), 2],
+    ['Nguyễn Thị Thanh', 'Huyền', 'ntthuyen@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('ntthuyen', 10), 2],
+    ['Vũ Quốc', 'Hoàng', 'vqhoang@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('vqhoang', 10), 2],
+    ['Lê Quốc', 'Hòa', 'lqhoa@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('lqhoa', 10), 2],
+    ['Chung Thùy', 'Linh', 'ctlinh@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('ctlinh', 10), 2],
+    ['Lê Yên', 'Thanh', 'lythanh@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('lythanh', 10), 2],
+    ['Võ Hoài', 'Việt', 'vhviet@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('vhviet', 10), 2],
+    ['Phạm Thanh', 'Tùng', 'pttung@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('pttung', 10), 2],
+    ['Nguyễn Đức', 'Huy', 'ndhuy@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('ndhuy', 10), 2],
+    ['Nguyễn Khắc', 'Huy', 'nkhuy@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('nkhuy', 10), 2],
+    ['Trần Duy', 'Quang', 'tdquang@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('tdquang', 10), 2],
+    ['Trần Ngọc Đạt', 'Thành', 'tndthanh@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('tndthanh', 10), 2],
+    ['Lê Minh', 'Quốc', 'lmquoc@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('lmquoc', 10), 2],
+    ['Phạm Đức', 'Thịnh', 'pdthinh@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('pdthinh', 10), 2],
+    ['Bùi Quốc', 'Minh', 'bqminh@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('bqminh', 10), 2],
+    ['Võ Duy', 'Anh', 'vdanh@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('vdanh', 10), 2],
+    ['Trần Thị Bích', 'Hạnh', 'ttbhanh@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('ttbhanh', 10), 2],
+    ['Trương Phước', 'Lộc', 'tploc@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('tploc', 10), 2],
+    ['Trần Duy', 'Quang', 'tdquang@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('tdquang', 10), 2],
+    ['Tuấn Nguyên Đức', 'Hoài', 'tndhoai@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('tndhoai', 10), 2],
+    ['Trần Hoàng', 'Khanh', 'thkhanh@fit.hcmus.edu.vn','090xxxx', bcrypt.hashSync('thkhanh', 10), 2],
 ];
-
+//[teacher_id,course_id,teacher_role],
 var insert_teacher_teach_course = [
-    { teacher_id: '1', course_id: '1', teacher_role: '0' },
-    { teacher_id: '17', course_id: '1', teacher_role: '1' },
-    { teacher_id: '18', course_id: '1', teacher_role: '1' },
+    ['1', '1', '0'],
+    ['17', '1', '1'],
+    ['18', '1', '1'],
 
-    { teacher_id: '2', course_id: '2', teacher_role: '0' },
-    { teacher_id: '19', course_id: '2', teacher_role: '1' },
+    ['2', '2', '0'],
+    ['19', '2', '1'],
 
-    { teacher_id: '3', course_id: '3', teacher_role: '0' },
-    { teacher_id: '20', course_id: '3', teacher_role: '1' },
+    ['3', '3', '0'],
+    ['20', '3', '1'],
 
-    { teacher_id: '4', course_id: '4', teacher_role: '0' },
+    ['4', '4', '0'],
 
-    { teacher_id: '5', course_id: '5', teacher_role: '0' },
+    ['5', '5', '0'],
 
-    { teacher_id: '6', course_id: '6', teacher_role: '0' },
-    { teacher_id: '21', course_id: '6', teacher_role: '1' },
-    { teacher_id: '22', course_id: '6', teacher_role: '1' },
-    { teacher_id: '23', course_id: '6', teacher_role: '1' },
+    ['6', '6', '0'],
+    ['21', '6', '1'],
+    ['22', '6', '1'],
+    ['23', '6', '1'],
 
-    { teacher_id: '7', course_id: '7', teacher_role: '0' },
-    { teacher_id: '24', course_id: '7', teacher_role: '1' },
-    { teacher_id: '8', course_id: '8', teacher_role: '0' },
+    ['7', '7', '0'],
+    ['24', '7', '1'],
+    ['8', '8', '0'],
 
-    { teacher_id: '19', course_id: '8', teacher_role: '1' },
+    ['19', '8', '1'],
 
-    { teacher_id: '9', course_id: '9', teacher_role: '0' },
+    ['9', '9', '0'],
 
-    { teacher_id: '10', course_id: '10', teacher_role: '0' },
-    { teacher_id: '25', course_id: '10', teacher_role: '1' },
+    ['10', '10', '0'],
+    ['25', '10', '1'],
 
-    { teacher_id: '11', course_id: '11', teacher_role: '0' },
-    { teacher_id: '26', course_id: '11', teacher_role: '1' },
+    ['11', '11', '0'],
+    ['26', '11', '1'],
 
-    { teacher_id: '12', course_id: '12', teacher_role: '0' },
-    { teacher_id: '27', course_id: '12', teacher_role: '1' },
-    { teacher_id: '28', course_id: '12', teacher_role: '1' },
+    ['12', '12', '0'],
+    ['27', '12', '1'],
+    ['28', '12', '1'],
 
-    { teacher_id: '2', course_id: '13', teacher_role: '0' },
-    { teacher_id: '6', course_id: '13', teacher_role: '0' },
-    { teacher_id: '22', course_id: '13', teacher_role: '1' },
-    { teacher_id: '23', course_id: '13', teacher_role: '1' },
-    { teacher_id: '29', course_id: '13', teacher_role: '1' },
+    ['2', '13', '0'],
+    ['6', '13', '0'],
+    ['22', '13', '1'],
+    ['23', '13', '1'],
+    ['29', '13', '1'],
 
-    { teacher_id: '13', course_id: '14', teacher_role: '0' },
-    { teacher_id: '31', course_id: '14', teacher_role: '1' },
-    { teacher_id: '30', course_id: '14', teacher_role: '1' },
+    ['13', '14', '0'],
+    ['31', '14', '1'],
+    ['30', '14', '1'],
 
-    { teacher_id: '14', course_id: '15', teacher_role: '0' },//
-    { teacher_id: '22', course_id: '15', teacher_role: '1' },
+    ['14', '15', '0'], //
+    ['22', '15', '1'],
 
-    { teacher_id: '16', course_id: '16', teacher_role: '0' },
-    { teacher_id: '23', course_id: '16', teacher_role: '1' },
-    { teacher_id: '31', course_id: '16', teacher_role: '1' },
-    { teacher_id: '32', course_id: '16', teacher_role: '1' },
-    { teacher_id: '33', course_id: '16', teacher_role: '1' },
-    { teacher_id: '34', course_id: '16', teacher_role: '1' },
+    ['16', '16', '0'],
+    ['23', '16', '1'],
+    ['31', '16', '1'],
+    ['32', '16', '1'],
+    ['33', '16', '1'],
+    ['34', '16', '1'],
 
-    { teacher_id: '15', course_id: '17', teacher_role: '0' },
-    { teacher_id: '38', course_id: '17', teacher_role: '1' },
-    { teacher_id: '37', course_id: '17', teacher_role: '1' },
-    { teacher_id: '36', course_id: '17', teacher_role: '1' },
-    { teacher_id: '35', course_id: '17', teacher_role: '1' },
+    ['15', '17', '0'],
+    ['38', '17', '1'],
+    ['37', '17', '1'],
+    ['36', '17', '1'],
+    ['35', '17', '1'],
 
-    { teacher_id: '16', course_id: '18', teacher_role: '0' },
-    { teacher_id: '40', course_id: '18', teacher_role: '1' },
-    { teacher_id: '39', course_id: '18', teacher_role: '1' },
+    ['16', '18', '0'],
+    ['40', '18', '1'],
+    ['39', '18', '1'],
 
-    { teacher_id: '16', course_id: '19', teacher_role: '0' },
-    { teacher_id: '31', course_id: '19', teacher_role: '1' },
-    { teacher_id: '43', course_id: '19', teacher_role: '1' },
-    { teacher_id: '17', course_id: '19', teacher_role: '1' },
-    { teacher_id: '42', course_id: '19', teacher_role: '1' },
-    { teacher_id: '40', course_id: '19', teacher_role: '1' },
+    ['16', '19', '0'],
+    ['31', '19', '1'],
+    ['43', '19', '1'],
+    ['17', '19', '1'],
+    ['42', '19', '1'],
+    ['40', '19', '1'],
 ];
 
 var insert_students = [
@@ -249,8 +254,16 @@ router.get('/seed', function(req, res, next) {
     pool.getConnection(function(error, connection) {
         connection.beginTransaction(function(error) {
             if (error) throw error;
-            for (var i = 0; i < insert_roles.length; i++) {
-                connection.query('INSERT INTO roles SET ?', insert_roles[i],
+            connection.query('INSERT INTO roles (name) VALUES ?', [insert_roles],
+                function(error, results, fields) {
+                    if (error) {
+                        return connection.rollback(function() {
+                            throw error;
+                        });
+                    }
+                });
+
+            connection.query('INSERT INTO semesters (name,start_date,end_date,vacation_time) VALUES ?', [insert_semesters],
                     function(error, results, fields) {
                         if (error) {
                             return connection.rollback(function() {
@@ -258,9 +271,8 @@ router.get('/seed', function(req, res, next) {
                             });
                         }
                     });
-            }
-            for (var i = 0; i < insert_semesters.length; i++) {
-                connection.query('INSERT INTO semesters SET ?', insert_semesters[i],
+            
+            connection.query('INSERT INTO programs (name,code) VALUES ?', [insert_programs],
                     function(error, results, fields) {
                         if (error) {
                             return connection.rollback(function() {
@@ -268,9 +280,8 @@ router.get('/seed', function(req, res, next) {
                             });
                         }
                     });
-            }
-            for (var i = 0; i < insert_programs.length; i++) {
-                connection.query('INSERT INTO programs SET ?', insert_programs[i],
+
+            connection.query('INSERT INTO classes (name,email,program_id) VALUES ?', [insert_classes],
                     function(error, results, fields) {
                         if (error) {
                             return connection.rollback(function() {
@@ -278,9 +289,8 @@ router.get('/seed', function(req, res, next) {
                             });
                         }
                     });
-            }
-            for (var i = 0; i < insert_classes.length; i++) {
-                connection.query('INSERT INTO classes SET ?', insert_classes[i],
+
+            connection.query('INSERT INTO courses (code,name,semester_id,program_id) VALUES ?', [insert_courses],
                     function(error, results, fields) {
                         if (error) {
                             return connection.rollback(function() {
@@ -288,9 +298,8 @@ router.get('/seed', function(req, res, next) {
                             });
                         }
                     });
-            }
-            for (var i = 0; i < insert_courses.length; i++) {
-                connection.query('INSERT INTO courses SET ?', insert_courses[i],
+
+            connection.query('INSERT INTO class_has_course (class_id,course_id,schedules) VALUES ?', [insert_class_has_course],
                     function(error, results, fields) {
                         if (error) {
                             return connection.rollback(function() {
@@ -298,59 +307,27 @@ router.get('/seed', function(req, res, next) {
                             });
                         }
                     });
-            }
-            for (var i = 0; i < insert_class_has_course.length; i++) {
-                connection.query('INSERT INTO class_has_course SET ?', insert_class_has_course[i],
-                    function(error, results, fields) {
-                        if (error) {
-                            return connection.rollback(function() {
-                                throw error;
-                            });
-                        }
-                    });
-            }
-            for (var i = 0; i < insert_users.length; i++) {
-                insert_users[i].password = bcrypt.hashSync(insert_users[i].email.split('@')[0], 10);
-                var role_id = insert_users[i].role_id;
-                if (role_id == 2) {
-                    connection.query('INSERT INTO users SET ?', insert_users[i],
+
+            connection.query('INSERT INTO users (first_name,last_name,email,phone,password,role_id) VALUES ?', [insert_users],
                         function(error, results, fields) {
                             if (error) {
                                 return connection.rollback(function() {
                                     throw error;
                                 });
                             }
-                            var id = { id: results.insertId };
                             //Teacher
-                            connection.query('INSERT INTO teachers SET ?', id, function(error, results, fields) {
-                                if (error) {
-                                    return connection.rollback(function() {
-                                        throw error;
-                                    });
-                                }
-                            });
+                            // Move to trigger
                         });
-                } else {
-                    connection.query('INSERT INTO users SET ?', insert_users[i],
-                        function(error, results, fields) {
-                            if (error) {
-                                return connection.rollback(function() {
-                                    throw error;
-                                });
-                            }
+
+            connection.query('INSERT INTO teacher_teach_course (teacher_id,course_id,teacher_role) VALUES ?', [insert_teacher_teach_course],
+                function(error, results, fields) {
+                    if (error) {
+                        return connection.rollback(function() {
+                            throw error;
                         });
-                }
-            }
-            for (var i = 0; i < insert_teacher_teach_course.length; i++) {
-                connection.query('INSERT INTO teacher_teach_course SET ?', insert_teacher_teach_course[i],
-                    function(error, results, fields) {
-                        if (error) {
-                            return connection.rollback(function() {
-                                throw error;
-                            });
-                        }
-                    });
-            }
+                    }
+                });
+            
             connection.commit(function(err) {
                 if (err) {
                     return connection.rollback(function() {

@@ -7,13 +7,28 @@ var bcrypt = require('bcrypt');
 var teacher_list = [];
 
 router.post('/add', function(req, res, next) {
-    if (req.body.name == null || req.body.email == null || req.body.password == null){
-        _global.sendError(res, null, "Fill all required fields");
+    if (req.body.first_name == ''){
+        _global.sendError(res, null, "First name is required");
         return;
     }
-
-    var new_firstname = req.body.firstname;    
-    var new_lastname = req.body.lastname;    
+    if (req.body.last_name == ''){
+        _global.sendError(res, null, "Last name is required");
+        return;
+    }
+    if (req.body.email == ''){
+        _global.sendError(res, null, "Email is required");
+        return;
+    }
+    if (req.body.email.indexOf('@') == -1){
+        _global.sendError(res, null, "Invalid Email");
+        return;
+    }
+    if (isNaN(req.body.phone)){
+        _global.sendError(res, null, "Invalid Phone Number");
+        return;
+    }
+    var new_first_name = req.body.first_name;    
+    var new_last_name = req.body.last_name;    
     var new_email = req.body.email;
     var new_phone = req.body.phone;
     pool.getConnection(function(error, connection) {
@@ -37,8 +52,8 @@ router.post('/add', function(req, res, next) {
             //new teacher data
             var new_password = new_email.split('@')[0];
             var new_user = {
-                firstname: new_firstname,
-                lastname: new_lastname,
+                first_name: new_first_name,
+                last_name: new_last_name,
                 email: new_email,
                 phone: new_phone,
                 password: bcrypt.hashSync(new_password, 10),
@@ -60,15 +75,9 @@ router.post('/add', function(req, res, next) {
                         });
                     }
                     //add data to teacher table
-                    var teacher = { id: results.insertId };
-                    connection.query('INSERT INTO teachers SET ?', teacher, function(error, results, fields) {
-                        if (error) {
-                            _global.sendError(res. error.message);
-                            return connection.rollback(function() {
-                                throw error;
-                            });
-                        }
-                        connection.commit(function(error) {
+                    //Move to trigger
+
+                    connection.commit(function(error) {
                             if (error) {
                                 _global.sendError(res. error.message);
                                 return connection.rollback(function() {
@@ -78,7 +87,6 @@ router.post('/add', function(req, res, next) {
                             console.log('success adding teacher!');
                             res.send({ result: 'success', message: 'Teacher Added Successfully' });
                         });
-                    });
                 });
             });
             connection.release();
@@ -90,6 +98,7 @@ router.post('/list', function(req, res, next) {
     var searchText = req.body.searchText;
     var page = req.body.page != null ? req.body.page : _global.default_page;
     var limit = req.body.limit != null ? req.body.limit : _global.detail_limit;
+    var sort = req.body.sort;
 
     pool.getConnection(function(error, connection) {
         if (error) {
@@ -97,7 +106,7 @@ router.post('/list', function(req, res, next) {
             throw error;
         }
 
-        connection.query(`SELECT teachers.id,firstname,lastname,phone,email,current_courses 
+        connection.query(`SELECT teachers.id,first_name,last_name,phone,email,current_courses 
         FROM teachers,users
         WHERE teachers.id = users.id`, function(error, rows, fields) {
             if (error) {
@@ -111,12 +120,14 @@ router.post('/list', function(req, res, next) {
                 search_list = teacher_list;
             } else {
                 for (var i = 0; i < teacher_list.length; i++) {
-                    if (teacher_list[i].name.toLowerCase().indexOf(searchText.toLowerCase()) != -1) {
+                    if (teacher_list[i].first_name.toLowerCase().indexOf(searchText.toLowerCase()) != -1 || teacher_list[i].last_name.toLowerCase().indexOf(searchText.toLowerCase()) != -1) {
                         search_list.push(teacher_list[i]);
                     }
                 }
             }
-
+            if(sort != 'none'){
+                _global.sortListByName(sort,search_list);
+            }
             res.send({ 
                 result: 'success', 
                 total_items: search_list.length, 
@@ -137,7 +148,7 @@ router.get('/detail/:id', function(req, res, next) {
                 throw error;
             }
             var teacher = rows[0];
-            connection.query(`SELECT teacher_teach_course.teacher_role, courses.code AS course_code, courses.name AS course_name,courses.attendance_count,programs.name AS program_name, semesters.name AS semester_name 
+            connection.query(`SELECT courses.id, teacher_teach_course.teacher_role, courses.code AS course_code, courses.name AS course_name,courses.attendance_count,programs.name AS program_name, semesters.name AS semester_name 
                 FROM teacher_teach_course , courses, programs , semesters 
                 WHERE teacher_teach_course.course_id = courses.id AND teacher_teach_course.teacher_id = ? AND programs.id = courses.program_id 
                 GROUP BY courses.code`, id, function(error, rows, fields) {
@@ -145,7 +156,6 @@ router.get('/detail/:id', function(req, res, next) {
                 connection.release();
                 if (error) throw error;
             });
-            connection.release();
         });
     });
 });

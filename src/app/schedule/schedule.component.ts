@@ -44,6 +44,7 @@ export class ScheduleComponent implements OnInit {
         [],
         ['abc','def']
     ];
+    
 
     public study_time: string;
     public courses: Array < any > = [];
@@ -69,7 +70,7 @@ export class ScheduleComponent implements OnInit {
 
     }
     public onChangeClass() {
-
+        console.log();
     }
     ngOnInit() {
         this.appService.getSemesterProgramClass().subscribe(results => {
