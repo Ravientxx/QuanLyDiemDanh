@@ -6,6 +6,32 @@ var connection = mysql.createConnection(_global.db);
 var pool = mysql.createPool(_global.db);
 var bcrypt = require('bcrypt');
 
+/**
+* @swagger
+* tags:
+*   name: User
+*   description: Teacher management
+*/
+
+/**
+* @swagger
+* /api/user/detail:
+*   get:
+*     summary: Get a user profile
+*     description: 
+*     tags: [User]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: id
+*         description: user ID
+*         in: formData
+*         required: true
+*         type: int
+*     responses:
+*       200:
+*         description: json
+*/
 router.get(['/detail/:id', '/detail?'], function (req,res,next){
 	var user_id;
 	if (req.query.id != null){

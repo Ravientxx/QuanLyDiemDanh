@@ -8,89 +8,146 @@ var teacher_list = [];
 
 /**
 * @swagger
-* /:
-*   get:
-*     description: Returns the homepage
-*     responses:
-*       200:
-*         description: hello world
-*/
-
-/**
-* @swagger
-* definitions:
-*   Login:
-*     required:
-*       - username
-*       - password
-*     properties:
-*       username:
-*         type: string
-*       password:
-*         type: string
-*       path:
-*         type: string
-*/
-
-/**
-* @swagger
 * tags:
-*   name: Users
-*   description: User management and login
+*   name: Teacher
+*   description: Teacher management
 */
 
 /**
 * @swagger
-* tags:
-*   - name: Login
-*     description: Login
-*   - name: Accounts
-*     description: Accounts
-*/
-
-/**
-* @swagger
-* /login:
+* /api/teacher/list:
 *   post:
-*     summary: Login to the application
+*     summary: Get teacher list
 *     description: 
-*     tags: [Users, Login]
+*     tags: [Teacher]
 *     produces:
 *       - application/json
 *     parameters:
-*       - name: username
-*         description: User's name.
+*       - name: searchText
+*         description: words exist in name
 *         in: formData
-*         required: true
-*         type: string
-*       - name: password
-*         description: User's password.
-*         in: formData
-*         required: true
 *         type: string
 *     responses:
 *       200:
-*         description: login
-*         schema:
-*           type: object
-*           $ref: '#/definitions/Login'
+*         description: json
 */
+router.post('/list', function (req, res, next) {
+    var searchText = req.body.searchText;
+    var page = req.body.page != null ? req.body.page : _global.default_page;
+    var limit = req.body.limit != null ? req.body.limit : _global.detail_limit;
+
+    pool.getConnection(function(error, connection) {
+        if (error) {
+            _global.sendError(res, error.message);
+            throw error;
+        }
+
+        connection.query(`SELECT teachers.id,firstname,lastname,phone,email,current_courses 
+        FROM teachers,users
+        WHERE teachers.id = users.id`, function(error, rows, fields) {
+            if (error) {
+                _global.sendError(res, error.message);
+                throw error;
+            }
+
+            teacher_list = rows;
+            var search_list = [];
+            if (searchText == null) {
+                search_list = teacher_list;
+            } else {
+                for (var i = 0; i < teacher_list.length; i++) {
+                    if (teacher_list[i].name.toLowerCase().indexOf(searchText.toLowerCase()) != -1) {
+                        search_list.push(teacher_list[i]);
+                    }
+                }
+            }
+
+            res.send({ 
+                result: 'success', 
+                total_items: search_list.length, 
+                teacher_list: _global.filterListByPage(page, limit, search_list) 
+            });
+
+            connection.release();
+        });
+    });
+});
 
 /**
 * @swagger
-* /users:
+* /api/teacher/detail:
 *   get:
-*     description: Returns users
-*     tags:
-*      - Users
+*     summary: Get a teacher profile
+*     description: 
+*     tags: [Teacher]
 *     produces:
-*      - application/json
+*       - application/json
+*     parameters:
+*       - name: id
+*         description: user ID
+*         in: formData
+*         required: true
+*         type: int
 *     responses:
 *       200:
-*         description: users
+*         description: json
 */
+router.get('/detail/:id', function (req, res, next) {
+    var id = req.params['id'];
+    pool.getConnection(function(error, connection) {
+        if (error) {
+            _global.sendError(res, error.message);
+            throw error;
+        }
 
+        connection.query(`SELECT * FROM users WHERE id = ? LIMIT 1`,id,function(error, rows, fields) {
+            if (error) {
+                _global.sendError(res, error.message);
+                throw error;
+            }
 
+            var teacher = rows[0];
+            res.send({ result: 'success', teacher: teacher});
+            connection.release();
+        });
+    });
+});
+
+/**
+* @swagger
+* /api/teacher/add:
+*   post:
+*     summary: Add a teacher
+*     description: 
+*     tags: [Teacher]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: firstname
+*         description: user firstname
+*         in: formData
+*         required: true
+*         type: string
+*       - name: lastname
+*         description: user lastname
+*         in: formData
+*         required: true
+*         type: string
+*       - name: email
+*         description: user email
+*         in: formData
+*         required: true
+*         type: string
+*         format: email
+*       - name: phone
+*         description: user phone
+*         in: formData
+*         required: true
+*         type: string
+*     responses:
+*       200:
+*         description: json
+*/
 router.post('/add', function (req, res, next) {
     if (req.body.name == null || req.body.email == null || req.body.password == null){
         _global.sendError(res, null, "Fill all required fields");
@@ -166,69 +223,6 @@ router.post('/add', function (req, res, next) {
                     });
                 });
             });
-            connection.release();
-        });
-    });
-});
-
-router.post('/list', function (req, res, next) {
-    var searchText = req.body.searchText;
-    var page = req.body.page != null ? req.body.page : _global.default_page;
-    var limit = req.body.limit != null ? req.body.limit : _global.detail_limit;
-
-    pool.getConnection(function(error, connection) {
-        if (error) {
-            _global.sendError(res, error.message);
-            throw error;
-        }
-
-        connection.query(`SELECT teachers.id,firstname,lastname,phone,email,current_courses 
-        FROM teachers,users
-        WHERE teachers.id = users.id`, function(error, rows, fields) {
-            if (error) {
-                _global.sendError(res, error.message);
-                throw error;
-            }
-
-            teacher_list = rows;
-            var search_list = [];
-            if (searchText == null) {
-                search_list = teacher_list;
-            } else {
-                for (var i = 0; i < teacher_list.length; i++) {
-                    if (teacher_list[i].name.toLowerCase().indexOf(searchText.toLowerCase()) != -1) {
-                        search_list.push(teacher_list[i]);
-                    }
-                }
-            }
-
-            res.send({ 
-                result: 'success', 
-                total_items: search_list.length, 
-                teacher_list: _global.filterListByPage(page, limit, search_list) 
-            });
-
-            connection.release();
-        });
-    });
-});
-
-router.get('/detail/:id', function (req, res, next) {
-    var id = req.params['id'];
-    pool.getConnection(function(error, connection) {
-        if (error) {
-            _global.sendError(res, error.message);
-            throw error;
-        }
-
-        connection.query(`SELECT * FROM users WHERE id = ? LIMIT 1`,id,function(error, rows, fields) {
-            if (error) {
-                _global.sendError(res, error.message);
-                throw error;
-            }
-
-            var teacher = rows[0];
-            res.send({ result: 'success', teacher: teacher});
             connection.release();
         });
     });
