@@ -1202,11 +1202,6 @@ article.media {
     float: left
 }
 
-h2 {
-    font-size: 18px;
-    font-weight: 400
-}
-
 #left,
 #right {
     display: table

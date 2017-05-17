@@ -2,13 +2,11 @@
     <div class="col-md-12">
         <div class="x_panel">
             <div class="x_title">
-                <h2>{{course.code}} - {{course.name}}</h2>
+                    <h3>{{course.code}} - {{course.name}}</h3>
                 <div class="row">
-                    <div class="col-xs-5">
-                        <button type="button" class="btn btn-sm btn-success btn-round" data-toggle="modal" data-target="#addTeacherModal"> <i class="fa fa-plus"></i> Add </button>
-                        <button type="button" class="btn btn-sm btn-success btn-round"> <i class="fa fa-upload"></i> Import</button>
-                        <button type="button" class="btn btn-sm btn-success btn-round"> <i class="fa fa-download"></i> Export</button>
-                    </div>
+                    <button type="button" class="btn btn-sm btn-success btn-round" data-toggle="modal" data-target="#addTeacherModal"> <i class="fa fa-plus"></i> Add Student</button>
+                    <button type="button" class="btn btn-sm btn-success btn-round"> <i class="fa fa-upload"></i> Import Attendance List</button>
+                    <button type="button" class="btn btn-sm btn-success btn-round"> <i class="fa fa-download"></i> Export Attendance List</button>
                 </div>
                 <div class="clearfix"></div>
             </div>
@@ -16,49 +14,49 @@
                 <div class="form-horizontal">
                     <div class="row">
                         <div class="col-xs-2" style="text-align: right">
-                            <h2>Programs :</h2>
+                            <h4>Programs :</h4>
                         </div>
-                        <div class="col-xs-4">
-                            <h2>{{course.program_name}}</h2>
+                        <div class="col-xs-2">
+                            <h4>{{course.program_name}}</h4>
                         </div>
                         <div class="col-xs-2" style="text-align: right">
-                            <h2>Semester :</h2>
+                            <h4>Semester :</h4>
                         </div>
-                        <div class="col-xs-4">
-                            <h2>{{course.semester_name}}</h2>
+                        <div class="col-xs-2">
+                            <h4>{{course.semester_name}}</h4>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-xs-2" style="text-align: right">
-                            <h2>Lecturer :</h2>
+                            <h4>Lecturer :</h4>
                         </div>
                         <div class="col-xs-4">
-                            <h2 *ngFor="let lecturer of lecturers">{{lecturer.first_name}} {{lecturer.last_name}}</h2>
+                            <h4 *ngFor="let lecturer of lecturers">{{lecturer.first_name}} {{lecturer.last_name}}</h4>
                         </div>
                         <div class="col-xs-2" style="text-align: right">
-                            <h2>TA :</h2>
+                            <h4>TA :</h4>
                         </div>
                         <div class="col-xs-4">
-                            <h2 *ngFor="let TA of TAs">{{TA.first_name}} {{TA.last_name}}</h2>
+                            <h4 *ngFor="let TA of TAs">{{TA.first_name}} {{TA.last_name}}</h4>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-xs-2" style="text-align: right">
-                            <h2>Office hour :</h2>
+                            <h4>Office hour :</h4>
                         </div>
                         <div class="col-xs-4">
-                            <h2>{{course.office_hour}}</h2>
+                            <h4>{{course.office_hour}}</h4>
                         </div>
                         <div class="col-xs-2" style="text-align: right">
-                            <h2>Note :</h2>
+                            <h4>Note :</h4>
                         </div>
                         <div class="col-xs-4">
-                            <h2>{{course.note}}</h2>
+                            <h4>Total Students : {{course.total_stud}}</h4>
                         </div>
                     </div>
-                </div>
-                <div class="col-xs-6">
-                    <h2>Total Students : {{course.total_stud}}</h2>
+                    <div class="row">
+                        <h4>{{course.note}}</h4>
+                    </div>
                 </div>
                 <attendance-list-table></attendance-list-table>
                 <div style="text-align: right;">
