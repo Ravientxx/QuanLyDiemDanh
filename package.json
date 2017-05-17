@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
-    "start": "supervisor ./bin/www",
+    "start": "ng build && supervisor ./bin/www",
     "client": "ng serve",
     "server": "supervisor ./bin/www",
     "build": "ng build",
@@ -39,6 +39,7 @@
     "pug": "~2.0.0-beta10",
     "rxjs": "^5.3.0",
     "serve-favicon": "~2.3.2",
+    "swagger-jsdoc": "^1.9.3",
     "ts-xlsx": "0.0.10",
     "zone.js": "^0.8.4"
   },

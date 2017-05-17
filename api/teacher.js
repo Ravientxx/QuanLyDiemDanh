@@ -5,7 +5,151 @@ var mysql = require('mysql');
 var pool = mysql.createPool(_global.db);
 var bcrypt = require('bcrypt');
 var teacher_list = [];
+/**
+* @swagger
+* tags:
+*   name: Teacher
+*   description: Teacher management
+*/
 
+/**
+* @swagger
+* /api/teacher/list:
+*   post:
+*     summary: Get teacher list
+*     description: 
+*     tags: [Teacher]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: searchText
+*         description: words exist in name
+*         in: formData
+*         type: string
+*     responses:
+*       200:
+*         description: json
+*/
+router.post('/list', function(req, res, next) {
+    var searchText = req.body.searchText;
+    var page = req.body.page != null ? req.body.page : _global.default_page;
+    var limit = req.body.limit != null ? req.body.limit : _global.detail_limit;
+    var sort = req.body.sort;
+
+    pool.getConnection(function(error, connection) {
+        if (error) {
+            _global.sendError(res, error.message);
+            throw error;
+        }
+
+        connection.query(`SELECT teachers.id,first_name,last_name,phone,email,current_courses 
+        FROM teachers,users
+        WHERE teachers.id = users.id`, function(error, rows, fields) {
+            if (error) {
+                _global.sendError(res, error.message);
+                throw error;
+            }
+
+            teacher_list = rows;
+            var search_list = [];
+            if (searchText == null) {
+                search_list = teacher_list;
+            } else {
+                for (var i = 0; i < teacher_list.length; i++) {
+                    if (teacher_list[i].first_name.toLowerCase().indexOf(searchText.toLowerCase()) != -1 || teacher_list[i].last_name.toLowerCase().indexOf(searchText.toLowerCase()) != -1) {
+                        search_list.push(teacher_list[i]);
+                    }
+                }
+            }
+            if(sort != 'none'){
+                _global.sortListByName(sort,search_list);
+            }
+            res.send({ 
+                result: 'success', 
+                total_items: search_list.length, 
+                teacher_list: _global.filterListByPage(page, limit, search_list) 
+            });
+
+            connection.release();
+        });
+    });
+});
+
+/**
+* @swagger
+* /api/teacher/detail:
+*   get:
+*     summary: Get a teacher profile
+*     description: 
+*     tags: [Teacher]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: id
+*         description: user ID
+*         in: formData
+*         required: true
+*         type: int
+*     responses:
+*       200:
+*         description: json
+*/
+router.get('/detail/:id', function(req, res, next) {
+    var id = req.params['id'];
+    pool.getConnection(function(error, connection) {
+        connection.query(`SELECT * FROM users WHERE id = ? LIMIT 1`,id,function(error, rows, fields) {
+            if (error) {
+                _global.sendError(res, error.message);
+                throw error;
+            }
+            var teacher = rows[0];
+            connection.query(`SELECT courses.id, teacher_teach_course.teacher_role, courses.code AS course_code, courses.name AS course_name,courses.attendance_count,programs.name AS program_name, semesters.name AS semester_name 
+                FROM teacher_teach_course , courses, programs , semesters 
+                WHERE teacher_teach_course.course_id = courses.id AND teacher_teach_course.teacher_id = ? AND programs.id = courses.program_id 
+                GROUP BY courses.code`, id, function(error, rows, fields) {
+                res.send({ result: 'success', teacher: teacher,teaching_courses: rows});
+                connection.release();
+                if (error) throw error;
+            });
+        });
+    });
+});
+
+/**
+* @swagger
+* /api/teacher/add:
+*   post:
+*     summary: Add a teacher
+*     description: 
+*     tags: [Teacher]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: firstname
+*         description: user firstname
+*         in: formData
+*         required: true
+*         type: string
+*       - name: lastname
+*         description: user lastname
+*         in: formData
+*         required: true
+*         type: string
+*       - name: email
+*         description: user email
+*         in: formData
+*         required: true
+*         type: string
+*         format: email
+*       - name: phone
+*         description: user phone
+*         in: formData
+*         required: true
+*         type: string
+*     responses:
+*       200:
+*         description: json
+*/
 router.post('/add', function(req, res, next) {
     if (req.body.first_name == ''){
         _global.sendError(res, null, "First name is required");
@@ -90,72 +234,6 @@ router.post('/add', function(req, res, next) {
                 });
             });
             connection.release();
-        });
-    });
-});
-
-router.post('/list', function(req, res, next) {
-    var searchText = req.body.searchText;
-    var page = req.body.page != null ? req.body.page : _global.default_page;
-    var limit = req.body.limit != null ? req.body.limit : _global.detail_limit;
-    var sort = req.body.sort;
-
-    pool.getConnection(function(error, connection) {
-        if (error) {
-            _global.sendError(res, error.message);
-            throw error;
-        }
-
-        connection.query(`SELECT teachers.id,first_name,last_name,phone,email,current_courses 
-        FROM teachers,users
-        WHERE teachers.id = users.id`, function(error, rows, fields) {
-            if (error) {
-                _global.sendError(res, error.message);
-                throw error;
-            }
-
-            teacher_list = rows;
-            var search_list = [];
-            if (searchText == null) {
-                search_list = teacher_list;
-            } else {
-                for (var i = 0; i < teacher_list.length; i++) {
-                    if (teacher_list[i].first_name.toLowerCase().indexOf(searchText.toLowerCase()) != -1 || teacher_list[i].last_name.toLowerCase().indexOf(searchText.toLowerCase()) != -1) {
-                        search_list.push(teacher_list[i]);
-                    }
-                }
-            }
-            if(sort != 'none'){
-                _global.sortListByName(sort,search_list);
-            }
-            res.send({ 
-                result: 'success', 
-                total_items: search_list.length, 
-                teacher_list: _global.filterListByPage(page, limit, search_list) 
-            });
-
-            connection.release();
-        });
-    });
-});
-
-router.get('/detail/:id', function(req, res, next) {
-    var id = req.params['id'];
-    pool.getConnection(function(error, connection) {
-        connection.query(`SELECT * FROM users WHERE id = ? LIMIT 1`,id,function(error, rows, fields) {
-            if (error) {
-                _global.sendError(res, error.message);
-                throw error;
-            }
-            var teacher = rows[0];
-            connection.query(`SELECT courses.id, teacher_teach_course.teacher_role, courses.code AS course_code, courses.name AS course_name,courses.attendance_count,programs.name AS program_name, semesters.name AS semester_name 
-                FROM teacher_teach_course , courses, programs , semesters 
-                WHERE teacher_teach_course.course_id = courses.id AND teacher_teach_course.teacher_id = ? AND programs.id = courses.program_id 
-                GROUP BY courses.code`, id, function(error, rows, fields) {
-                res.send({ result: 'success', teacher: teacher,teaching_courses: rows});
-                connection.release();
-                if (error) throw error;
-            });
         });
     });
 });

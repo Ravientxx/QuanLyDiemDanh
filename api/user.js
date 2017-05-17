@@ -6,7 +6,33 @@ var connection = mysql.createConnection(_global.db);
 var pool = mysql.createPool(_global.db);
 var bcrypt = require('bcrypt');
 
-router.get(['/detail/:id', '/detail?'],function(req,res,next){
+/**
+* @swagger
+* tags:
+*   name: User
+*   description: Teacher management
+*/
+
+/**
+* @swagger
+* /api/user/detail:
+*   get:
+*     summary: Get a user profile
+*     description: 
+*     tags: [User]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: id
+*         description: user ID
+*         in: formData
+*         required: true
+*         type: int
+*     responses:
+*       200:
+*         description: json
+*/
+router.get(['/detail/:id', '/detail?'], function (req,res,next){
 	var user_id;
 	if (req.query.id != null){
 		user_id = req.query.id;
@@ -45,7 +71,7 @@ router.get(['/detail/:id', '/detail?'],function(req,res,next){
     });
 });
 
-router.put(['/update/:id', '/update?'], function(req, res, next){
+router.put(['/update/:id', '/update?'], function (req, res, next){
 	var user_id;
 	if (req.query.id != null){
 		user_id = req.query.id;
@@ -114,7 +140,7 @@ router.put(['/update/:id', '/update?'], function(req, res, next){
     });
 });
 
-router.delete(['/delete/:id', '/delete?'],function(req,res,next){
+router.delete(['/delete/:id', '/delete?'], function (req,res,next){
 	var user_id;
 	if (req.query.id != null){
 		user_id = req.query.id;
@@ -191,7 +217,7 @@ router.delete(['/delete/:id', '/delete?'],function(req,res,next){
     });
 });
 
-router.put(['/changePassword/:id', '/changePassword?'], function(req, res, next){
+router.put(['/changePassword/:id', '/changePassword?'], function (req, res, next){
 	var user_id;
 	if (req.query.id == null){
 		if (req.body.id == null){

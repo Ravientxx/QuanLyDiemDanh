@@ -49,4 +49,6 @@ module.exports = {
 
     default_page: 1,
     default_limit: 10,
+
+    api_ver: 1,
 };
