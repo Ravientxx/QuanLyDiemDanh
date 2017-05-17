@@ -7,7 +7,7 @@ var pool = mysql.createPool(_global.db);
 var bcrypt = require('bcrypt');
 var student_list = [];
 
-router.get('/',function(req,res,next){
+router.get('/',function (req,res,next) {
 	console.log('bac');
 });
 
