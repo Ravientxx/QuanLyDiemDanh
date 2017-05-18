@@ -10,6 +10,7 @@ router.use('/absence-request', require('./absence-request'));
 router.use('/student', require('./student'));
 router.use('/schedule', require('./schedule'));
 router.use('/course', require('./course'));
+router.use('/user', require('./user'));
 
 router.get('/semesters-programs-classes', function(req, res, next) {
     var program_id = req.body.program_id;

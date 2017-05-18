@@ -16,7 +16,7 @@ var bcrypt = require('bcrypt');
 /**
 * @swagger
 * /api/user/detail:
-*   get:
+*   post:
 *     summary: Get a user profile
 *     description: 
 *     tags: [User]
@@ -32,12 +32,8 @@ var bcrypt = require('bcrypt');
 *       200:
 *         description: json
 */
-router.get(['/detail/:id', '/detail?'], function (req,res,next){
-	var user_id;
-	if (req.query.id != null){
-		user_id = req.query.id;
-	} 
-	else if (req.body.id != null){
+router.post('/detail', function (req,res,next){
+	if (req.body.id != null){
 		user_id = req.body.id;
 	}
 	else {	
@@ -51,7 +47,7 @@ router.get(['/detail/:id', '/detail?'], function (req,res,next){
             throw error;
         }
 
-        connection.query(`SELECT id,lastname,firstname,email,phone,role_id as role FROM users WHERE id=? LIMIT 1`, user_id ,
+        connection.query(`SELECT id,last_name,first_name,email,phone,role_id as role FROM users WHERE id=? LIMIT 1`, user_id ,
         	function(error, rows, fields) {
             if (error){
                 _global.sendError(res, error.message);
@@ -71,12 +67,44 @@ router.get(['/detail/:id', '/detail?'], function (req,res,next){
     });
 });
 
-router.put(['/update/:id', '/update?'], function (req, res, next){
-	var user_id;
-	if (req.query.id != null){
-		user_id = req.query.id;
-	} 
-	else if (req.body.id != null){
+/**
+* @swagger
+* /api/user/update:
+*   put:
+*     summary: update user profile
+*     description: 
+*     tags: [User]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: id
+*         description: user ID
+*         in: formData
+*         required: true
+*         type: int
+*       - name: firstname
+*         description: user firstname
+*         in: formData
+*         type: string
+*       - name: lastname
+*         description: user lastname
+*         in: formData
+*         type: string
+*       - name: email
+*         description: user email
+*         in: formData
+*         type: string
+*         format: email
+*       - name: phone
+*         description: user phone
+*         in: formData
+*         type: string
+*     responses:
+*       200:
+*         description: json
+*/
+router.put('/update', function (req, res, next){
+	if (req.body.id != null){
 		user_id = req.body.id;
 	}
 	else {	
@@ -86,19 +114,19 @@ router.put(['/update/:id', '/update?'], function (req, res, next){
 
 	pool.getConnection(function(error, connection) {
         if (error) {
-            sendError(res, error.message);
+            _global.sendError(res, error.message);
             throw error;
         }
 
-        connection.query(`SELECT lastname,firstname,email,phone FROM users WHERE id=? LIMIT 1`, user_id ,function(error, rows, fields) {
+        connection.query(`SELECT id,last_name,first_name,email,phone FROM users WHERE id=? LIMIT 1`, user_id ,function(error, rows, fields) {
             if (error){
-                sendError(res, error.message);
+                _global.sendError(res, error.message);
                 throw error;
             }
 
             //check user exist
             if (rows.length == 0) { 
-                sendError(res, 'User\'s ID not exist');
+                _global.sendError(res, 'User\'s ID not exist');
                 throw 'User\'s ID not exist';
             }
 
@@ -108,11 +136,11 @@ router.put(['/update/:id', '/update?'], function (req, res, next){
 
             if (req.body.firstname != null){
             	params.push(req.body.firstname);
-            	query = 'firstname = ?';
+            	query = 'first_name = ?';
             }
             if (req.body.lastname != null){
             	params.push(req.body.lastname);
-            	query += ', lastname = ?';
+            	query += ', last_name = ?';
             }
             if (req.body.email != null){
             	params.push(req.body.email);
@@ -123,19 +151,23 @@ router.put(['/update/:id', '/update?'], function (req, res, next){
             	query += ', phone = ?'
             }
 
+            if(params.length == 0){
+                res.send({ result: 'success', message: 'nothing update' , data: rows[0]});
+            }
+            
             params.push(user_id);
             //update to user table
-            connection.query('UPDATE user SET ' + query + 'WHERE id=? LIMIT 1', params, function(error, results, fields) {
+            connection.query('UPDATE users SET ' + query + 'WHERE id=? LIMIT 1', params, function(error, result, fields) {
                 if (error) {
-                    sendError(res. error.message);
+                    _global.sendError(res. error.message);
                     return connection.rollback(function() {
                         throw error;
                     });
                 }
 
-                res.send({ result: 'success', message: 'User Updated Successfully' });
+                res.send({ result: 'success', message: 'User Updated Successfully', data: result});
+                connection.release();
             });
-            connection.release();
         });
     });
 });
@@ -159,7 +191,7 @@ router.delete(['/delete/:id', '/delete?'], function (req,res,next){
             throw error;
         }
 
-        connection.query(`SELECT id,lastname,firstname,email,phone,role_id FROM users WHERE id=? LIMIT 1`, user_id ,
+        connection.query(`SELECT id,last_name,first_name,email,phone,role_id FROM users WHERE id=? LIMIT 1`, user_id ,
         	function(error, rows, fields) {
             if (error){
                 _global.sendError(res, error.message);
