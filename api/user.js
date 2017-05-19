@@ -27,7 +27,7 @@ var bcrypt = require('bcrypt');
 *         description: user ID
 *         in: formData
 *         required: true
-*         type: int
+*         type: integer
 *     responses:
 *       200:
 *         description: json
@@ -81,7 +81,7 @@ router.post('/detail', function (req,res,next){
 *         description: user ID
 *         in: formData
 *         required: true
-*         type: int
+*         type: integer
 *       - name: firstname
 *         description: user firstname
 *         in: formData
@@ -172,12 +172,27 @@ router.put('/update', function (req, res, next){
     });
 });
 
-router.delete(['/delete/:id', '/delete?'], function (req,res,next){
-	var user_id;
-	if (req.query.id != null){
-		user_id = req.query.id;
-	} 
-	else if (req.body.id != null){
+/**
+* @swagger
+* /api/user/delete:
+*   delete:
+*     summary: delete a user
+*     description: 
+*     tags: [User]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: id
+*         description: user ID
+*         in: formData
+*         required: true
+*         type: integer
+*     responses:
+*       200:
+*         description: json
+*/
+router.delete('/delete', function (req,res,next){
+	if (req.body.id != null){
 		user_id = req.body.id;
 	}
 	else {	
@@ -226,41 +241,74 @@ router.delete(['/delete/:id', '/delete?'], function (req,res,next){
             });*/
             //check user role
             if (user.role_id == _global.role.student){
-
+                connection.beginTransaction(function(error) {
+                    if (error){
+                        _global.sendError(res, error.message);
+                        throw error;
+                    }
+                     connection.release();
+                });           
             }
             else if (user.role_id ==_global.role.teacher){
-
+                connection.beginTransaction(function(error) {
+                    if (error){
+                        _global.sendError(res, error.message);
+                        throw error;
+                    }
+                     connection.release();
+                });
             }
             else {
             	//user is staff
+                connection.beginTransaction(function(error) {
+                    if (error){
+                        _global.sendError(res, error.message);
+                        throw error;
+                    }
+                     connection.release();
+                });
             }
-
-			//begin delete user
-            connection.beginTransaction(function(error) {
-                if (error){
-                    _global.sendError(res, error.message);
-                    throw error;
-                }
-                
-            });
-
-            connection.release();
         });
     });
 });
 
-router.put(['/changePassword/:id', '/changePassword?'], function (req, res, next){
-	var user_id;
-	if (req.query.id == null){
-		if (req.body.id == null){
-			_global.sendError(res, "Missing user id", "Require user\'s ID");
-        	return;
-		} 
-		user_id = req.body.id;
-	} 
-	else {
-		user_id = req.query.id;
-	}
+/**
+* @swagger
+* /api/user/changePassword:
+*   put:
+*     summary: change password
+*     description: 
+*     tags: [User]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: id
+*         description: user ID
+*         in: formData
+*         required: true
+*         type: integer
+*       - name: currentPassword
+*         description: current password
+*         in: formData
+*         required: true
+*         type: string
+*       - name: newPassword
+*         description: new password
+*         in: formData
+*         required: true
+*         type: string
+*     responses:
+*       200:
+*         description: json
+*/
+router.put('/changePassword', function (req, res, next){
+	if (req.body.id != null){
+        user_id = req.body.id;
+    }
+    else {  
+        _global.sendError(res, "Missing user id", "Require user\'s ID");
+        return;
+    }
 
 	if (req.body.currentPassword == null){
 		_global.sendError(res, "Missing user currentPassword", "currentPassword is a required field");
@@ -306,8 +354,8 @@ router.put(['/changePassword/:id', '/changePassword?'], function (req, res, next
                 }
 
                 res.send({ result: 'success', message: 'User\'s password Updated Successfully' });
-            });
-            connection.release();
+                connection.release();
+            }); 
         });
     });
 });

@@ -36,7 +36,7 @@ var teacher_list = [];
 *         in: formData
 *         type: integer
 *       - name: sort
-*         description: words exist in name
+*         description: acs or dcs
 *         in: formData
 *         type: string
 *     responses:
@@ -104,7 +104,7 @@ router.post('/list', function(req, res, next) {
 *         description: user ID
 *         in: formData
 *         required: true
-*         type: int
+*         type: integer
 *     responses:
 *       200:
 *         description: json
@@ -112,7 +112,7 @@ router.post('/list', function(req, res, next) {
 router.get('/detail/:id', function(req, res, next) {
     var id = req.params['id'];
     pool.getConnection(function(error, connection) {
-        connection.query(`SELECT * FROM users WHERE id = ? LIMIT 1`,id,function(error, rows, fields) {
+        connection.query(`SELECT id,last_name,first_name,email,phone,current_courses FROM users join teachers on users.id = teachers.id WHERE id = ? LIMIT 1`,id,function(error, rows, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 throw error;
