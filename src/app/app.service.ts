@@ -31,4 +31,6 @@ export class AppService {
         current_teacher_id : 0,
         current_student_id : 0,
     }
+
+    public current_userType = 3; 
 }

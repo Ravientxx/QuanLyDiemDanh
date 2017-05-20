@@ -7,27 +7,13 @@
     <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
         <div class="menu_section">
             <ul class="nav side-menu">
-                <li><a routerLink="/" routerLinkActive="active"><i class="fa fa-home"></i> Dashboard</a></li>
-                <li><a routerLink="/students" routerLinkActive="active"><i class="fa fa-users"></i> Students</a></li>
-                <li><a routerLink="/courses" routerLinkActive="active"><i class="fa fa-book"></i> Courses</a></li>
-                <li><a routerLink="/teachers" routerLinkActive="active"><i class="fa fa-graduation-cap"></i> Teachers</a></li>
-                <li><a routerLink="/schedule" routerLinkActive="active"><i class="fa fa-calendar"></i> Schedule</a></li>
-                <li>
-                    <a><i class="fa fa-envelope"></i> Absence Requests <span class="fa fa-chevron-down"></span> </a>
-                    <ul class="nav child_menu">
-                        <li><a routerLink="/absence-requests/student">Student</a></li>
-                        <li><a routerLink="/absence-requests/teacher">Teacher</a></li>
+                <li *ngFor="let route of sideMenu">
+                    <a *ngIf="!route.subMenu" routerLink="route.url" routerLinkActive="active"><i class="fa {{route.icon}}"></i>{{route.title}}</a>
+                    <a *ngIf="route.subMenu"><i class="fa {{route.icon}}"></i>{{route.title}}<span class="fa fa-chevron-down"></span></a>
+                    <ul *ngIf="route.subMenu" class="nav child_menu">
+                        <li *ngFor="let subroute of route.subMenu"><a routerLink="subroute.url">{{subroute.title}}</a></li>
                     </ul>
                 </li>
-                <li>
-                    <a><i class="fa fa-key"></i> Admin <span class="fa fa-chevron-down"></span> </a>
-                    <ul class="nav child_menu">
-                        <li><a href="/admin/create-user">Create User</a></li>
-                        <li><a href="/admin/users">User Management</a></li>
-                        <li><a href="/admin/users">Activity Logs</a></li>
-                    </ul>
-                </li>
-                <li><a href="/settings"><i class="fa fa-cog"></i> Settings</a></li>
             </ul>
         </div>
     </div>
