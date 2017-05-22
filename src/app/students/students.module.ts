@@ -11,9 +11,19 @@ import { Ng2TableModule } from 'ng2-table/ng2-table';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
 
+import { StudentHomePageComponent} from './student-home-page/student-home-page.component';
+import { CoursesListTableComponent} from './courses-list-table/courses-list-table.component';
+import { CoursesDetailTableComponent} from './courses-detail-table/courses-detail-table.component';
+import { AbsenceRequestsTableComponent} from './absence-requests-table/absence-requests-table.component';
+import { FeedbackTableComponent} from './feedback-table/feedback-table.component';
+
 const studentsRoutes: Routes = [
+  { path: 'students/dashboard', component: StudentHomePageComponent },
+  { path: 'students/courses/:id', component: CoursesDetailTableComponent },
+  { path: 'students/absence-requests', component: CoursesDetailTableComponent },
+  { path: 'students/feedback', component: FeedbackTableComponent },
   { path: 'students',  component: StudentsComponent },
-  { path: 'students/:id', component: StudentDetailComponent }
+  { path: 'students/:id', component: StudentDetailComponent },
 ];
 
 @NgModule({
@@ -28,7 +38,12 @@ const studentsRoutes: Routes = [
   declarations: [
     StudentsComponent,
     StudentsListTableComponent,
-    StudentDetailComponent
+    StudentDetailComponent,
+    StudentHomePageComponent,
+    CoursesListTableComponent,
+    CoursesDetailTableComponent,
+    AbsenceRequestsTableComponent,
+    FeedbackTableComponent
   ],
   providers: []
 })

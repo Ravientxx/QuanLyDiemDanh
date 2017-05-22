@@ -8,10 +8,10 @@
         <div class="menu_section">
             <ul class="nav side-menu">
                 <li *ngFor="let route of sideMenu">
-                    <a *ngIf="!route.subMenu" routerLink="route.url" routerLinkActive="active"><i class="fa {{route.icon}}"></i>{{route.title}}</a>
+                    <a *ngIf="!route.subMenu" routerLink="{{route.url}}" routerLinkActive="active"><i class="fa {{route.icon}}"></i>{{route.title}}</a>
                     <a *ngIf="route.subMenu"><i class="fa {{route.icon}}"></i>{{route.title}}<span class="fa fa-chevron-down"></span></a>
                     <ul *ngIf="route.subMenu" class="nav child_menu">
-                        <li *ngFor="let subroute of route.subMenu"><a routerLink="subroute.url">{{subroute.title}}</a></li>
+                        <li *ngFor="let subroute of route.subMenu"><a routerLink="{{subroute.url}}">{{subroute.title}}</a></li>
                     </ul>
                 </li>
             </ul>

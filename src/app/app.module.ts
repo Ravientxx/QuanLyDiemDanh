@@ -24,7 +24,7 @@ const ROUTES = [
     path: '',
     component: HomePageComponent
   },
-    {
+  {
     path: '**',
     component: PageNotFoundComponent
   },
@@ -37,7 +37,7 @@ const ROUTES = [
     SideMenuComponent,
     TopNavigationComponent,
     HomePageComponent,
-    PageNotFoundComponent
+    PageNotFoundComponent,
   ],
   imports: [
     BrowserModule,

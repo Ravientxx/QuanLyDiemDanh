@@ -1,3 +1,19 @@
+.bold {
+    font-weight: bold;
+}
+
+.red {
+    color: red !important;
+}
+
+.blue {
+    color: blue !important;
+}
+
+.green{
+    color: green !important;
+}
+
 .x_title h2,
 table.tile_info td p {
     white-space: nowrap;
@@ -4948,3 +4964,8 @@ th {
     pointer-events:all;
 }
 /*Make modal vertical center*/
+
+.modal-div-info {
+    text-align: center;
+    font-size: 1.5em;
+}
