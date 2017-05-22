@@ -8,9 +8,9 @@ import { AppComponent } from './app.component';
 import { FooterComponent } from './layout/footer/footer.component';
 import { SideMenuComponent } from './layout/side-menu/side-menu.component';
 import { TopNavigationComponent } from './layout/top-navigation/top-navigation.component';
-import { HomePageComponent } from './home-page/home-page.component';
 import { PageNotFoundComponent } from './others/page-not-found.component';
 
+import { HomePageModule } from './home-page/home-page.module';
 import { StudentsModule } from './students/students.module';
 import { CoursesModule } from './courses/courses.module';
 import { TeachersModule } from './teachers/teachers.module';
@@ -20,10 +20,6 @@ import { AbsenceRequestsModule } from './absence-requests/absence-requests.modul
 import {AppService} from './app.service';
 
 const ROUTES = [
-  {
-    path: '',
-    component: HomePageComponent
-  },
   {
     path: '**',
     component: PageNotFoundComponent
@@ -36,13 +32,13 @@ const ROUTES = [
     FooterComponent,
     SideMenuComponent,
     TopNavigationComponent,
-    HomePageComponent,
     PageNotFoundComponent,
   ],
   imports: [
     BrowserModule,
     FormsModule,
     HttpModule,
+    HomePageModule,
     CoursesModule,
     StudentsModule,
     TeachersModule,
@@ -55,4 +51,5 @@ const ROUTES = [
   ],
   bootstrap: [AppComponent]
 })
+
 export class AppModule { }

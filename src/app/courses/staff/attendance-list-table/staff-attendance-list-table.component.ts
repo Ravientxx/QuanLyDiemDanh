@@ -2,10 +2,10 @@ import { Component, OnInit, Input } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 
 @Component({
-    selector: 'attendance-list-table',
-    templateUrl: './attendance-list-table.component.html'
+    selector: 'staff-attendance-list-table',
+    templateUrl: './staff-attendance-list-table.component.html'
 })
-export class AttendanceListTableComponent implements OnInit {
+export class StaffAttendanceListTableComponent implements OnInit {
     @Input() type: string;
 
     public TableData: Array < any > = [{

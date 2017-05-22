@@ -19,7 +19,7 @@ export class SideMenuComponent implements OnInit {
 				break;
 			case globalVariable.userType.teacher:
 				this.sideMenu = this.teacherMenu;
-				break;	
+				break;
 		}
 	}
 
@@ -56,6 +56,4 @@ export class SideMenuComponent implements OnInit {
 		{title: 'Absence Requests', url: '/absence-request', icon: 'fa-envelope'},
 		{title: 'Feedback', url: '/feedback', icon: 'fa-envelope'},
 	];
-
-
 }

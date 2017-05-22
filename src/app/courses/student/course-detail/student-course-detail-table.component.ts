@@ -1,58 +1,38 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 
 @Component({
-    selector: 'courses-list-table',
-    templateUrl: './courses-list-table.component.html'
+  selector: 'student-course-detail-table',
+  templateUrl: './student-course-detail-table.component.html'
 })
-export class CoursesListTableComponent implements OnInit {
-    @Input() type: string;
-
-    public CurrentTableData: Array < any > = [{
-        'code': 'CS345',
-        'name': 'System Architect',
-        'program': 'APCS',
-        'teacher': 'Đinh Bá Tiến',
-        'semester': 'HK2-2016-2017',
-        'total-students': '30',
-        'total-musters': '7'
-    }, {
-        'code': 'CTT511',
-        'name': 'Accountant',
-        'program': 'APCS',
-        'teacher': 'Nghiêm Quốc Minh',
-        'semester': 'HK1-2016-2017',
-        'total-students': '25',
-        'total-musters': '5'
-    }];
-    public PreviousTableData: Array < any > = [{
-        'code': 'CS345',
-        'name': 'System Architect',
-        'program': 'APCS',
-        'teacher': 'Đinh Bá Tiến',
-        'semester': 'HK2-2016-2017',
-        'total-students': '30',
-        'total-musters': '7'
-    }, {
-        'code': 'CTT511',
-        'name': 'Accountant',
-        'program': 'APCS',
-        'teacher': 'Nghiêm Quốc Minh',
-        'semester': 'HK1-2016-2017',
-        'total-students': '25',
-        'total-musters': '5'
-    }];
+export class StudentCoursesDetailTableComponent implements OnInit {
+  public TableData: Array < any > = [
+    {
+        no: '1',
+        date: '13-08-2017 Thu 12:40:29',
+        userStatus: 0,
+        method: 'FaceReg',
+        action: '<button class="btn" type="button">Report</button>'
+    },{
+        no: '2',
+        date: '13-08-2017 Thu 12:40:29',
+        userStatus: "1 <a>view reason</a>",
+        method: 'Quiz',
+        action: '<button class="btn" type="button">Report</button>'
+    },{
+        no: '3',
+        date: '13-08-2017 Thu 12:40:29',
+        userStatus: 1,
+        method: 'Check Name',
+        action: '<button class="btn" type="button">Report</button>'
+    },];
     public rows: Array < any > = [];
     public columns: Array < any > = [
-        { title: 'Code', name: 'code' }, {
-            title: 'Name',
-            name: 'name',
-        },
-        { title: 'Program', name: 'program' },
-        { title: 'Teacher', name: 'teacher' },
-        { title: 'Semester', name: 'semester' },
-        { title: 'Total students', name: 'total-students' },
-        { title: 'Total musters', name: 'total-musters' },
+        { title: 'No', name: 'no' },
+        { title: 'Date', name: 'date'},
+        { title: 'Your status', name: 'userStatus' },
+        { title: 'Method', name: 'method' },
+        { title: 'Action', name: 'action' },
     ];
     public page: number = 1;
     public itemsPerPage: number = 10;
@@ -64,17 +44,12 @@ export class CoursesListTableComponent implements OnInit {
         paging: true,
         sorting: { columns: this.columns },
         filtering: { filterString: '' },
-        className: ['table-striped', 'table-bordered', 'text-center', 'table-hover']
+        className: ['table-striped', 'table-bordered','text-center','table-hover']
     };
 
-    private data: Array < any > = [];
+    private data: Array < any > = this.TableData;
 
-    public constructor(private router: Router) {
-        if (this.type == 'current') {
-            this.data = this.CurrentTableData;
-        } else {
-            this.data = this.PreviousTableData;
-        }
+    public constructor(private router : Router) {
         this.length = this.data.length;
     }
 
@@ -172,6 +147,6 @@ export class CoursesListTableComponent implements OnInit {
 
     public onCellClick(data: any): any {
         //console.log(data.row.id);
-        this.router.navigate(['/courses',data.row.code + '-' + data.row.semester]);
+        this.router.navigate(['/students', data.row.id]);
     }
 }

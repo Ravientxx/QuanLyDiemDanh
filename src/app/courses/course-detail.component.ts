@@ -4,10 +4,10 @@ import { AppService } from '../app.service';
 import * as globalVariable from '../global-variable'; 
 
 @Component({
-    selector: 'app-courses',
-    templateUrl: './courses.component.html'
+    selector: 'course-detail',
+    templateUrl: './course-detail.component.html'
 })
-export class CoursesComponent implements OnInit {
+export class CourseDetailComponent implements OnInit {
     
     //public htmlContent: string = null;
     public userType: number = null;

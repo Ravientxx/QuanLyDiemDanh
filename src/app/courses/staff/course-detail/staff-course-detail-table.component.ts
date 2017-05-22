@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { CourseService } from '../courses.service';
+import { CourseService } from '../../courses.service';
 
 @Component({
-    selector: 'courses-detail',
-    templateUrl: './course-detail.component.html'
+    selector: 'staff-course-detail-table',
+    templateUrl: './staff-course-detail-table.component.html'
 })
-export class CourseDetailComponent implements OnInit {
+export class StaffCourseDetailTableComponent implements OnInit {
 
     course_id : any;
     course : Array<any> = [];
