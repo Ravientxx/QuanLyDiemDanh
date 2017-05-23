@@ -2,10 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 
 @Component({
-  selector: 'feedback-table',
-  templateUrl: './feedback-table.component.html'
+  selector: 'student-feedback-table',
+  templateUrl: './student-feedback-table.component.html'
 })
-export class FeedbackTableComponent implements OnInit {
+export class StudentFeedbackTableComponent implements OnInit {
   public TableData: Array < any > = [
     {
         no: '1',

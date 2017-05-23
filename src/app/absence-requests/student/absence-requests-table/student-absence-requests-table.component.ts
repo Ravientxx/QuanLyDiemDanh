@@ -2,10 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 
 @Component({
-  selector: 'absense-requests-table',
-  templateUrl: './absence-requests-table.component.html'
+  selector: 'student-absence-requests-table',
+  templateUrl: './student-absence-requests-table.component.html'
 })
-export class AbsenceRequestsTableComponent implements OnInit {
+export class StudentAbsenceRequestsTableComponent implements OnInit {
   public TableData: Array < any > = [
     {
         no: '1',

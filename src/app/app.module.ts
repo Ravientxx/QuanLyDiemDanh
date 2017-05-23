@@ -16,6 +16,7 @@ import { CoursesModule } from './courses/courses.module';
 import { TeachersModule } from './teachers/teachers.module';
 import { ScheduleModule } from './schedule/schedule.module';
 import { AbsenceRequestsModule } from './absence-requests/absence-requests.module';
+import { FeedbackModule } from './feedback/feedback.module';
 
 import {AppService} from './app.service';
 
@@ -44,6 +45,7 @@ const ROUTES = [
     TeachersModule,
     ScheduleModule,
     AbsenceRequestsModule,
+    FeedbackModule,
     RouterModule.forRoot(ROUTES), // Add routes to the app
   ],
   providers: [

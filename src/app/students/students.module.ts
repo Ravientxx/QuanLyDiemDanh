@@ -11,11 +11,7 @@ import { Ng2TableModule } from 'ng2-table/ng2-table';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
 
-import { AbsenceRequestsTableComponent} from './absence-requests-table/absence-requests-table.component';
-import { FeedbackTableComponent} from './feedback-table/feedback-table.component';
-
 const studentsRoutes: Routes = [
-  { path: 'students/feedback', component: FeedbackTableComponent },
   { path: 'students',  component: StudentsComponent },
   { path: 'students/:id', component: StudentDetailComponent },
 ];
@@ -33,8 +29,6 @@ const studentsRoutes: Routes = [
     StudentsComponent,
     StudentsListTableComponent,
     StudentDetailComponent,
-    AbsenceRequestsTableComponent,
-    FeedbackTableComponent
   ],
   providers: []
 })

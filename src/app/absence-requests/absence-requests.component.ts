@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { AppService } from '../app.service';
+import * as globalVariable from '../global-variable'; 
 
 @Component({
   selector: 'app-absence-requests',
@@ -6,67 +8,27 @@ import { Component, OnInit } from '@angular/core';
 })
 export class AbsenceRequestsComponent implements OnInit {
 
-  constructor() { }
+  //public htmlContent: string = null;
+  public userType: number = null;
 
-  ngOnInit() {
+  public role: object = null;
+
+  constructor(private appService: AppService) {
+    /*switch (appService.current_userType){
+        case globalVariable.userType.staff:
+            this.htmlContent = '<staff-home-page></staff-home-page>';
+            break;
+        case globalVariable.userType.student:
+            this.htmlContent = '<student-home-page></student-home-page>';
+            break;
+        case globalVariable.userType.teacher:
+            this.htmlContent = '<teacher-home-page></teacher-home-page>';
+            break;
+    }*/
+
+    this.userType = appService.current_userType;
+    this.role = globalVariable.userType;
   }
 
-  public caption1:string = 'Request';
-  public data1 = [{
-        'code': '1353002',
-        'name': 'Nguyễn Văn A',
-        'reason': 'Đi khám nghĩa vụ',
-        'from_to': '10/7/2016 - 17/7/2016',
-        'days': '7',
-        'submited_at': '10/7/2016'
-    },{
-        'code': '1353002',
-        'name': 'Nguyễn Văn B',
-        'reason': 'Đi khám nghĩa vụ',
-        'from_to': '10/7/2016 - 17/7/2016',
-        'days': '7',
-        'submited_at': '10/7/2016'
-    },{
-        'code': '1353002',
-        'name': 'Nguyễn Văn C',
-        'reason': 'Đi khám nghĩa vụ',
-        'from_to': '10/7/2016 - 17/7/2016',
-        'days': '7',
-        'submited_at': '10/7/2016'
-    }
-  ];
-  public head1 = [
-    { title: 'Code', name: 'code'},
-    { title: 'Name', name: 'name'},
-    { title: 'Reason', name: 'reason', sort: false},
-    { title: 'From-To', name: 'from_to'},
-    { title: 'Days', name: 'days'},
-    { title: 'Submited At', name: 'submited_at'}
-  ];
-
-  public caption2:string = 'Accepted';
-  public data2 = [{
-        'code': '1353002',
-        'name': 'Nguyễn Văn A',
-        'reason': 'Đi khám nghĩa vụ',
-        'from_to': '10/7/2016 - 17/7/2016',
-        'days': '7',
-        'accepted_at': '10/7/2016'
-    },{
-        'code': '1353002',
-        'name': 'Nguyễn Văn A',
-        'reason': 'Đi khám nghĩa vụ',
-        'from_to': '10/7/2016 - 17/7/2016',
-        'days': '7',
-        'accepted_at': '10/7/2016'
-    }
-  ];
-  public head2 = [
-    { title: 'Code', name: 'code'},
-    { title: 'Name', name: 'name'},
-    { title: 'Reason', name: 'reason', sort: false},
-    { title: 'From-To', name: 'from_to'},
-    { title: 'Days', name: 'days'},
-    { title: 'Accepted At', name: 'accepted_at'}
-  ];
+  ngOnInit() {}
 }

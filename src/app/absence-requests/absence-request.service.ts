@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Http, Response, Headers, RequestOptions } from '@angular/http';
-import { StudentAbsenceRequest } from './student/student-absence-request.model';
+import { StudentAbsenceRequest } from './staff/student/student-absence-request.model';
 import { Observable } from 'rxjs';
 
 import * as globalVariables from '../global-variable';

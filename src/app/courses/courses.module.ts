@@ -5,8 +5,6 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { CourseService } from './courses.service';
 
-import { CollapseModule } from 'ngx-bootstrap';
-
 import { CoursesComponent } from './courses.component';
 import { CourseDetailComponent } from './course-detail.component';
 
@@ -18,9 +16,11 @@ import { StaffAttendanceListTableComponent } from './staff/attendance-list-table
 import { StudentCoursesDetailTableComponent } from './student/course-detail/student-course-detail-table.component';
 //import { StudentHomePageComponent } from '../home-page/student/home-page/student-home-page.component';
 
+import { CollapseModule } from 'ngx-bootstrap';
 import { Ng2TableModule } from 'ng2-table/ng2-table';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
+
 
 const coursesRoutes: Routes = [
   { path: 'courses',  component: CoursesComponent },
