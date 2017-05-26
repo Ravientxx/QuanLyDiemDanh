@@ -20,9 +20,7 @@ const AbsenceRequestsRoutes: Routes = [
   declarations: [
   	StudentAbsenceRequestComponent
   ],
-  providers: [
-    AbsenceRequestService
-  ]
+  providers: []
 })
 
 export class AbsenceRequestsModule{}

@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ScheduleUploadResult } from './schedule-upload/schedule-upload.component';
-import { AppService } from '../app.service';
-import { ScheduleService } from './schedule.service';
+import { ScheduleService, AppService } from '../shared/shared.module';
 @Component({
     selector: 'app-schedule',
     templateUrl: './schedule.component.html',

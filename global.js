@@ -35,10 +35,12 @@ module.exports = {
         }
     },
 
-    sortListByName: function(sort, list) {
+    sortListByKey: function(order, list, key) {
         for (var i = 0; i < list.length; i++) {
             for (var j = 0; j < list.length; j++) {
-                if (sort == 'dsc' && list[i].last_name.toLowerCase() > list[j].last_name.toLowerCase() || sort == 'asc' && list[i].last_name.toLowerCase() < list[j].last_name.toLowerCase()) {
+                var value1 = list[i][key].toString().toLowerCase();
+                var value2 = list[j][key].toString().toLowerCase();
+                if (order == 'dsc' && value1 > value2 || order == 'asc' && value1 < value2) {
                     var temp = list[i];
                     list[i] = list[j];
                     list[j] = temp;
@@ -49,6 +51,9 @@ module.exports = {
 
     default_page: 1,
     default_limit: 10,
+
+    lecturer_role: 0,
+    ta_role: 1,
 
     api_ver: 1,
 };

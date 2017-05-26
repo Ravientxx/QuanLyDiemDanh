@@ -52,3 +52,7 @@
     { firstname: 'Ngụy Thiên', lastname: 'Ban', email: '13530@fit.hcmus.edu.vn', phone: '01228718705', password: '', role_id: 1 },
     { firstname: 'Ngô Trường', lastname: 'Đạt', email: '13530@fit.hcmus.edu.vn', phone: '01228718705', password: '', role_id: 1 },
     { firstname: 'Nguyễn Thanh', lastname: 'Hoàng', email: '13530@fit.hcmus.edu.vn', phone: '01228718705', password: '', role_id: 1 },
+
+
+
+

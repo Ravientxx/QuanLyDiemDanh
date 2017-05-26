@@ -10,7 +10,6 @@ import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
 import {FileUploadModule} from "ng2-file-upload";
 import { ScheduleUploadComponent } from './schedule-upload/schedule-upload.component';
-import { ScheduleService } from './schedule.service';
 
 const scheduleRoutes: Routes = [
   { path: 'schedule',  component: ScheduleComponent }
@@ -31,8 +30,6 @@ const scheduleRoutes: Routes = [
     ScheduleComponent,
     ScheduleUploadComponent,
   ],
-  providers: [
-    ScheduleService,
-  ]
+  providers: []
 })
 export class ScheduleModule {}

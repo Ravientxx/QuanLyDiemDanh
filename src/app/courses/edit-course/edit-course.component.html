@@ -1,0 +1,361 @@
+<div class="col-md-12 col-sm-12 col-xs-12">
+    <div class="x_panel">
+        <div class="x_title">
+            <h3>Edit Course</h3>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <form class="form-horizontal form-label-left">
+                <div class="modal-body">
+                    <div class="col-xs-12 col-md-6">
+                        <div class="form-group">
+                            <label class="control-label col-md-3 col-sm-3 col-xs-12">Code*</label>
+                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                <input type="text" [(ngModel)]="code" name="code" required="required" class="form-control col-md-7 col-xs-12">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-3 col-sm-3 col-xs-12">Name*</label>
+                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                <input type="text" [(ngModel)]="name" name="name" required="required" class="form-control col-md-7 col-xs-12">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-3 col-sm-3 col-xs-12"> Lecturer*</label>
+                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                <div class="form-control tag_list col-md-7 col-xs-12">
+                                    <button class="btn btn-primary disabled" *ngFor="let lecturer of selected_lecturers" style="margin-bottom:5px">{{lecturer.first_name}} {{lecturer.last_name}}</button>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-3 col-xs-12">
+                                <button class="btn btn-primary" (click)="onOpenChooseLecturer()"><i class="fa fa-pencil"></i> Edit</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-3 col-sm-3 col-xs-12"> TA </label>
+                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                <div class="form-control tag_list col-md-7 col-xs-12 ">
+                                    <button class="btn btn-primary disabled" *ngFor="let lecturer of selected_TAs" style="margin-bottom:5px">{{lecturer.first_name}} {{lecturer.last_name}}</button>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-3 col-xs-12">
+                                <button class="btn btn-primary" (click)="onOpenChooseTA()"><i class="fa fa-pencil"></i> Edit</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-3 col-sm-3 col-xs-12"> Office hour </label>
+                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                <input class="form-control col-md-7 col-xs-12" type="text" name="office_hour" [(ngModel)]="office_hour">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-3 col-sm-3 col-xs-12"> Note </label>
+                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                <input class="form-control col-md-7 col-xs-12" type="text" name="note" [(ngModel)]="note">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-md-6">
+                        <div class="form-group">
+                            <label class="control-label col-md-3 col-sm-3 col-xs-12"> Programs*</label>
+                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                <select class="form-control" [(ngModel)]="selectedProgram" (ngModelChange)="onChangeProgram()" name="program">
+                                    <option *ngFor="let program of programs" [value]="program.id">{{program.name}}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-3 col-sm-3 col-xs-12"> Class*</label>
+                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                <select class="form-control" [(ngModel)]="selectedClass" name="class">
+                                    <option *ngFor="let class of filteredClasses" [value]="class.id">{{class.name}}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-3 col-sm-3 col-xs-12"> Students </label>
+                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" name="isAddStudentFromCLass" [(ngModel)]="isAddStudentFromCLass">Add all students from selected class</label>
+                                </div>
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" name="isAddStudentFromFile" [(ngModel)]="isAddStudentFromFile">Add student from file</label>
+                                </div>
+                                <div *ngIf="isAddStudentFromFile">
+                                    <label class="btn btn-primary btn-file col-md-5 col-xs-12">
+                                        Choose file
+                                        <input type="file" style="display:none;" name="students" [(ngModel)]="newCourseStudents" onchange="$('#upload-file-info').html($(this)[0].files[0]['name']);">
+                                    </label>
+                                    <label class='label label-success' id="upload-file-info"></label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-3 col-sm-3 col-xs-12"> Schedule*</label>
+                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                <button class="btn btn-primary" (click)="onOpenChooseSchedule()"><i class="fa fa-pencil"></i> Edit</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div *ngIf="error_message" class="alert alert-danger text-center col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                            {{error_message}}
+                        </div>
+                        <div *ngIf="success_message" class="alert alert-success text-center col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                            {{success_message}}
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" (click)="onCancelAddCourse()">Cancel</button>
+                    <button type="button" class="btn btn-success" (click)="onAddCourse()">Add</button>
+                    <button type="button" class="btn btn-success" (click)="onAddCourse(true)">Add & Continue</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="chooseLecturerModal" role="dialog">
+    <div class="vertical-alignment-helper">
+        <div class="modal-dialog modal-lg vertical-align-center">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Add Lecturer</h4>
+                </div>
+                <form class="form-horizontal form-label-left">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <div class="col-sm-6 col-xs-12 text-center">
+                                <h4>Teacher list</h4>
+                                <input placeholder="Search Name" class="form-control" [(ngModel)]="searchText" (ngModelChange)="searchList()" name="searchText" />
+                                <div style="overflow:auto; max-height:300px;">
+                                    <table class="table table-striped table-bordered text-center table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Email</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let teacher of filtered_teachers" (click)='onSelectLecturerClick(teacher.id)'>
+                                                <td>{{teacher.first_name}} {{teacher.last_name}}</td>
+                                                <td>{{teacher.email}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-sm-5 col-xs-12 col-sm-offset-1 text-center">
+                                <h4>Selected Lecturers</h4>
+                                <div style="overflow:auto; max-height:300px;">
+                                    <table class="table table-striped table-bordered text-center table-hover table-fixed">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Email</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let teacher of temp_lecturers" (click)='onRemoveLecturerClick(teacher.id)'>
+                                                <td>{{teacher.first_name}} {{teacher.last_name}}</td>
+                                                <td>{{teacher.email}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" (click)="onCancelChooseLecturer()">Cancel</button>
+                        <button type="button" class="btn btn-default btn-success" (click)="onSaveChooseLecturer()">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="chooseTAModal" role="dialog">
+    <div class="vertical-alignment-helper">
+        <div class="modal-dialog modal-lg vertical-align-center">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Add TA</h4>
+                </div>
+                <form class="form-horizontal form-label-left">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <div class="col-sm-6 col-xs-12 text-center">
+                                <h4>Teacher list</h4>
+                                <input placeholder="Search Name" class="form-control" [(ngModel)]="searchText" (ngModelChange)="searchList()" name="searchText" />
+                                <div style="overflow:auto; max-height:300px;">
+                                    <table class="table table-striped table-bordered text-center table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Email</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let teacher of filtered_teachers" (click)='onSelectTAClick(teacher.id)'>
+                                                <td>{{teacher.first_name}} {{teacher.last_name}}</td>
+                                                <td>{{teacher.email}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-sm-5 col-xs-12 col-sm-offset-1 text-center">
+                                <h4>Selected TAs</h4>
+                                <div style="overflow:auto; max-height:300px;">
+                                    <table class="table table-striped table-bordered text-center table-hover table-fixed">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Email</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let teacher of temp_TAs" (click)='onRemoveTAClick(teacher.id)'>
+                                                <td>{{teacher.first_name}} {{teacher.last_name}}</td>
+                                                <td>{{teacher.email}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" (click)="onCancelChooseTA()">Cancel</button>
+                        <button type="button" class="btn btn-default btn-success" (click)="onSaveChooseTA()">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="chooseScheduleModal" role="dialog">
+    <div class="vertical-alignment-helper">
+        <div class="modal-dialog modal-lg vertical-align-center">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Add Schedule</h4>
+                </div>
+                <form class="form-horizontal form-label-left">
+                    <div class="modal-body">
+                        <table class="table table-striped table-bordered text-center">
+                            <thead class="text-center">
+                                <tr>
+                                    <th width="10%"> </th>
+                                    <th width="15%">2</th>
+                                    <th width="15%">3</th>
+                                    <th width="15%">4</th>
+                                    <th width="15%">5</th>
+                                    <th width="15%">6</th>
+                                    <th width="15%">7</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>(LT)7:30-9:10 <br> (TH)7:30-9:30</strong></td>
+                                    <td (click)="onScheduleCellClick(0)"><p *ngIf="sessions[0].room">{{sessions[0].room}} - {{sessions[0].type}}</p></td>
+                                    <td (click)="onScheduleCellClick(4)"><p *ngIf="sessions[4].room">{{sessions[4].room}} - {{sessions[4].type}}</p></td>
+                                    <td (click)="onScheduleCellClick(8)"><p *ngIf="sessions[8].room">{{sessions[8].room}} - {{sessions[8].type}}</p></td>
+                                    <td (click)="onScheduleCellClick(12)"><p *ngIf="sessions[12].room">{{sessions[12].room}} - {{sessions[12].type}}</p></td>
+                                    <td (click)="onScheduleCellClick(16)"><p *ngIf="sessions[16].room">{{sessions[16].room}} - {{sessions[16].type}}</p></td>
+                                    <td (click)="onScheduleCellClick(20)"><p *ngIf="sessions[20].room">{{sessions[20].room}} - {{sessions[20].type}}</p></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>(LT)9:30-11:10 <br> (TH)9:30-11:30</strong></td>
+                                    <td (click)="onScheduleCellClick(1)"><p *ngIf="sessions[1].room">{{sessions[1].room}} - {{sessions[1].type}}</p></td>
+                                    <td (click)="onScheduleCellClick(5)"><p *ngIf="sessions[5].room">{{sessions[5].room}} - {{sessions[5].type}}</p></td>
+                                    <td (click)="onScheduleCellClick(9)"><p *ngIf="sessions[9].room">{{sessions[9].room}} - {{sessions[9].type}}</p></td>
+                                    <td (click)="onScheduleCellClick(13)"><p *ngIf="sessions[13].room">{{sessions[13].room}} - {{sessions[13].type}}</p></td>
+                                    <td (click)="onScheduleCellClick(17)"><p *ngIf="sessions[17].room">{{sessions[17].room}} - {{sessions[17].type}}</p></td>
+                                    <td (click)="onScheduleCellClick(21)"><p *ngIf="sessions[21].room">{{sessions[21].room}} - {{sessions[21].type}}</p></td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>(LT)13:30-15:10 <br> (TH)13:30-15:30</strong></td>
+                                    <td (click)="onScheduleCellClick(2)"><p *ngIf="sessions[2].room">{{sessions[2].room}} - {{sessions[2].type}}</p></td>
+                                    <td (click)="onScheduleCellClick(6)"><p *ngIf="sessions[6].room">{{sessions[6].room}} - {{sessions[6].type}}</p></td>
+                                    <td (click)="onScheduleCellClick(10)"><p *ngIf="sessions[10].room">{{sessions[10].room}} - {{sessions[10].type}}</p></td>
+                                    <td (click)="onScheduleCellClick(14)"><p *ngIf="sessions[14].room">{{sessions[14].room}} - {{sessions[14].type}}</p></td>
+                                    <td (click)="onScheduleCellClick(18)"><p *ngIf="sessions[18].room">{{sessions[18].room}} - {{sessions[18].type}}</p></td>
+                                    <td (click)="onScheduleCellClick(22)"><p *ngIf="sessions[22].room">{{sessions[22].room}} - {{sessions[22].type}}</p></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>(LT)15:30-17:10 <br> (TH)15:30-17:30</strong></td>
+                                    <td (click)="onScheduleCellClick(3)"><p *ngIf="sessions[3].room">{{sessions[3].room}} - {{sessions[3].type}}</p></td>
+                                    <td (click)="onScheduleCellClick(7)"><p *ngIf="sessions[7].room">{{sessions[7].room}} - {{sessions[7].type}}</p></td>
+                                    <td (click)="onScheduleCellClick(11)"><p *ngIf="sessions[11].room">{{sessions[11].room}} - {{sessions[11].type}}</p></td>
+                                    <td (click)="onScheduleCellClick(15)"><p *ngIf="sessions[15].room">{{sessions[15].room}} - {{sessions[15].type}}</p></td>
+                                    <td (click)="onScheduleCellClick(19)"><p *ngIf="sessions[19].room">{{sessions[19].room}} - {{sessions[19].type}}</p></td>
+                                    <td (click)="onScheduleCellClick(23)"><p *ngIf="sessions[23].room">{{sessions[23].room}} - {{sessions[23].type}}</p></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="form-group" *ngIf="editingCellIndex != -1">
+                            <label class="control-label col-sm-1 col-xs-6"> Room:</label>
+                            <div class="col-sm-3 col-xs-6">
+                                <input class="form-control col-md-7 col-xs-12"  name="room" [(ngModel)]="temp_room">
+                            </div>
+                            <label class="control-label col-sm-1 col-xs-6"> Type:</label>
+                            <div class="col-sm-2 col-xs-6">
+                                <label class="radio-inline"><input type="radio" name="optradio" [(ngModel)]="temp_type" [value] = "'LT'" [checked]="temp_type == 'LT'">LT</label>
+                                <label class="radio-inline"><input type="radio" name="optradio" [(ngModel)]="temp_type" [value] = "'TH'" [checked]="temp_type == 'TH'">TH</label>
+                            </div>
+                            <div class="col-sm-4 col-xs-12">
+                                <button type="button" class="btn btn-default" (click)="onCancelScheduleCell()">Cancel</button>
+                                <button type="button" class="btn btn-danger" (click)="onRemoveScheduleCell()">Remove</button>
+                                <button type="button" class="btn btn-success" (click)="onUpdateScheduleCell()">Update</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" (click)="onCancelChooseSchedule()">Cancel</button>
+                        <button type="button" class="btn btn-default btn-success" (click)="onSaveChooseSchedule()">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="progressModal" role="dialog">
+    <div class="vertical-alignment-helper">
+        <div class="modal-dialog modal-sm vertical-align-center">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="text-center">
+                        <h2>Loading</h2>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

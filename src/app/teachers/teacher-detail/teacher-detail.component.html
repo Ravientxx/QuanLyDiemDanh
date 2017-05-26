@@ -32,17 +32,15 @@
                                         <tr *ngFor="let course of teaching_courses" (click)="onCellClick(course.id)">
                                             <td>{{course.course_code}}</td>
                                             <td>{{course.course_name}}</td>
-                                            <td *ngIf="course.teacher_role">
-                                                TA
-                                            </td>
-                                            <td *ngIf="!course.teacher_role">
-                                                Lecturer
-                                            </td>
+                                            <td *ngIf="course.teacher_role">TA</td>
+                                            <td *ngIf="!course.teacher_role">Lecturer</td>
                                             <td>{{course.semester_name}}</td>
                                             <td>{{course.program_name}}</td>
                                         </tr>
                                     </tbody>
                                 </table>
+                            </tab>
+                            <tab heading='Feedbacks'>
                             </tab>
                         </tabset>
                     </div>

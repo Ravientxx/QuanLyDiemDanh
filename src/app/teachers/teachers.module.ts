@@ -6,11 +6,9 @@ import { RouterModule, Routes } from '@angular/router';
 import { TeachersComponent }    from './teachers.component';
 import { TeacherDetailComponent } from './teacher-detail/teacher-detail.component';
 
-import { Ng2TableModule } from 'ng2-table/ng2-table';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
 
-import { TeacherService } from './teachers.service';
 const teachersRoutes: Routes = [
   { path: 'teachers',  component: TeachersComponent },
   { path: 'teachers/:id', component: TeacherDetailComponent }
@@ -21,7 +19,6 @@ const teachersRoutes: Routes = [
     CommonModule,
     FormsModule,
     RouterModule.forChild(teachersRoutes),
-    Ng2TableModule,
     PaginationModule.forRoot(),
     TabsModule.forRoot(),
   ],
@@ -29,8 +26,6 @@ const teachersRoutes: Routes = [
     TeachersComponent,
     TeacherDetailComponent
   ],
-  providers: [
-    TeacherService
-  ]
+  providers: []
 })
 export class TeachersModule {}

@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { TeacherService } from './teachers.service';
-import { AppService } from '../app.service';
+import { TeacherService, AppService } from '../shared/shared.module';
 declare var jQuery:any;
 
 @Component({

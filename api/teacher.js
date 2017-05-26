@@ -62,7 +62,7 @@ router.post('/list', function(req, res, next) {
                 }
             }
             if(sort != 'none'){
-                _global.sortListByName(sort,search_list);
+                _global.sortListByKey(sort,search_list,'last_name');
             }
             res.send({ 
                 result: 'success', 

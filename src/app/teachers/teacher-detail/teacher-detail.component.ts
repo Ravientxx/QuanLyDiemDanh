@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { TeacherService } from '../teachers.service';
+import { TeacherService } from '../../shared/shared.module';
 @Component({
     selector: 'teacher-detail',
     templateUrl: './teacher-detail.component.html'
