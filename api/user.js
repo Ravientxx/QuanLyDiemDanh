@@ -16,7 +16,7 @@ var bcrypt = require('bcrypt');
 /**
 * @swagger
 * /api/user/detail:
-*   get:
+*   post:
 *     summary: Get a user profile
 *     description: 
 *     tags: [User]
@@ -27,17 +27,13 @@ var bcrypt = require('bcrypt');
 *         description: user ID
 *         in: formData
 *         required: true
-*         type: int
+*         type: integer
 *     responses:
 *       200:
 *         description: json
 */
-router.get(['/detail/:id', '/detail?'], function (req,res,next){
-	var user_id;
-	if (req.query.id != null){
-		user_id = req.query.id;
-	} 
-	else if (req.body.id != null){
+router.post('/detail', function (req,res,next){
+	if (req.body.id != null){
 		user_id = req.body.id;
 	}
 	else {	
@@ -51,7 +47,7 @@ router.get(['/detail/:id', '/detail?'], function (req,res,next){
             throw error;
         }
 
-        connection.query(`SELECT id,lastname,firstname,email,phone,role_id as role FROM users WHERE id=? LIMIT 1`, user_id ,
+        connection.query(`SELECT id,last_name,first_name,email,phone,role_id as role FROM users WHERE id=? LIMIT 1`, user_id ,
         	function(error, rows, fields) {
             if (error){
                 _global.sendError(res, error.message);
@@ -71,81 +67,44 @@ router.get(['/detail/:id', '/detail?'], function (req,res,next){
     });
 });
 
-router.put(['/update/:id', '/update?'], function (req, res, next){
-	var user_id;
-	if (req.query.id != null){
-		user_id = req.query.id;
-	} 
-	else if (req.body.id != null){
-		user_id = req.body.id;
-	}
-	else {	
-		_global.sendError(res, "Missing user id", "Require user\'s ID");
-        return;
-	}
-
-	pool.getConnection(function(error, connection) {
-        if (error) {
-            sendError(res, error.message);
-            throw error;
-        }
-
-        connection.query(`SELECT lastname,firstname,email,phone FROM users WHERE id=? LIMIT 1`, user_id ,function(error, rows, fields) {
-            if (error){
-                sendError(res, error.message);
-                throw error;
-            }
-
-            //check user exist
-            if (rows.length == 0) { 
-                sendError(res, 'User\'s ID not exist');
-                throw 'User\'s ID not exist';
-            }
-
-            //build query
-            var params = [];
-            var query = '';
-
-            if (req.body.firstname != null){
-            	params.push(req.body.firstname);
-            	query = 'firstname = ?';
-            }
-            if (req.body.lastname != null){
-            	params.push(req.body.lastname);
-            	query += ', lastname = ?';
-            }
-            if (req.body.email != null){
-            	params.push(req.body.email);
-            	query += ', email = ?';
-            }
-            if (req.body.phone != null){
-            	params.push(req.body.phone);
-            	query += ', phone = ?'
-            }
-
-            params.push(user_id);
-            //update to user table
-            connection.query('UPDATE user SET ' + query + 'WHERE id=? LIMIT 1', params, function(error, results, fields) {
-                if (error) {
-                    sendError(res. error.message);
-                    return connection.rollback(function() {
-                        throw error;
-                    });
-                }
-
-                res.send({ result: 'success', message: 'User Updated Successfully' });
-            });
-            connection.release();
-        });
-    });
-});
-
-router.delete(['/delete/:id', '/delete?'], function (req,res,next){
-	var user_id;
-	if (req.query.id != null){
-		user_id = req.query.id;
-	} 
-	else if (req.body.id != null){
+/**
+* @swagger
+* /api/user/update:
+*   put:
+*     summary: update user profile
+*     description: 
+*     tags: [User]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: id
+*         description: user ID
+*         in: formData
+*         required: true
+*         type: integer
+*       - name: firstname
+*         description: user firstname
+*         in: formData
+*         type: string
+*       - name: lastname
+*         description: user lastname
+*         in: formData
+*         type: string
+*       - name: email
+*         description: user email
+*         in: formData
+*         type: string
+*         format: email
+*       - name: phone
+*         description: user phone
+*         in: formData
+*         type: string
+*     responses:
+*       200:
+*         description: json
+*/
+router.put('/update', function (req, res, next){
+	if (req.body.id != null){
 		user_id = req.body.id;
 	}
 	else {	
@@ -159,7 +118,95 @@ router.delete(['/delete/:id', '/delete?'], function (req,res,next){
             throw error;
         }
 
-        connection.query(`SELECT id,lastname,firstname,email,phone,role_id FROM users WHERE id=? LIMIT 1`, user_id ,
+        connection.query(`SELECT id,last_name,first_name,email,phone FROM users WHERE id=? LIMIT 1`, user_id ,function(error, rows, fields) {
+            if (error){
+                _global.sendError(res, error.message);
+                throw error;
+            }
+
+            //check user exist
+            if (rows.length == 0) { 
+                _global.sendError(res, 'User\'s ID not exist');
+                throw 'User\'s ID not exist';
+            }
+
+            //build query
+            var params = [];
+            var query = '';
+
+            if (req.body.firstname != null){
+            	params.push(req.body.firstname);
+            	query = 'first_name = ?';
+            }
+            if (req.body.lastname != null){
+            	params.push(req.body.lastname);
+            	query += ', last_name = ?';
+            }
+            if (req.body.email != null){
+            	params.push(req.body.email);
+            	query += ', email = ?';
+            }
+            if (req.body.phone != null){
+            	params.push(req.body.phone);
+            	query += ', phone = ?'
+            }
+
+            if(params.length == 0){
+                res.send({ result: 'success', message: 'nothing update' , data: rows[0]});
+            }
+            
+            params.push(user_id);
+            //update to user table
+            connection.query('UPDATE users SET ' + query + 'WHERE id=? LIMIT 1', params, function(error, result, fields) {
+                if (error) {
+                    _global.sendError(res. error.message);
+                    return connection.rollback(function() {
+                        throw error;
+                    });
+                }
+
+                res.send({ result: 'success', message: 'User Updated Successfully', data: result});
+                connection.release();
+            });
+        });
+    });
+});
+
+/**
+* @swagger
+* /api/user/delete:
+*   delete:
+*     summary: delete a user
+*     description: 
+*     tags: [User]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: id
+*         description: user ID
+*         in: formData
+*         required: true
+*         type: integer
+*     responses:
+*       200:
+*         description: json
+*/
+router.delete('/delete', function (req,res,next){
+	if (req.body.id != null){
+		user_id = req.body.id;
+	}
+	else {	
+		_global.sendError(res, "Missing user id", "Require user\'s ID");
+        return;
+	}
+
+	pool.getConnection(function(error, connection) {
+        if (error) {
+            _global.sendError(res, error.message);
+            throw error;
+        }
+
+        connection.query(`SELECT id,last_name,first_name,email,phone,role_id FROM users WHERE id=? LIMIT 1`, user_id ,
         	function(error, rows, fields) {
             if (error){
                 _global.sendError(res, error.message);
@@ -194,41 +241,74 @@ router.delete(['/delete/:id', '/delete?'], function (req,res,next){
             });*/
             //check user role
             if (user.role_id == _global.role.student){
-
+                connection.beginTransaction(function(error) {
+                    if (error){
+                        _global.sendError(res, error.message);
+                        throw error;
+                    }
+                     connection.release();
+                });           
             }
             else if (user.role_id ==_global.role.teacher){
-
+                connection.beginTransaction(function(error) {
+                    if (error){
+                        _global.sendError(res, error.message);
+                        throw error;
+                    }
+                     connection.release();
+                });
             }
             else {
             	//user is staff
+                connection.beginTransaction(function(error) {
+                    if (error){
+                        _global.sendError(res, error.message);
+                        throw error;
+                    }
+                     connection.release();
+                });
             }
-
-			//begin delete user
-            connection.beginTransaction(function(error) {
-                if (error){
-                    _global.sendError(res, error.message);
-                    throw error;
-                }
-                
-            });
-
-            connection.release();
         });
     });
 });
 
-router.put(['/changePassword/:id', '/changePassword?'], function (req, res, next){
-	var user_id;
-	if (req.query.id == null){
-		if (req.body.id == null){
-			_global.sendError(res, "Missing user id", "Require user\'s ID");
-        	return;
-		} 
-		user_id = req.body.id;
-	} 
-	else {
-		user_id = req.query.id;
-	}
+/**
+* @swagger
+* /api/user/changePassword:
+*   put:
+*     summary: change password
+*     description: 
+*     tags: [User]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: id
+*         description: user ID
+*         in: formData
+*         required: true
+*         type: integer
+*       - name: currentPassword
+*         description: current password
+*         in: formData
+*         required: true
+*         type: string
+*       - name: newPassword
+*         description: new password
+*         in: formData
+*         required: true
+*         type: string
+*     responses:
+*       200:
+*         description: json
+*/
+router.put('/changePassword', function (req, res, next){
+	if (req.body.id != null){
+        user_id = req.body.id;
+    }
+    else {  
+        _global.sendError(res, "Missing user id", "Require user\'s ID");
+        return;
+    }
 
 	if (req.body.currentPassword == null){
 		_global.sendError(res, "Missing user currentPassword", "currentPassword is a required field");
@@ -274,8 +354,8 @@ router.put(['/changePassword/:id', '/changePassword?'], function (req, res, next
                 }
 
                 res.send({ result: 'success', message: 'User\'s password Updated Successfully' });
-            });
-            connection.release();
+                connection.release();
+            }); 
         });
     });
 });

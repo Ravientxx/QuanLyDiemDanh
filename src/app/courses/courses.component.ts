@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 import { CourseService, AppService } from '../shared/shared.module';
 
+
 @Component({
     selector: 'app-courses',
     templateUrl: './courses.component.html'
@@ -128,4 +129,27 @@ export class CoursesComponent implements OnInit {
             this.previous_onChangeProgram();
         }
     }
+    // //public htmlContent: string = null;
+    // public userType: number = null;
+
+    // public role: object = null;
+
+    // constructor(private appService: AppService) {
+    //     switch (appService.current_userType){
+    //         case globalVariable.userType.staff:
+    //             this.htmlContent = '<staff-home-page></staff-home-page>';
+    //             break;
+    //         case globalVariable.userType.student:
+    //             this.htmlContent = '<student-home-page></student-home-page>';
+    //             break;
+    //         case globalVariable.userType.teacher:
+    //             this.htmlContent = '<teacher-home-page></teacher-home-page>';
+    //             break;
+    //     }
+
+    //     this.userType = appService.current_userType;
+    //     this.role = globalVariable.userType;
+    // }
+
+    // ngOnInit() {}
 }

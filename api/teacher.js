@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var _global = require('../global.js');
+var queryBuilder = require('../query.js');
 var mysql = require('mysql');
 var pool = mysql.createPool(_global.db);
 var bcrypt = require('bcrypt');
@@ -26,6 +27,18 @@ var teacher_list = [];
 *         description: words exist in name
 *         in: formData
 *         type: string
+*       - name: page
+*         description: page number for pagination
+*         in: formData
+*         type: integer
+*       - name: limit
+*         description: number records per page
+*         in: formData
+*         type: integer
+*       - name: sort
+*         description: acs or dcs
+*         in: formData
+*         type: string
 *     responses:
 *       200:
 *         description: json
@@ -33,7 +46,7 @@ var teacher_list = [];
 router.post('/list', function(req, res, next) {
     var searchText = req.body.searchText;
     var page = req.body.page != null ? req.body.page : _global.default_page;
-    var limit = req.body.limit != null ? req.body.limit : _global.detail_limit;
+    var limit = req.body.limit != null ? req.body.limit : _global.default_limit;
     var sort = req.body.sort;
 
     pool.getConnection(function(error, connection) {
@@ -67,6 +80,8 @@ router.post('/list', function(req, res, next) {
             res.send({ 
                 result: 'success', 
                 total_items: search_list.length, 
+                page: page,
+                limit: limit,
                 teacher_list: _global.filterListByPage(page, limit, search_list) 
             });
 
@@ -89,7 +104,7 @@ router.post('/list', function(req, res, next) {
 *         description: user ID
 *         in: formData
 *         required: true
-*         type: int
+*         type: integer
 *     responses:
 *       200:
 *         description: json
@@ -97,7 +112,7 @@ router.post('/list', function(req, res, next) {
 router.get('/detail/:id', function(req, res, next) {
     var id = req.params['id'];
     pool.getConnection(function(error, connection) {
-        connection.query(`SELECT * FROM users WHERE id = ? LIMIT 1`,id,function(error, rows, fields) {
+        connection.query(`SELECT users.id,last_name,first_name,email,phone,current_courses FROM users join teachers on users.id = teachers.id WHERE users.id = ? LIMIT 1`,id,function(error, rows, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 throw error;
@@ -107,9 +122,12 @@ router.get('/detail/:id', function(req, res, next) {
                 FROM teacher_teach_course , courses, programs , semesters 
                 WHERE teacher_teach_course.course_id = courses.id AND teacher_teach_course.teacher_id = ? AND programs.id = courses.program_id 
                 GROUP BY courses.code`, id, function(error, rows, fields) {
+                if (error) {
+                    _global.sendError(res, error.message);
+                    throw error;
+                }
                 res.send({ result: 'success', teacher: teacher,teaching_courses: rows});
                 connection.release();
-                if (error) throw error;
             });
         });
     });
@@ -144,7 +162,6 @@ router.get('/detail/:id', function(req, res, next) {
 *       - name: phone
 *         description: user phone
 *         in: formData
-*         required: true
 *         type: string
 *     responses:
 *       200:
@@ -222,18 +239,18 @@ router.post('/add', function(req, res, next) {
                     //Move to trigger
 
                     connection.commit(function(error) {
-                            if (error) {
-                                _global.sendError(res. error.message);
-                                return connection.rollback(function() {
-                                    throw error;
-                                });
-                            }
-                            console.log('success adding teacher!');
-                            res.send({ result: 'success', message: 'Teacher Added Successfully' });
-                        });
+                        if (error) {
+                            _global.sendError(res. error.message);
+                            return connection.rollback(function() {
+                                throw error;
+                            });
+                        }
+                        console.log('success adding teacher!');
+                        res.send({ result: 'success', message: 'Teacher Added Successfully' });
+                        connection.release();
+                    });
                 });
             });
-            connection.release();
         });
     });
 });

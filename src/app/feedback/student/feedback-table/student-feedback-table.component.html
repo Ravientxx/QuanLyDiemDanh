@@ -1,0 +1,80 @@
+<!-- top tiles -->
+<div class="col-md-12 col-sm-12 col-xs-12">
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>CTT123 SQL DMBN (HKI-2017-2018)</h2><p>view detail</p>
+            <div class="clearfix"></div>
+            <label>Total Absence:&nbsp;</label><span class="red">3 (30%)</span>&nbsp;&nbsp;&nbsp;
+            <label>Total Allow:&nbsp;</label><span class="blue">3</span>&nbsp;&nbsp;&nbsp;
+            <label>Total Lession:&nbsp;</label><span class="green">3</span>
+        </div>
+        <div class="x_content">
+            <ng-table [config]="config" (tableChanged)="onChangeTable(config)" (cellClicked)="onCellClick($event)" [rows]="rows" [columns]="columns">
+            </ng-table>
+            <pagination *ngIf="config.paging"
+                        class="pagination-sm"
+                        [(ngModel)]="page"
+                        [totalItems]="length"
+                        [itemsPerPage]="itemsPerPage"
+                        [maxSize]="maxSize"
+                        [boundaryLinks]="true"
+                        [rotate]="false"
+                        (pageChanged)="onChangeTable(config, $event)"
+                        (numPages)="numPages = $event">
+            </pagination>
+        </div>
+    </div>
+</div>
+<!-- Modal Miss Courses-->
+<div class="modal fade" id="missCourseModal" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h2 class="modal-title">Missing course ticket</h2>
+            </div>
+            <form id="demo-form2" data-parsley-validate="" class="form-horizontal form-label-left" novalidate="">
+                <div class="modal-body">    
+                    <h4 class="bold">Your information</h4>    
+                    <div class="form-group">
+                        <div class="col-md-12 col-sm-12 col-xs-12 modal-div-info">
+                            <p>Huynh Huu Nghia - 1353021 - 13CLC</p>
+                        </div>
+                    </div>
+                    <h4 class="bold">Courses</h4>
+                    <div class="form-group">
+                        <label class="control-label col-md-1 col-sm-1 col-xs-1" >Code</label>
+                        <div class="col-md-3 col-sm-3 col-xs-3">
+                            <input type="text" name="missCourseModal[courses][code][]" required="required" class="form-control">
+                        </div>
+                        <label class="control-label col-md-2 col-sm-2 col-xs-2" >Teacher</label>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                            <input type="text" name="missCourseModal[courses][teacher][]" required="required" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-1 col-sm-1 col-xs-1" >Code</label>
+                        <div class="col-md-3 col-sm-3 col-xs-3">
+                            <input type="text" name="missCourseModal[courses][code][]" required="required" class="form-control">
+                        </div>
+                        <label class="control-label col-md-2 col-sm-2 col-xs-2" >Teacher</label>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                            <input type="text" name="missCourseModal[courses][teacher][]" required="required" class="form-control">
+                        </div>
+                    </div>
+                    <h4 class="bold">Note</h4>
+                    <div class="form-group">
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                            <textarea id="missCourseModal-note" name="missCourseModal-note" cols="30" rows="2" class="form-control" placeholder="Extend information"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-default btn-success">Send</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

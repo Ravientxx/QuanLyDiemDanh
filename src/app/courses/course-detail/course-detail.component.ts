@@ -2,9 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 import { CourseService, AttendanceService, ScheduleService, AppService } from '../../shared/shared.module';
 declare let jQuery: any;
-
 @Component({
-    selector: 'courses-detail',
+    selector: 'course-detail',
     templateUrl: './course-detail.component.html'
 })
 export class CourseDetailComponent implements OnInit {

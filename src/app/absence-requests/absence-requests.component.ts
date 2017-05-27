@@ -1,72 +1,81 @@
 import { Component, OnInit } from '@angular/core';
-
+import { Router, ActivatedRoute, Params } from '@angular/router';
+import { AppService } from '../shared/shared.module';
+import { AbsenceRequestService } from './absence-request.service';
 @Component({
-  selector: 'app-absence-requests',
-  templateUrl: './absence-requests.component.html'
+    selector: 'app-absence-requests',
+    templateUrl: './absence-requests.component.html'
 })
 export class AbsenceRequestsComponent implements OnInit {
+    public selectedRequest;
+    public confirm_modal_title: string;
+    public newRequests = [];
+    public action: any;
+    public acceptedRequests=[];
+    public serverResponse;
+    public userType: number = null;
+    public role: object = null;
 
-  constructor() { }
+    public constructor(private router: Router, private AbsenceRequestService: AbsenceRequestService, private appService: AppService) {
+        /*switch (appService.current_userType){
+        case globalVariable.userType.staff:
+            this.htmlContent = '<staff-home-page></staff-home-page>';
+            break;
+        case globalVariable.userType.student:
+            this.htmlContent = '<student-home-page></student-home-page>';
+            break;
+        case globalVariable.userType.teacher:
+            this.htmlContent = '<teacher-home-page></teacher-home-page>';
+            break;
+        }*/
 
-  ngOnInit() {
-  }
-
-  public caption1:string = 'Request';
-  public data1 = [{
-        'code': '1353002',
-        'name': 'Nguyễn Văn A',
-        'reason': 'Đi khám nghĩa vụ',
-        'from_to': '10/7/2016 - 17/7/2016',
-        'days': '7',
-        'submited_at': '10/7/2016'
-    },{
-        'code': '1353002',
-        'name': 'Nguyễn Văn B',
-        'reason': 'Đi khám nghĩa vụ',
-        'from_to': '10/7/2016 - 17/7/2016',
-        'days': '7',
-        'submited_at': '10/7/2016'
-    },{
-        'code': '1353002',
-        'name': 'Nguyễn Văn C',
-        'reason': 'Đi khám nghĩa vụ',
-        'from_to': '10/7/2016 - 17/7/2016',
-        'days': '7',
-        'submited_at': '10/7/2016'
+        this.userType = appService.current_userType;
+        this.role = appService.userType;
     }
-  ];
-  public head1 = [
-    { title: 'Code', name: 'code'},
-    { title: 'Name', name: 'name'},
-    { title: 'Reason', name: 'reason', sort: false},
-    { title: 'From-To', name: 'from_to'},
-    { title: 'Days', name: 'days'},
-    { title: 'Submited At', name: 'submited_at'}
-  ];
 
-  public caption2:string = 'Accepted';
-  public data2 = [{
-        'code': '1353002',
-        'name': 'Nguyễn Văn A',
-        'reason': 'Đi khám nghĩa vụ',
-        'from_to': '10/7/2016 - 17/7/2016',
-        'days': '7',
-        'accepted_at': '10/7/2016'
-    },{
-        'code': '1353002',
-        'name': 'Nguyễn Văn A',
-        'reason': 'Đi khám nghĩa vụ',
-        'from_to': '10/7/2016 - 17/7/2016',
-        'days': '7',
-        'accepted_at': '10/7/2016'
+    public ngOnInit(): void {
+        this.loadRequests();
     }
-  ];
-  public head2 = [
-    { title: 'Code', name: 'code'},
-    { title: 'Name', name: 'name'},
-    { title: 'Reason', name: 'reason', sort: false},
-    { title: 'From-To', name: 'from_to'},
-    { title: 'Days', name: 'days'},
-    { title: 'Accepted At', name: 'accepted_at'}
-  ];
+    public loadRequests() {
+        this.AbsenceRequestService.getNewRequests()
+            .subscribe(requests => this.newRequests = requests, err => { console.log(err) });
+        this.AbsenceRequestService.getAcceptedRequests()
+            .subscribe(requests => this.acceptedRequests = requests, err => { console.log(err) });
+    }
+    public clickRequest(request, action) {
+        this.selectedRequest = request;
+        let title: string;
+        this.action = action;
+        switch (action) {
+            case "accept":
+                title = "Accept Absence Request";
+                break;
+            case "reject":
+                title = "Reject Absence Request";
+                break;
+            case "undo":
+                title = "Undo Absence Request";
+                break;
+        }
+        this.confirm_modal_title = title;
+    }
+
+    public confirmAction() {
+        switch (this.action) {
+            case "accept":
+                this.AbsenceRequestService.acceptRequest(this.selectedRequest.id)
+                    .subscribe(requests => {
+                            this.serverResponse = requests;
+                            this.loadRequests();
+                        },
+                        err => {
+                            console.log(err)
+                        });
+                break;
+            case "reject":
+                break;
+            case "undo":
+                break;
+        }
+    }
 }

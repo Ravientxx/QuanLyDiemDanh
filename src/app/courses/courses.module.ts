@@ -13,6 +13,8 @@ import { EditCourseComponent } from './edit-course/edit-course.component'
 import { TooltipModule } from 'ngx-bootstrap';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
+
+
 const coursesRoutes: Routes = [
   { path: 'courses',  component: CoursesComponent },
   { path: 'courses/add', component: AddCourseComponent },
@@ -38,4 +40,5 @@ const coursesRoutes: Routes = [
   ],
   providers: []
 })
+
 export class CoursesModule {}

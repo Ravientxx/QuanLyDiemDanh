@@ -21,4 +21,7 @@ export class AppService {
         current_teacher_id : 0,
         current_student_id : 0,
     }
+
+    public current_userType = 3; 
+    public userType = { student: 1, teacher: 2, staff: 3};
 }

@@ -1,3 +1,19 @@
+.bold {
+    font-weight: bold;
+}
+
+.red {
+    color: red !important;
+}
+
+.blue {
+    color: blue !important;
+}
+
+.green{
+    color: green !important;
+}
+
 .x_title h2,
 table.tile_info td p {
     white-space: nowrap;
@@ -4952,6 +4968,7 @@ th {
 }
 /*Make modal vertical center*/
 
+<<<<<<< HEAD
 table td {
     white-space:pre !important;
 }
@@ -4970,3 +4987,9 @@ table td {
 .tooltip .tooltip-arrow {
   border-bottom-color: #337AB7;
 }
+=======
+.modal-div-info {
+    text-align: center;
+    font-size: 1.5em;
+}
+>>>>>>> 6e864b4b5285ae640edc4dae683ac7b238c8541f

@@ -51,13 +51,13 @@ router.post('/list', function(req, res, next) {
         };
         if (class_id == 0) {
             connection.query(`SELECT users.id, students.stud_id as code, CONCAT(users.first_name,' ',users.last_name) as name, students.status, students.current_courses as enroll_course, classes.name as class_name
-								FROM users,students,classes
-								WHERE users.id = students.id AND classes.id = students.class_id AND classes.program_id = ?`,
+                                FROM users,students,classes
+                                WHERE users.id = students.id AND classes.id = students.class_id AND classes.program_id = ?`,
                 program_id, return_function);
         } else {
             connection.query(`SELECT users.id, students.stud_id as code, CONCAT(users.first_name,' ',users.last_name) as name, students.status, students.current_courses as enroll_course, classes.name as class_name
-								FROM users,students,classes
-								WHERE users.id = students.id AND classes.id = students.class_id AND classes.id = ? AND classes.program_id = ?`, [class_id, program_id], return_function);
+                                FROM users,students,classes
+                                WHERE users.id = students.id AND classes.id = students.class_id AND classes.id = ? AND classes.program_id = ?`, [class_id, program_id], return_function);
         }
     });
 });
@@ -199,8 +199,8 @@ router.get('/detail/:id', function(req, res, next) {
                                 WHERE users.id = teacher_teach_course.teacher_id AND 
                                     courses.id = teacher_teach_course.course_id AND 
                                     teacher_teach_course.teacher_role = 0) as lecturers  
-            	FROM student_enroll_course,courses
-            	WHERE student_enroll_course.course_id = courses.id AND student_enroll_course.student_id = ?`, id, function(error, rows, fields) {
+                FROM student_enroll_course,courses
+                WHERE student_enroll_course.course_id = courses.id AND student_enroll_course.student_id = ?`, id, function(error, rows, fields) {
                 if (error) {
                     _global.sendError(res, error.message);
                     throw error;
