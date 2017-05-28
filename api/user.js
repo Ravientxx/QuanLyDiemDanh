@@ -6,32 +6,6 @@ var connection = mysql.createConnection(_global.db);
 var pool = mysql.createPool(_global.db);
 var bcrypt = require('bcrypt');
 
-/**
-* @swagger
-* tags:
-*   name: User
-*   description: Teacher management
-*/
-
-/**
-* @swagger
-* /api/user/detail:
-*   post:
-*     summary: Get a user profile
-*     description: 
-*     tags: [User]
-*     produces:
-*       - application/json
-*     parameters:
-*       - name: id
-*         description: user ID
-*         in: formData
-*         required: true
-*         type: integer
-*     responses:
-*       200:
-*         description: json
-*/
 router.post('/detail', function (req,res,next){
 	if (req.body.id != null){
 		user_id = req.body.id;
@@ -67,42 +41,6 @@ router.post('/detail', function (req,res,next){
     });
 });
 
-/**
-* @swagger
-* /api/user/update:
-*   put:
-*     summary: update user profile
-*     description: 
-*     tags: [User]
-*     produces:
-*       - application/json
-*     parameters:
-*       - name: id
-*         description: user ID
-*         in: formData
-*         required: true
-*         type: integer
-*       - name: firstname
-*         description: user firstname
-*         in: formData
-*         type: string
-*       - name: lastname
-*         description: user lastname
-*         in: formData
-*         type: string
-*       - name: email
-*         description: user email
-*         in: formData
-*         type: string
-*         format: email
-*       - name: phone
-*         description: user phone
-*         in: formData
-*         type: string
-*     responses:
-*       200:
-*         description: json
-*/
 router.put('/update', function (req, res, next){
 	if (req.body.id != null){
 		user_id = req.body.id;
@@ -172,25 +110,6 @@ router.put('/update', function (req, res, next){
     });
 });
 
-/**
-* @swagger
-* /api/user/delete:
-*   delete:
-*     summary: delete a user
-*     description: 
-*     tags: [User]
-*     produces:
-*       - application/json
-*     parameters:
-*       - name: id
-*         description: user ID
-*         in: formData
-*         required: true
-*         type: integer
-*     responses:
-*       200:
-*         description: json
-*/
 router.delete('/delete', function (req,res,next){
 	if (req.body.id != null){
 		user_id = req.body.id;
@@ -272,35 +191,6 @@ router.delete('/delete', function (req,res,next){
     });
 });
 
-/**
-* @swagger
-* /api/user/changePassword:
-*   put:
-*     summary: change password
-*     description: 
-*     tags: [User]
-*     produces:
-*       - application/json
-*     parameters:
-*       - name: id
-*         description: user ID
-*         in: formData
-*         required: true
-*         type: integer
-*       - name: currentPassword
-*         description: current password
-*         in: formData
-*         required: true
-*         type: string
-*       - name: newPassword
-*         description: new password
-*         in: formData
-*         required: true
-*         type: string
-*     responses:
-*       200:
-*         description: json
-*/
 router.put('/changePassword', function (req, res, next){
 	if (req.body.id != null){
         user_id = req.body.id;

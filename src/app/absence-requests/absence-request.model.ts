@@ -1,4 +1,4 @@
-export class Project { 
+export class StudentAbsenceRequest { 
     id: string;
     name: string;
     reason: string;

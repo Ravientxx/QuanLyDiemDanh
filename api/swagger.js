@@ -2,7 +2,7 @@
 * @swagger
 * tags:
 *   name: User
-*   description: Teacher management
+*   description: User management
 */
 
 /**
