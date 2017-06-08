@@ -12,9 +12,9 @@ var app = express();
 // swagger definition
 var swaggerDefinition = {
   info: {
-    title: 'Node Swagger API',
+    title: 'DiemDanh API',
     version: '1.0.0',
-    description: 'Demonstrating how to describe a RESTful API with Swagger',
+    description: 'Demonstrating how to use DiemDanh API with your application',
   },
   host: 'localhost:3000',
   basePath: '/',
@@ -25,7 +25,7 @@ var options = {
   // import swaggerDefinitions
   swaggerDefinition: swaggerDefinition,
   // path to the API docs
-  apis: ['./api/*.js'],
+  apis: ['./api/swagger.js'],
 };
 
 // initialize swagger-jsdoc
