@@ -10,8 +10,8 @@ import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
 
 const teachersRoutes: Routes = [
-  { path: 'teachers',  component: TeachersComponent },
-  { path: 'teachers/:id', component: TeacherDetailComponent }
+  { path: '',  component: TeachersComponent },
+  { path: ':id', component: TeacherDetailComponent }
 ];
 
 @NgModule({

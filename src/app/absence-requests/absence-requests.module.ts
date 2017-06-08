@@ -3,8 +3,6 @@ import { CommonModule }   from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 
-import { AbsenceRequestService } from './absence-request.service';
-
 import { AbsenceRequestsComponent } from './absence-requests.component';
 
 import { CollapseModule } from 'ngx-bootstrap';
@@ -13,7 +11,7 @@ import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
 
 const AbsenceRequestsRoutes: Routes = [
-  { path: 'absence-requests',  component: AbsenceRequestsComponent },
+  { path: '',  component: AbsenceRequestsComponent },
 ];
 
 @NgModule({

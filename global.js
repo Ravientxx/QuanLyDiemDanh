@@ -49,6 +49,9 @@ module.exports = {
         }
     },
 
+    jwt_secret_key : '13530191353049',
+    jwt_expire_time : '1d',
+
     default_page: 1,
     default_limit: 10,
 

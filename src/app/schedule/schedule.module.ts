@@ -12,7 +12,7 @@ import {FileUploadModule} from "ng2-file-upload";
 import { ScheduleUploadComponent } from './schedule-upload/schedule-upload.component';
 
 const scheduleRoutes: Routes = [
-  { path: 'schedule',  component: ScheduleComponent }
+  { path: '',  component: ScheduleComponent }
 ];
 
 @NgModule({

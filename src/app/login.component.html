@@ -1,0 +1,35 @@
+<div>
+    <a class="hiddenanchor" id="signup"></a>
+    <a class="hiddenanchor" id="signin"></a>
+    <div class="login_wrapper">
+        <div class="animate form login_form">
+            <section class="login_content">
+                <img src="assets/images/logo2.png" alt="">
+                <form>
+                    <h1>Login Form</h1>
+                    <div *ngIf="authService.redirectMessage" class="alert-danger alert text-center" style="padding-top: 6px;padding-bottom: 6px">
+                                {{authService.redirectMessage}}
+                            </div>
+                    <div>
+                        <input type="text" class="form-control" name="email" placeholder="Email" [(ngModel)]="email"/>
+                    </div>
+                    <div>
+                        <input type="password" class="form-control" name="password" placeholder="Password" [(ngModel)]="password"/>
+                    </div>
+                    <div class="row">
+                        <div *ngIf="error_message" class="alert alert-danger text-center col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                            {{error_message}}
+                        </div>
+                    </div>
+                    <div>
+                        <button class="btn btn-default" (click)="login()">Log in</button>
+                    </div>
+                    <div>
+                        <a (click)="forgotPassword()">Forgot your password?</a>
+                    </div>
+                    <div class="clearfix"></div>
+                </form>
+            </section>
+        </div>
+    </div>
+</div>

@@ -13,13 +13,13 @@ import { EditCourseComponent } from './edit-course/edit-course.component'
 import { TooltipModule } from 'ngx-bootstrap';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
-
-
+import {FileUploadModule} from "ng2-file-upload";
+import { SharedModule } from '../shared/shared.module';
 const coursesRoutes: Routes = [
-  { path: 'courses',  component: CoursesComponent },
-  { path: 'courses/add', component: AddCourseComponent },
-  { path: 'courses/:id', component: CourseDetailComponent },
-  { path: 'courses/:id/edit', component: EditCourseComponent },
+  { path: '',  component: CoursesComponent },
+  { path: 'add', component: AddCourseComponent },
+  { path: ':id', component: CourseDetailComponent },
+  { path: ':id/edit', component: EditCourseComponent },
 ];
 
 @NgModule({
@@ -31,6 +31,8 @@ const coursesRoutes: Routes = [
     TooltipModule.forRoot(),
     PaginationModule.forRoot(),
     TabsModule,
+    FileUploadModule,
+    SharedModule
   ],
   declarations: [
     CoursesComponent,

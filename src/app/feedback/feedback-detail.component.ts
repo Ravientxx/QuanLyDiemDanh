@@ -26,8 +26,8 @@ export class FeedbackDetailComponent implements OnInit {
                 break;
         }*/
 
-        this.userType = appService.current_userType;
-        this.role = this.appService.userType;
+        // this.userType = appService.current_userType;
+        // this.role = this.appService.userType;
     }
 
     ngOnInit() {}

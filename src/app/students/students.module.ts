@@ -9,10 +9,10 @@ import { StudentDetailComponent } from './student-detail/student-detail.componen
 import { Ng2TableModule } from 'ng2-table/ng2-table';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
-
+import {FileUploadModule} from "ng2-file-upload";
 const studentsRoutes: Routes = [
-  { path: 'students',  component: StudentsComponent },
-  { path: 'students/:id', component: StudentDetailComponent }
+  { path: '',  component: StudentsComponent },
+  { path: ':id', component: StudentDetailComponent }
 ];
 
 @NgModule({
@@ -23,6 +23,7 @@ const studentsRoutes: Routes = [
     Ng2TableModule,
     PaginationModule.forRoot(),
     TabsModule.forRoot(),
+    FileUploadModule
   ],
   declarations: [
     StudentsComponent,

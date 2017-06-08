@@ -25,7 +25,7 @@ CREATE TABLE `absence_requests` (
   `reason` varchar(255) CHARACTER SET utf8 DEFAULT NULL,
   `start_date` datetime DEFAULT NULL,
   `end_date` datetime DEFAULT NULL,
-  `status` tinyint(1) DEFAULT NULL,
+  `status` tinyint(1) NOT NULL DEFAULT 0,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
@@ -179,11 +179,11 @@ CREATE TABLE `students` (
 -- ----------------------------
 DROP TABLE IF EXISTS `student_enroll_course`;
 CREATE TABLE `student_enroll_course` (
-  `course_id` int(11) NOT NULL,
+  `class_has_course_id` int(11) NOT NULL,
   `student_id` int(11) NOT NULL,
   `attendance_status` tinyint(1) DEFAULT '0',
   `enrollment_status` tinyint(1) DEFAULT '0',
-  PRIMARY KEY (`course_id`,`student_id`)
+  PRIMARY KEY (`class_has_course_id`,`student_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- ----------------------------
@@ -244,10 +244,11 @@ CREATE TABLE `votes` (
 -- ----------------------------
 DROP TABLE IF EXISTS `class_has_course`;
 CREATE TABLE `class_has_course` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `class_id` int(11) NOT NULL,
   `course_id` int(11) NOT NULL,
   `schedules` varchar(255) CHARACTER SET utf8 DEFAULT NULL,
-  PRIMARY KEY (`class_id`,`course_id`)
+  PRIMARY KEY (`id`,`class_id`,`course_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
@@ -334,7 +335,7 @@ BEGIN
 	WHERE id = OLD.student_id;
 	UPDATE courses
 	SET total_stud = total_stud + 1
-	WHERE id = OLD.course_id;
+	WHERE id = (SELECT course_id FROM class_has_course WHERE id = OLD.class_has_course_id LIMIT 1);
 END//
 DELIMITER ;
 
@@ -352,7 +353,7 @@ BEGIN
 	WHERE id = NEW.student_id;
 	UPDATE courses
 	SET total_stud = total_stud + 1
-	WHERE id = NEW.course_id;
+	WHERE id = (SELECT course_id FROM class_has_course WHERE id = NEW.class_has_course_id LIMIT 1);
 END//
 DELIMITER ;
 

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 import { StudentService, AppService } from '../shared/shared.module';
+import { FileUploader } from "ng2-file-upload/ng2-file-upload";
 declare var jQuery: any;
 @Component({
     selector: 'app-students',
@@ -38,7 +39,6 @@ export class StudentsComponent implements OnInit {
     newClass: number = 0;
     newProgram: number = 0;
     newNote: string = '';
-
     constructor(private appService: AppService, private studentService: StudentService, private router: Router) {}
 
     ngOnInit() {
@@ -118,5 +118,35 @@ export class StudentsComponent implements OnInit {
             }
         }
         this.newClass = this.new_classes[0].id;
+    }
+
+
+    onImportStudent(){
+        jQuery('#importModal').modal('show');
+    }
+    onExportStudent(){
+
+    }
+    import_files = [];
+    import_results = [];
+    uploader: FileUploader = new FileUploader({ url: '' });
+    import_progress = 0;
+    onSelectFile(files : any){
+        console.log(files);
+        this.import_files = Array.prototype.slice.call(files);
+        for(var i = 0 ; i < this.import_files.length; i++){
+            this.import_results.push('');
+        }
+        this.import_progress = 80;
+    }
+    onRemoveFile(i : number){
+        this.import_files.splice(i,1);
+        this.import_results.splice(i,1);
+    }
+    onCancelImport(){
+
+    }
+    onImport(){
+
     }
 }

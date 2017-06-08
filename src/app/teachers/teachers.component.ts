@@ -29,19 +29,19 @@ export class TeachersComponent implements OnInit {
 
     public onSearchChange() {
         this.TeacherService.getListTeachers(this.searchText, this.pageNumber, this.itemsPerPage,this.sort_tag[this.sort_index])
-            .subscribe(list => {
-                this.teacher_list = list.teacher_list;
-                this.totalItems = list.total_items;
+            .subscribe(result => {
+                this.teacher_list = result.teacher_list;
+                this.totalItems = result.total_items;
             }, err => { console.log(err) });
     }
 
     public onPageChanged(event: any) {
         this.pageNumber= event.page;
         this.TeacherService.getListTeachers(this.searchText, this.pageNumber, this.itemsPerPage,this.sort_tag[this.sort_index])
-            .subscribe(list => {
-            	this.apiCallResult = list.result;
-                this.teacher_list = list.teacher_list;
-                this.totalItems = list.total_items;
+            .subscribe(result => {
+            	this.apiCallResult = result.result;
+                this.teacher_list = result.teacher_list;
+                this.totalItems = result.total_items;
             }, err => { console.log(err) });
     }
     public onSortNameClick(){
@@ -64,13 +64,13 @@ export class TeachersComponent implements OnInit {
     	jQuery("#progressModal").modal("show");
     	this.error_message = "";
     	this.TeacherService.addTeacher(this.newTeacherFirstName, this.newTeacherLastName, this.newTeacherEmail, this.newTeacherPhone)
-            .subscribe(list => {
-            	this.apiCallResult = list.result;
+            .subscribe(result => {
+            	this.apiCallResult = result.result;
             	if(this.apiCallResult == 'failure'){
-            		this.error_message = list.message;
+            		this.error_message = result.message;
             	}
             	if(this.apiCallResult == 'success'){
-            		this.success_message = list.message;
+            		this.success_message = result.message;
             		this.newTeacherEmail = this.newTeacherFirstName = this.newTeacherLastName = this.newTeacherPhone = "";
             		this.onSearchChange();
             	}

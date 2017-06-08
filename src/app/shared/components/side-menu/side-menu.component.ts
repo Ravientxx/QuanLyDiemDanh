@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AppService } from '../../services/app.service';
+import { AuthService } from '../../services/auth.service';
 
 
 @Component({
@@ -8,18 +8,19 @@ import { AppService } from '../../services/app.service';
 })
 export class SideMenuComponent implements OnInit {
 
-	constructor(private appService: AppService) {
-		switch (appService.current_userType){
-			case this.appService.userType.staff:
-				this.sideMenu = this.staffMenu;
-				break;
-			case this.appService.userType.student:
-				this.sideMenu = this.studentMenu;
-				break;
-			case this.appService.userType.teacher:
-				this.sideMenu = this.teacherMenu;
-				break;
-		}
+	constructor(private authService: AuthService) {
+		// switch (appService.current_userType){
+		// 	case this.appService.userType.staff:
+		// 		this.sideMenu = this.staffMenu;
+		// 		break;
+		// 	case this.appService.userType.student:
+		// 		this.sideMenu = this.studentMenu;
+		// 		break;
+		// 	case this.appService.userType.teacher:
+		// 		this.sideMenu = this.teacherMenu;
+		// 		break;
+		// }
+		this.sideMenu = this.staffMenu;
 	}
 
 	ngOnInit() {}

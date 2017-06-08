@@ -1,7 +1,10 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input,ViewChild } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { CourseService, TeacherService, AppService } from '../../shared/shared.module';
-declare let jQuery: any;
+import { CourseService, TeacherService, AppService, ExcelService, EditScheduleModalComponent } from '../../shared/shared.module';
+import { FileUploader } from "ng2-file-upload/ng2-file-upload";
+import { read, IWorkBook } from "ts-xlsx";
+import { IWorkSheet } from "xlsx";
+declare var jQuery: any;
 
 
 @Component({
@@ -9,9 +12,8 @@ declare let jQuery: any;
     templateUrl: './add-course.component.html'
 })
 export class AddCourseComponent implements OnInit {
-    @Input() type: string;
 
-    public constructor(private router: Router, private appService: AppService, private courseService: CourseService, private teacherService: TeacherService) {
+    public constructor( private router: Router, private excelService: ExcelService, private appService: AppService, private courseService: CourseService, private teacherService: TeacherService) {
 
     }
     public onChangeProgram() {
@@ -21,7 +23,9 @@ export class AddCourseComponent implements OnInit {
                 this.filteredClasses.push(this.classes[i]);
             }
         }
-        this.selectedClass = this.filteredClasses[0].id;
+        for (var i = 0; i < this.selectedClasses.length; i++) {
+            this.selectedClasses[i].classId = this.filteredClasses[0].id;
+        }
     }
     public ngOnInit(): void {
         this.teacherService.getListTeachers(this.searchText, 1, 9999)
@@ -35,11 +39,7 @@ export class AddCourseComponent implements OnInit {
             this.selectedProgram = this.programs[0].id;
             this.onChangeProgram();
         }, error => { console.log(error) });
-
-        this.initSessions();
     }
-    public isAddStudentFromCLass: boolean = true;
-    public isAddStudentFromFile: boolean = false;
 
     public searchText: string = '';
     public teachers: Array < any > = [];
@@ -48,12 +48,6 @@ export class AddCourseComponent implements OnInit {
     public temp_lecturers: Array < any > = [];
     public selected_TAs: Array < any > = [];
     public temp_TAs: Array < any > = [];
-
-    public programs: Array < any > = [];
-    public selectedProgram: any;
-    public classes: Array < any > ;
-    public filteredClasses: Array < any > ;
-    public selectedClass: any;
 
     public code = '';
     name = '';
@@ -68,18 +62,18 @@ export class AddCourseComponent implements OnInit {
         this.router.navigate(['/courses/']);
     }
 
-    public onAddCourse(isContinue: boolean = false) {
-        jQuery("#progressModal").modal("show");
+    isContinue = false;
+    addCourse(){
         this.error_message = "";
         this.courseService.addCourse(this.code, this.name, this.selected_lecturers, this.selected_TAs, this.office_hour, this.note,
-                this.selectedProgram, this.selectedClass, this.isAddStudentFromCLass, this.isAddStudentFromFile, [], this.schedule)
+                this.selectedProgram, this.selectedClasses)
             .subscribe(result => {
                 this.apiCallResult = result.result;
                 if (this.apiCallResult == 'failure') {
                     this.error_message = result.message;
                 }
                 if (this.apiCallResult == 'success') {
-                    if (isContinue == false) {
+                    if (this.isContinue == false) {
                         this.success_message = result.message + '...Redirecting';
                         setTimeout(() => {
                             this.router.navigate(['/courses/']);
@@ -90,10 +84,45 @@ export class AddCourseComponent implements OnInit {
                 }
                 jQuery("#progressModal").modal("hide");
             }, error => {
-                this.error_message = 'Server Error';
+                this.error_message = error;
                 console.log(error);
                 jQuery("#progressModal").modal("hide");
             });
+    }
+    public loopReadStudentFile(index: any){
+        if(this.selectedClasses[index].addStudentFromFile == ''){
+            if(index < this.selectedClasses.length-1){
+                this.loopReadStudentFile(index+1);
+            }else{
+                this.addCourse();
+                return;
+            }
+        }
+        else{
+            this.excelService.readStudentEnrollCourseFile(this.selectedClasses[index].addStudentFromFile).subscribe(result => {
+                this.apiCallResult = result[0].result;
+                if (this.apiCallResult == 'failure') {
+                    this.error_message = result[0].message;
+                    return;
+                }
+                if (this.apiCallResult == 'success') {
+                    this.selectedClasses[index].studentListFromFile = result[0].student_list.slice();
+                    if(index < this.selectedClasses.length-1){
+                        this.loopReadStudentFile(index+1);
+                    }else{
+                        this.addCourse();
+                        return;
+                    }
+                }
+            }, error => {
+                console.log(error);
+            });
+        }
+    }
+    public onAddCourse(isContinue: boolean = false) {
+        jQuery("#progressModal").modal("show");
+        this.isContinue = isContinue;
+        this.loopReadStudentFile(0);
     }
 
     public searchList() {
@@ -192,109 +221,85 @@ export class AddCourseComponent implements OnInit {
     }
 
 
-    public editingCellIndex: number = -1;
-    public temp_room: string = '';
-    public temp_type: string = '';
-    public schedule: string = '';
-    public temp_sessions = [];
-    public sessions = [
-        { room: '', type: 'LT' },
-        { room: '', type: 'LT' },
-        { room: '', type: 'LT' },
-        { room: '', type: 'LT' },
-        { room: '', type: 'LT' },
-        { room: '', type: 'LT' },
-        { room: '', type: 'LT' },
-        { room: '', type: 'LT' },
-        { room: '', type: 'LT' },
-        { room: '', type: 'LT' },
-        { room: '', type: 'LT' },
-        { room: '', type: 'LT' },
-        { room: '', type: 'LT' },
-        { room: '', type: 'LT' },
-        { room: '', type: 'LT' },
-        { room: '', type: 'LT' },
-        { room: '', type: 'LT' },
-        { room: '', type: 'LT' },
-        { room: '', type: 'LT' },
-        { room: '', type: 'LT' },
-        { room: '', type: 'LT' },
-        { room: '', type: 'LT' },
-        { room: '', type: 'LT' },
-        { room: '', type: 'LT' },
-    ];
-    public initSessions() {
-        this.temp_sessions = [
-            { room: '', type: 'LT' },
-            { room: '', type: 'LT' },
-            { room: '', type: 'LT' },
-            { room: '', type: 'LT' },
-            { room: '', type: 'LT' },
-            { room: '', type: 'LT' },
-            { room: '', type: 'LT' },
-            { room: '', type: 'LT' },
-            { room: '', type: 'LT' },
-            { room: '', type: 'LT' },
-            { room: '', type: 'LT' },
-            { room: '', type: 'LT' },
-            { room: '', type: 'LT' },
-            { room: '', type: 'LT' },
-            { room: '', type: 'LT' },
-            { room: '', type: 'LT' },
-            { room: '', type: 'LT' },
-            { room: '', type: 'LT' },
-            { room: '', type: 'LT' },
-            { room: '', type: 'LT' },
-            { room: '', type: 'LT' },
-            { room: '', type: 'LT' },
-            { room: '', type: 'LT' },
-            { room: '', type: 'LT' },
-        ];
+    //Class
+    public programs: Array < any > = [];
+    public selectedProgram: any;
+    public classes: Array < any > ;
+    public filteredClasses: Array < any > ;
+    public isAddStudentFromCLass: boolean = true;
+    public isAddStudentFromFile: boolean = false;
+    public selectedClasses: Array < any > = [{
+        classId: 0,
+        class_name: '',
+        schedule: '',
+        isAddStudentFromCLass: true,
+        addStudentFromFile: '',
+        studentListFromFile: [],
+    }];
+    tempValue = [];
+    onSelectFile(index: number, file: any) {
+        this.selectedClasses[index].addStudentFromFile = file;
+    }
+    onRemoveFile(index: number) {
+        this.selectedClasses[index].addStudentFromFile = '';
+    }
+    onAddClass() {
+        this.selectedClasses.push({
+            classId: 0,
+            class_name: '',
+            schedule : '',
+            isAddStudentFromCLass: false,
+            addStudentFromFile: '',
+            studentListFromFile: [],
+        });
+    }
+    onRemoveClass(index: number) {
+        //remove class
+        for (var i = index; i < this.selectedClasses.length - 1; i++) {
+            this.selectedClasses[i].classId = this.selectedClasses[i + 1].classId;
+            this.selectedClasses[i].class_name = this.selectedClasses[i + 1].class_name;
+            this.selectedClasses[i].schedule = this.selectedClasses[i + 1].schedule;
+            this.selectedClasses[i].isAddStudentFromCLass = this.selectedClasses[i + 1].isAddStudentFromCLass;
+            this.selectedClasses[i].addStudentFromFile = this.selectedClasses[i + 1].addStudentFromFile;
+        }
+        this.selectedClasses.pop();
+    }
+
+    //Schedule
+    @ViewChild(EditScheduleModalComponent)
+    private editScheduleModal: EditScheduleModalComponent;
+
+    public scheduleModal ={
+        id : 'chooseScheduleModal',
+        title : 'Add Schedule'
     }
     public onOpenChooseSchedule() {
-        jQuery("#chooseScheduleModal").modal("show");
-        for(var i = 0 ; i < this.sessions.length; i++){
-            this.temp_sessions[i].room = this.sessions[i].room;
-            this.temp_sessions[i].type = this.sessions[i].type;
-        }
-    }
-    public onCancelChooseSchedule() {
-        this.initSessions();
-        jQuery("#chooseScheduleModal").modal("hide");
-    }
-    public onSaveChooseSchedule() {
-        for(var i = 0 ; i < this.temp_sessions.length; i++){
-            this.sessions[i].room = this.temp_sessions[i].room;
-            this.sessions[i].type = this.temp_sessions[i].type;
-        }
-        this.initSessions();
-        this.schedule = '';
-        for (var i = 0; i < this.sessions.length; i++) {
-            if (this.sessions[i].room != '') {
-                this.schedule += i + '-' + this.sessions[i].room + '-' + this.sessions[i].type + ';';
+        this.error_message = '';
+        for(var i = 0 ; i < this.selectedClasses.length; i++){
+            if(this.selectedClasses[i].classId == 0){
+                this.error_message = 'Class is required';
+                return;
+            }
+            for(var j = i + 1 ; j < this.selectedClasses.length; j++){
+                if(this.selectedClasses[i].classId == this.selectedClasses[j].classId){
+                    this.error_message = 'Cannot select the same class';
+                    return;
+                }
             }
         }
-        this.schedule = this.schedule.substr(0, this.schedule.length - 1);
-        console.log(this.schedule);
-        jQuery("#chooseScheduleModal").modal("hide");
+        for(var i = 0 ; i < this.selectedClasses.length; i++){
+            for(var j = 0 ; j < this.classes.length ; j++){
+                if(this.selectedClasses[i].classId == this.classes[j].id){
+                    this.selectedClasses[i].class_name = this.classes[j].name;
+                    break;
+                }
+            }
+        }
+        this.editScheduleModal.onOpenModal();
     }
-    public onScheduleCellClick(index: number) {
-        this.editingCellIndex = index;
-        this.temp_room = this.temp_sessions[index].room;
-        this.temp_type = this.temp_sessions[index].type;
-    }
-    public onCancelScheduleCell() {
-        this.editingCellIndex = -1;
-    }
-    public onRemoveScheduleCell() {
-        this.temp_sessions[this.editingCellIndex].room = '';
-        this.temp_sessions[this.editingCellIndex].type = 'LT';
-        this.editingCellIndex = -1;
-    }
-    public onUpdateScheduleCell() {
-        this.temp_sessions[this.editingCellIndex].room = this.temp_room;
-        this.temp_sessions[this.editingCellIndex].type = this.temp_type;
-        console.log(this.sessions[this.editingCellIndex]);
-        this.editingCellIndex = -1;
+    public onSaveChooseSchedule(schedule : Array<string>) {
+        for(var i = 0 ; i < schedule.length; i++){
+            this.selectedClasses[i].schedule = schedule[i];
+        }
     }
 }

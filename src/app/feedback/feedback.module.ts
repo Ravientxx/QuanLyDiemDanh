@@ -22,7 +22,7 @@ import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
 
 const feedbackRoutes: Routes = [
-  { path: 'feedback',  component: FeedbackComponent },
+  { path: '',  component: FeedbackComponent },
 ];
 
 @NgModule({

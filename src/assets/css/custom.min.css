@@ -478,7 +478,8 @@ body .container.body .right_col {
     .nav-md .container.body .right_col,
     .nav-md .container.body .top_nav {
         width: 100%;
-        margin: 0
+        margin: 0;
+        padding-right: 0
     }
     .nav-md .container.body .col-md-3.left_col {
         display: none
@@ -1312,12 +1313,13 @@ table.tile_info {
 }
 
 .course_title {
-    white-space: nowrap;
+/*    white-space: nowrap;
     overflow:hidden;
     text-overflow: ellipsis;
     float: left;
     display: block;
-    max-width: 50%;
+    max-width: 50%;*/
+    word-break: break-all;
 }
 
 .x_title h2 small {
@@ -3476,6 +3478,10 @@ ul.user_data li p {
     margin-bottom: 0
 }
 
+ul.user_data li i {
+    width: 20px;
+}
+
 ul.user_data li .progress {
     width: 90%
 }
@@ -4199,7 +4205,6 @@ form:after {
 
 .login_content form div a {
     font-size: 12px;
-    margin: 10px 15px 0 0
 }
 
 .reset_pass {
@@ -4922,7 +4927,7 @@ ul.notifications {
     display: none;
 }
 
-#file-drop {
+.file-drop {
     border: 2px dashed #bbb;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
@@ -4967,8 +4972,6 @@ th {
     pointer-events:all;
 }
 /*Make modal vertical center*/
-
-<<<<<<< HEAD
 table td {
     white-space:pre !important;
 }
@@ -4987,9 +4990,13 @@ table td {
 .tooltip .tooltip-arrow {
   border-bottom-color: #337AB7;
 }
-=======
 .modal-div-info {
     text-align: center;
     font-size: 1.5em;
 }
->>>>>>> 6e864b4b5285ae640edc4dae683ac7b238c8541f
+.user_data{
+    word-break: break-all;
+}
+.attendance-check{
+    font-size: 20px;
+}

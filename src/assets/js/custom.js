@@ -37,11 +37,6 @@
     };
 
 })(jQuery, 'smartresize');
-/**
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 
 //var CURRENT_PATH = window.location.href.split('#')[0].split('?')[0];
 var CURRENT_PATH = window.location.protocol + "//" + window.location.host + window.location.pathname;
@@ -139,11 +134,6 @@ function init_sidebar() {
 };
 // /Sidebar
 
-var randNum = function() {
-    return (Math.floor(Math.random() * (1 + 40 - 20))) + 20;
-};
-
-
 // Panel toolbox
 $(document).ready(function() {
     $('.collapse-link').on('click', function() {
@@ -173,14 +163,6 @@ $(document).ready(function() {
     });
 });
 // /Panel toolbox
-
-// Tooltip
-$(document).ready(function() {
-    $('[data-toggle="tooltip"]').tooltip({
-        container: 'body'
-    });
-});
-// /Tooltip
 
 // Progressbar
 if ($(".progress .progress-bar")[0]) {
@@ -354,6 +336,5 @@ function init_autosize() {
 $(document).ready(function() {
     init_sidebar();
     init_autosize();
-    init_autocomplete();
 
 });

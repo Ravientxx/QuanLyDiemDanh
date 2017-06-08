@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 import { CourseService, AppService } from '../shared/shared.module';
 
-
 @Component({
     selector: 'app-courses',
     templateUrl: './courses.component.html'
@@ -110,7 +109,6 @@ export class CoursesComponent implements OnInit {
     }
 
     public onCellClick(id: any) {
-        console.log(id);
         this.router.navigate(['/courses/', id]);
     }
     public onAddCourse() {
@@ -119,7 +117,6 @@ export class CoursesComponent implements OnInit {
 
 
     public collapsed(event: any): void {
-        console.log(event);
     }
 
     public expanded(event: any): void {

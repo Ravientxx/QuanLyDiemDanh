@@ -43,6 +43,8 @@ app.get('/api/swagger.json', function(req, res) {
   res.send(swaggerSpec);
 });
 
+app.use('/authenticate', require('./api/authenticate'));
+app.use('/seed', require('./api/seed'));
 app.use('/api', require('./api/api'));
 
 //Xác định trang "public" cho client
