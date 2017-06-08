@@ -3,10 +3,11 @@ import { Http, Response, Headers, RequestOptions } from '@angular/http';
 import { Observable } from 'rxjs';
 import { AppConfig } from '../config';
 import { AuthService } from './auth.service';
+import { Router } from '@angular/router';
 @Injectable()
 export class StudentService {
     // Resolve HTTP using the constructor
-    constructor(private http: Http, private appConfig: AppConfig, private authService: AuthService) {}
+    constructor(private http: Http, private appConfig: AppConfig, private authService: AuthService,private router:Router) {}
         // private instance variable to hold base url
     private getListStudentsUrl = this.appConfig.apiHost + '/student/list';
     getListStudents(searchText: string = null, page: number = 1, limit: number = 10, sort: string = 'none',sort_tag: string = '', program_id: number = 1, class_id: number = 0): Observable < { result: string, total_items: number, student_list: Array<any>, message:string } > {

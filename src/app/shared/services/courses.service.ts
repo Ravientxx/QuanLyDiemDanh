@@ -3,10 +3,11 @@ import { Http, Response, Headers, RequestOptions } from '@angular/http';
 import { Observable } from 'rxjs';
 import { AppConfig } from '../config'
 import { AuthService } from './auth.service';
+import { Router } from '@angular/router';
 @Injectable()
 export class CourseService {
     // Resolve HTTP using the constructor
-    constructor(private http: Http, private appConfig: AppConfig,private authService: AuthService) {}
+    constructor(private http: Http, private appConfig: AppConfig,private authService: AuthService,private router :Router) {}
 
     private getCourseDetailsUrl = this.appConfig.apiHost + '/course/detail';
     getCourseDetail(id: number): Observable < { result: string, course: any , lecturers: Array < any > , TAs: Array < any > , class_has_course: Array < any > , message:string} > {

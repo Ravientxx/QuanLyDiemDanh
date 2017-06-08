@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
 import { Http, Response, Headers, RequestOptions } from '@angular/http';
 import { Observable } from 'rxjs';
-
+import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
 import {AppConfig} from '../config';
 
 @Injectable()
 export class AbsenceRequestService {
     // Resolve HTTP using the constructor
-    constructor(private http: Http, private appConfig: AppConfig,private authService: AuthService) {}
+    constructor(private http: Http, private appConfig: AppConfig,private authService: AuthService,private router : Router) {}
         // private instance variable to hold base url
     private getRequestsByStudentUrl = this.appConfig.apiHost + '/absence-request/by-student';
     getRequestsByStudent(id : number): Observable < { result: string, absence_requests: Array < any >, message:string} > {

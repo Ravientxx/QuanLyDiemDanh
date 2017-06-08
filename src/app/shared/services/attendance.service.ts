@@ -3,10 +3,11 @@ import { Http, Response, Headers, RequestOptions } from '@angular/http';
 import { Observable } from 'rxjs';
 import { AppConfig } from '../config';
 import { AuthService } from './auth.service';
+import { Router } from '@angular/router';
 @Injectable()
 export class AttendanceService {
     // Resolve HTTP using the constructor
-    constructor(private http: Http,private appConfig: AppConfig, private authService: AuthService) {}
+    constructor(private http: Http,private appConfig: AppConfig, private authService: AuthService,private router:Router) {}
     private getAttendanceListByCourseUrl = this.appConfig.apiHost + '/attendance/list-by-course';
     getAttendanceListByCourse(searchText: string = null, page: number = 1, limit: number = 10, sort: string = 'none', sort_tag: string = '', course_id: number = 0): Observable < { result: string, total_items: number, attendance_list: Array<any>, message:string} > {
         var params = {

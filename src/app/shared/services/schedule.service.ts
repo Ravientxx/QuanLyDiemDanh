@@ -3,10 +3,11 @@ import { Http, Response, Headers, RequestOptions } from '@angular/http';
 import { Observable } from 'rxjs';
 import { AppConfig } from '../config';
 import { AuthService } from './auth.service';
+import { Router } from '@angular/router';
 @Injectable()
 export class ScheduleService {
     // Resolve HTTP using the constructor
-    constructor(private http: Http,private appConfig: AppConfig, private authService: AuthService) {}
+    constructor(private http: Http,private appConfig: AppConfig, private authService: AuthService,private router: Router) {}
     private updateScheduleUrl = this.appConfig.apiHost + '/schedule/update/';
     updateSchedule(classes : any): Observable < { result: string, message : string} > {
         var params = {
