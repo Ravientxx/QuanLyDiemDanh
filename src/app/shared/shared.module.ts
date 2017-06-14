@@ -15,6 +15,8 @@ import { PageNotFoundComponent } from './components/page-not-found.component';
 export {PageNotFoundComponent};
 import { EditScheduleModalComponent } from './components/edit-schedule-modal/edit-schedule-modal.component';
 export { EditScheduleModalComponent };
+import { ResultMessageModalComponent } from './components/result-message-modal/result-message-modal.component';
+export { ResultMessageModalComponent };
 
 import {AppService} from './services/app.service';
 export {AppService};
@@ -36,6 +38,10 @@ import {AuthGuardService} from './services/auth-guard.service';
 export {AuthGuardService};
 import {AuthService} from './services/auth.service';
 export {AuthService};
+import {SemesterService} from './services/semester.service';
+export {SemesterService};
+import {FeedbackService} from './services/feedback.service';
+export {FeedbackService};
 /**
  * Do not specify providers for modules that might be imported by a lazy loaded module.
  */
@@ -56,14 +62,16 @@ export {AuthService};
     SideMenuComponent,
     TopNavigationComponent,
     PageNotFoundComponent,
-    EditScheduleModalComponent
+    EditScheduleModalComponent,
+    ResultMessageModalComponent
   ],
   exports: [
     FooterComponent,
     SideMenuComponent,
     TopNavigationComponent,
     PageNotFoundComponent,
-    EditScheduleModalComponent
+    EditScheduleModalComponent,
+    ResultMessageModalComponent
   ],  
   providers: [
     AppService,
@@ -75,7 +83,9 @@ export {AuthService};
     ExcelService,
     AbsenceRequestService,
     AppConfig,
-    AuthGuardService
+    AuthGuardService,
+    SemesterService,
+    FeedbackService
   ]
 })
 export class SharedModule {}

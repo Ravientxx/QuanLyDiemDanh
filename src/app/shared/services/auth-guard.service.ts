@@ -29,7 +29,7 @@ export class AuthGuardService implements CanActivate, CanActivateChild, CanLoad 
 
         // Store the attempted URL for redirecting
         this.authService.redirectUrl = url;
-
+        this.authService.redirectMessage = 'You have to login first!';
         // Navigate to the login page with extras
         this.router.navigate(['/login']);
         return false;

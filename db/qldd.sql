@@ -38,6 +38,7 @@ DROP TABLE IF EXISTS `attendance`;
 CREATE TABLE `attendance` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `course_id` int(11) DEFAULT NULL,
+  `class_id` int(11) DEFAULT NULL,
   `time` datetime DEFAULT NULL,
   `student_count` tinyint(1) DEFAULT NULL,
   `teacher_checkin` datetime DEFAULT NULL,
@@ -102,9 +103,10 @@ CREATE TABLE `feedbacks` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `from_id` int(11) DEFAULT NULL,
   `to_id` int(11) DEFAULT NULL,
-  `type` tinyint(1) DEFAULT NULL,
   `title` varchar(50) CHARACTER SET utf8 NOT NULL,
   `content` varchar(255) CHARACTER SET utf8 DEFAULT NULL,
+  `type` tinyint(1) DEFAULT 0,
+  `read` boolean DEFAULT FALSE,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -369,5 +371,33 @@ BEGIN
     UPDATE courses
 	SET attendance_count = attendance_count + 1
 	WHERE id = NEW.course_id;
+END//
+DELIMITER ;
+
+
+-- ----------------------------
+-- Trigger for update attendance's student count
+-- ----------------------------
+DELIMITER //
+DROP TRIGGER IF EXISTS trigger_insert_attendance_detail//
+CREATE TRIGGER trigger_insert_attendance_detail
+    AFTER INSERT ON attendance_detail
+    FOR EACH ROW
+BEGIN
+    UPDATE attendance
+  SET student_count = student_count + 1
+  WHERE id = NEW.attendance_id;
+END//
+DELIMITER ;
+
+DELIMITER //
+DROP TRIGGER IF EXISTS trigger_delete_attendance_detail//
+CREATE TRIGGER trigger_delete_attendance_detail
+    AFTER DELETE ON attendance_detail
+    FOR EACH ROW
+BEGIN
+    UPDATE attendance
+  SET student_count = student_count - 1
+  WHERE id = OLD.attendance_id;
 END//
 DELIMITER ;

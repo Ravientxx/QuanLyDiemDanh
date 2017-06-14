@@ -1,6 +1,6 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input,ViewChild } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { TeacherService, CourseService, AppService } from '../../shared/shared.module';
+import { TeacherService, CourseService, AppService, ResultMessageModalComponent } from '../../shared/shared.module';
 declare let jQuery: any;
 
 
@@ -19,6 +19,11 @@ export class EditCourseComponent implements OnInit {
     };
     lecturers: Array < any > = [];
     TAs: Array < any > = [];
+    public apiResult: string;
+    public apiResultMessage: string;
+    @ViewChild(ResultMessageModalComponent)
+    private resultMessageModal: ResultMessageModalComponent;
+
     public constructor(private route: ActivatedRoute,private router: Router, private appService: AppService, private courseService: CourseService, private teacherService: TeacherService) {
 
     }
@@ -56,34 +61,34 @@ export class EditCourseComponent implements OnInit {
     public temp_lecturers: Array < any > = [];
     public temp_TAs: Array < any > = [];
 
-    public apiCallResult: string;
-    public error_message: any;
-    public success_message: any;
-
     public onCancelEditCourse() {
         this.router.navigate(['/courses/']);
     }
 
     public onSaveCourse(isContinue: boolean = false) {
         jQuery("#progressModal").modal("show");
-        this.error_message = "";
         this.courseService.editCourse(this.course_id,this.course.code, this.course.name, this.lecturers, this.TAs, this.course.office_hour, this.course.note)
             .subscribe(result => {
-                this.apiCallResult = result.result;
-                if (this.apiCallResult == 'failure') {
-                    this.error_message = result.message;
+                this.apiResult = result.result;
+                if (this.apiResult == 'failure') {
+                    this.apiResultMessage = result.message;
                 }
-                if (this.apiCallResult == 'success') {
-                    this.success_message = result.message + '...Redirecting';
+                if (this.apiResult == 'success') {
+                    this.apiResultMessage = result.message + '...Redirecting';
                         setTimeout(() => {
                             this.router.navigate(['/courses/']);
                         }, 3000);
                 }
                 jQuery("#progressModal").modal("hide");
+                //this.resultMessageModal.onOpenModal();
+                this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
             }, error => {
-                this.error_message = 'Server Error';
+                this.apiResult = 'failure;'
+                this.apiResultMessage = 'Server Error';
                 console.log(error);
                 jQuery("#progressModal").modal("hide");
+                //this.resultMessageModal.onOpenModal();
+                this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
             });
     }
 

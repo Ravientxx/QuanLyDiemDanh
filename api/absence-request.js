@@ -41,5 +41,36 @@ router.put('/change-status', function(req, res, next) {
         });
     });
 });
-
+router.post('/list', function(req, res, next) {
+    var status = req.body.status ? req.body.status : 0;
+    var search_text = req.body.search_text ? req.body.search_text : '';
+    pool.getConnection(function(error, connection) {
+        connection.query(`SELECT absence_requests.*,students.stud_id as code, CONCAT(users.first_name,' ', users.last_name) as name 
+            FROM absence_requests,students,users 
+            WHERE users.id = students.id AND absence_requests.student_id = students.id AND absence_requests.status = ?`,status, function(error, rows, fields) {
+            if (error) {
+                _global.sendError(res, error.message);
+                throw error;
+            }
+            absence_requests = rows;
+            var search_list = [];
+            if (search_text == null) {
+                search_list = absence_requests;
+            } else {
+                for (var i = 0; i < absence_requests.length; i++) {
+                    if (absence_requests[i].code.toLowerCase().indexOf(search_text.toLowerCase()) != -1 ||
+                        absence_requests[i].name.toLowerCase().indexOf(search_text.toLowerCase()) != -1 ||
+                        absence_requests[i].reason.toLowerCase().indexOf(search_text.toLowerCase()) != -1) {
+                        search_list.push(absence_requests[i]);
+                    }
+                }
+            }
+            res.send({
+                result: 'success',
+                absence_requests: search_list
+            });
+            connection.release();
+        });
+    });
+});
 module.exports = router;

@@ -35,13 +35,55 @@ export class AuthService {
             .catch((error: any) => Observable.throw(error || 'Server error'));
     }
 
+    private logoutUrl = this.appConfig.host + '/authenticate/logout';
     logout(): void {
+        var params = {
+            'token': this.token,
+        };
+        //this.http.post(this.logoutUrl, params).catch((error: any) => Observable.throw(error || 'Server error'));
+
         this.token = '';
         this.current_user = '';
         //delete from localStorage
         this.localStorage.set('isLoggedIn',false);
         this.localStorage.remove('token','current_user');
+    }
 
-        this.router.navigate(['/login']);
+    private forgotPasswordUrl = this.appConfig.host + '/authenticate/forgot-password';
+    forgotPassword(email : string): Observable < { result: string, message: string} > {
+        this.token = '';
+        this.current_user = '';
+        this.localStorage.set('isLoggedIn',false);
+        this.localStorage.remove('token','current_user');
+        var params = {
+            'email': email,
+        };
+        return this.http.post(this.forgotPasswordUrl, params)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => Observable.throw(error || 'Server error'));
+    }
+    private resetPasswordCheckUrl = this.appConfig.host + '/authenticate/reset-password-check';
+    resetPasswordCheck(token : string): Observable < { result: string, message: string} > {
+        var params = {
+            'token': token,
+        };
+        return this.http.post(this.resetPasswordCheckUrl, params)
+            .map((res: Response) => res.json())
+            .catch((error: any) => Observable.throw(error || 'Server error'));
+    }
+    private resetPasswordUrl = this.appConfig.host + '/authenticate/reset-password';
+    resetPassword(password : string,confirm_password: string,token:string): Observable < { result: string, message: string} > {
+        var params = {
+            'password': password,
+            'confirm_password': confirm_password,
+            'token': token
+        };
+        return this.http.post(this.resetPasswordUrl, params)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => Observable.throw(error || 'Server error'));
     }
 }

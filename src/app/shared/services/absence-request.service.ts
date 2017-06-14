@@ -48,4 +48,26 @@ export class AbsenceRequestService {
                 return Observable.throw(error || 'Server error');
             });
     }
+
+    private getAbsenceRequestsUrl = this.appConfig.apiHost + '/absence-request/list';
+    getAbsenceRequests(status:number,search_text:string): Observable < { result: string, absence_requests: Array < any >, message:string} > {
+        var params = {
+            'status': status,
+            'search_text': search_text
+        };
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.getAbsenceRequestsUrl,params,options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => {
+                if(error.status == 401){
+                    this.authService.tokenExpired(this.router.url);
+                }
+                return Observable.throw(error || 'Server error');
+            });
+    }
 }

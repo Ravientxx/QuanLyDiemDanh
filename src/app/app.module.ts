@@ -7,26 +7,21 @@ import { FileUploadModule } from "ng2-file-upload";
 
 import { AppComponent } from './app.component';
 import { LoginComponent } from './login.component';
+import { ForgotPasswordComponent } from './forgot-password.component';
 import { SharedModule, PageNotFoundComponent, AuthService, AuthGuardService } from './shared/shared.module';
-
-import { HomePageModule } from './home-page/home-page.module';
-import { StudentsModule } from './students/students.module';
-import { CoursesModule } from './courses/courses.module';
-import { TeachersModule } from './teachers/teachers.module';
-import { ScheduleModule } from './schedule/schedule.module';
-import { AbsenceRequestsModule } from './absence-requests/absence-requests.module';
-import { FeedbackModule } from './feedback/feedback.module';
 
 const ROUTES = [
     { path: '', loadChildren: 'app/layout/layout.module#LayoutModule' }, 
     { path: 'login', component: LoginComponent},
+    { path: 'forgot-password', component: ForgotPasswordComponent},
     { path: '**', component: PageNotFoundComponent },
 ];
 
 @NgModule({
     declarations: [
         AppComponent,
-        LoginComponent
+        LoginComponent,
+        ForgotPasswordComponent
     ],
     imports: [
         BrowserModule,

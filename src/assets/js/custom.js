@@ -54,7 +54,7 @@ function init_sidebar() {
             contentHeight = bodyHeight < leftColHeight ? leftColHeight : bodyHeight;
 
         // normalize content
-        contentHeight -=  $('.nav_menu').height() + footerHeight;
+        contentHeight -= $('.nav_menu').height() + footerHeight;
 
         $('.right_col').css('min-height', contentHeight);
     };
@@ -329,12 +329,9 @@ function init_autosize() {
         autosize($('.resizable_textarea'));
 
     }
-
 };
-
 
 $(document).ready(function() {
     init_sidebar();
     init_autosize();
-
 });

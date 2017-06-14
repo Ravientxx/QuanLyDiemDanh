@@ -34,7 +34,7 @@ export class TeacherService {
     }
 
     private getTeacherDetailsUrl = this.appConfig.apiHost + '/teacher/detail';
-    getTeacherDetail(id: number): Observable < { result: string, teacher: Array<any>, teaching_courses: Array<any>, message:string} > {
+    getTeacherDetail(id: number): Observable < { result: string, teacher: any, teaching_courses: Array<any>, message:string} > {
         let authToken = this.authService.token;
         let headers = new Headers();
         headers.append('x-access-token', `${authToken}`);
@@ -64,6 +64,29 @@ export class TeacherService {
         headers.append('x-access-token', `${authToken}`);
         let options = new RequestOptions({ headers: headers });
         return this.http.post(this.addTeacherUrl, params, options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => {
+                if(error.status == 401){
+                    this.authService.tokenExpired(this.router.url);
+                }
+                return Observable.throw(error || 'Server error');
+            });
+    }
+    private updateTeacherUrl = this.appConfig.apiHost + '/teacher/update';
+    updateTeacher(id: number,name: string, email: string, phone: string = null): Observable < { result: string, message: string } > {
+        var params = {
+            'id' : id,
+            'name': name,
+            'email': email,
+            'phone': phone
+        };
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.put(this.updateTeacherUrl, params, options)
             // ...and calling .json() on the response to return data
             .map((res: Response) => res.json())
             //...errors if any

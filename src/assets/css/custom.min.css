@@ -214,7 +214,7 @@ a:hover {
 
 .nav-sm .container.body .col-md-3.left_col.menu_fixed {
     position: fixed;
-    height: 100%
+    height: 100%;
 }
 
 .nav-sm .container.body .col-md-3.left_col .mCSB_container,
@@ -4974,6 +4974,8 @@ th {
 /*Make modal vertical center*/
 table td {
     white-space:pre !important;
+    word-wrap: break-word;
+    vertical-align:middle !important;
 }
 
 .tag_list {
@@ -4999,4 +5001,38 @@ table td {
 }
 .attendance-check{
     font-size: 20px;
+}
+.nav-tabs > li.active > a{
+    background-color: #337AB7 !important;
+    color: white !important;
+}
+.underline {
+    text-decoration: underline !important;
+}
+.class_color_1{
+    color: red !important;
+}
+.class_color_2{
+    color: fuchsia !important;
+}
+.class_color_3{
+    color: blue !important;
+}
+.class_color_4{
+    color: orange !important;
+}
+.class_color_5{
+    color: green !important;
+}
+.class_color_6{
+    color: yellow !important;
+}
+.class_color_7{
+    color: purple !important;
+}
+.class_color_8{
+    color: cyan !important;
+}
+.new_feedback{
+    background-color: #E5EAF2;
 }

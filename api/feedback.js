@@ -1,0 +1,73 @@
+var express = require('express');
+var router = express.Router();
+var _global = require('../global.js');
+var mysql = require('mysql');
+var async = require("async");
+
+var pool = mysql.createPool(_global.db);
+
+router.post('/list', function(req, res, next) {
+    var role_id = req.body.role_id ? req.body.role_id : 0;
+    var search_text = req.body.search_text ? req.body.search_text : '';
+    pool.getConnection(function(error, connection) {
+        var query = `SELECT id, title, content, feedbacks.read, created_at , 
+            (SELECT CONCAT(users.first_name,' ',users.last_name,'\r\n',users.email) FROM users WHERE users.id = feedbacks.from_id) as _from, 
+            (SELECT CONCAT(first_name,' ',last_name) FROM users WHERE users.id = feedbacks.to_id) as _to 
+            FROM feedbacks`;
+        if(role_id != 0){
+            query += ' WHERE type = ' + role_id;
+        }
+        query += ' ORDER BY feedbacks.read , feedbacks.created_at';
+        connection.query(query,function(error, rows, fields) {
+            if (error) {
+                _global.sendError(res, error.message);
+                throw error;
+            }
+            var feedbacks = rows;
+            for(var i = 0 ; i < feedbacks.length; i++){
+                if(feedbacks[i]._to == null){
+                    feedbacks[i]._to = 'Giáo vụ';
+                }
+                if(feedbacks[i]._from == null){
+                    feedbacks[i]._from = 'Anonymous';
+                }
+            }
+            var search_list = [];
+            if (search_text == null) {
+                search_list = feedbacks;
+            } else {
+                for (var i = 0; i < feedbacks.length; i++) {
+                    if (feedbacks[i]._from.toLowerCase().indexOf(search_text.toLowerCase()) != -1 ||
+                        feedbacks[i]._to.toLowerCase().indexOf(search_text.toLowerCase()) != -1 ||
+                        feedbacks[i].title.toLowerCase().indexOf(search_text.toLowerCase()) != -1) {
+                        search_list.push(feedbacks[i]);
+                    }
+                }
+            }
+            res.send({ result: 'success', feedbacks: search_list});
+            connection.release();
+        });
+    });
+});
+router.put('/read', function(req, res, next) {
+    if (req.body.feedback_id == undefined || req.body.feedback_id == 0) {
+        _global.sendError(res, null, "feedback id is required");
+        return;
+    }
+    var feedback_id = req.body.feedback_id;
+    pool.getConnection(function(error, connection) {
+        if (error) {
+            _global.sendError(res, error.message);
+            throw error;
+        }
+        connection.query(`UPDATE feedbacks SET feedbacks.read = 1 WHERE id = ?`,feedback_id,function(error, rows, fields) {
+            if (error) {
+                _global.sendError(res, error.message);
+                throw error;
+            }
+            res.send({ result: 'success'});
+            connection.release();
+        });
+    });
+});
+module.exports = router;

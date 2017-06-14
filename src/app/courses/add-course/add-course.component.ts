@@ -1,6 +1,6 @@
 import { Component, OnInit, Input,ViewChild } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { CourseService, TeacherService, AppService, ExcelService, EditScheduleModalComponent } from '../../shared/shared.module';
+import { CourseService, TeacherService, AppService, ExcelService, EditScheduleModalComponent, ResultMessageModalComponent } from '../../shared/shared.module';
 import { FileUploader } from "ng2-file-upload/ng2-file-upload";
 import { read, IWorkBook } from "ts-xlsx";
 import { IWorkSheet } from "xlsx";
@@ -16,6 +16,11 @@ export class AddCourseComponent implements OnInit {
     public constructor( private router: Router, private excelService: ExcelService, private appService: AppService, private courseService: CourseService, private teacherService: TeacherService) {
 
     }
+    public apiResult: string;
+    public apiResultMessage: string;
+    @ViewChild(ResultMessageModalComponent)
+    private resultMessageModal: ResultMessageModalComponent;
+
     public onChangeProgram() {
         this.filteredClasses = [{ id: 0, name: 'Choose class' }];
         for (var i = 0; i < this.classes.length; i++) {
@@ -54,39 +59,37 @@ export class AddCourseComponent implements OnInit {
     note = '';
     office_hour = '';
 
-    public apiCallResult: string;
-    public error_message: any;
-    public success_message: any;
-
     public onCancelAddCourse() {
         this.router.navigate(['/courses/']);
     }
 
     isContinue = false;
     addCourse(){
-        this.error_message = "";
         this.courseService.addCourse(this.code, this.name, this.selected_lecturers, this.selected_TAs, this.office_hour, this.note,
                 this.selectedProgram, this.selectedClasses)
             .subscribe(result => {
-                this.apiCallResult = result.result;
-                if (this.apiCallResult == 'failure') {
-                    this.error_message = result.message;
-                }
-                if (this.apiCallResult == 'success') {
+                this.apiResult = result.result;
+                this.apiResultMessage = result.message;
+                if (this.apiResult == 'success') {
                     if (this.isContinue == false) {
-                        this.success_message = result.message + '...Redirecting';
+                        this.apiResultMessage = result.message + '...Redirecting';
                         setTimeout(() => {
                             this.router.navigate(['/courses/']);
                         }, 3000);
                     } else {
-                        this.success_message = result.message;
+                        this.apiResultMessage = result.message;
                     }
                 }
                 jQuery("#progressModal").modal("hide");
+                //this.resultMessageModal.onOpenModal();
+                this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
             }, error => {
-                this.error_message = error;
+                this.apiResult = 'failure';
+                this.apiResultMessage = error;
                 console.log(error);
                 jQuery("#progressModal").modal("hide");
+                //this.resultMessageModal.onOpenModal();
+                this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
             });
     }
     public loopReadStudentFile(index: any){
@@ -100,12 +103,12 @@ export class AddCourseComponent implements OnInit {
         }
         else{
             this.excelService.readStudentEnrollCourseFile(this.selectedClasses[index].addStudentFromFile).subscribe(result => {
-                this.apiCallResult = result[0].result;
-                if (this.apiCallResult == 'failure') {
-                    this.error_message = result[0].message;
+                this.apiResult = result[0].result;
+                if (this.apiResult == 'failure') {
+                    this.apiResultMessage = result[0].message;
                     return;
                 }
-                if (this.apiCallResult == 'success') {
+                if (this.apiResult == 'success') {
                     this.selectedClasses[index].studentListFromFile = result[0].student_list.slice();
                     if(index < this.selectedClasses.length-1){
                         this.loopReadStudentFile(index+1);
@@ -274,15 +277,20 @@ export class AddCourseComponent implements OnInit {
         title : 'Add Schedule'
     }
     public onOpenChooseSchedule() {
-        this.error_message = '';
         for(var i = 0 ; i < this.selectedClasses.length; i++){
             if(this.selectedClasses[i].classId == 0){
-                this.error_message = 'Class is required';
+                this.apiResult = 'failure';
+                this.apiResultMessage = 'Class is required';
+                //this.resultMessageModal.onOpenModal();
+                this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
                 return;
             }
             for(var j = i + 1 ; j < this.selectedClasses.length; j++){
                 if(this.selectedClasses[i].classId == this.selectedClasses[j].classId){
-                    this.error_message = 'Cannot select the same class';
+                    this.apiResult = 'failure';
+                    this.apiResultMessage = 'Cannot select the same class';
+                    //this.resultMessageModal.onOpenModal();
+                    this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
                     return;
                 }
             }

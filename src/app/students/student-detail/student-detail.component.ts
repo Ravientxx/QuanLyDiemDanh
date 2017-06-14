@@ -1,6 +1,6 @@
-import { Component, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, ChangeDetectorRef, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { StudentService, AppService, AbsenceRequestService } from '../../shared/shared.module';
+import { StudentService, AppService, AbsenceRequestService,ResultMessageModalComponent } from '../../shared/shared.module';
 declare var jQuery: any;
 @Component({
     selector: 'students-detail',
@@ -13,6 +13,8 @@ export class StudentDetailComponent implements OnInit {
     public constructor(private route: ActivatedRoute, private router: Router, private studentService: StudentService, private appService: AppService, private absenceRequestService: AbsenceRequestService) {
 
     }
+    @ViewChild(ResultMessageModalComponent)
+    private resultMessageModal: ResultMessageModalComponent;
     isEditingStudent = false;
     public student = {
         id: 0,
@@ -32,6 +34,7 @@ export class StudentDetailComponent implements OnInit {
         this.studentService.getStudentrDetail(this.student_id).subscribe(result => {
             this.student = result.student;
             this.current_courses = result.current_courses;
+            this.editing_name = this.student.first_name + ' ' + this.student.last_name;
             console.log(this.student.status);
         }, error => { console.log(error) });
 
@@ -89,33 +92,21 @@ export class StudentDetailComponent implements OnInit {
     onCancelEditStudent() {
         this.isEditingStudent = false;
     }
-    public error_message: string = '';
-    public success_message: string = '';
+    public apiResult: string;
+    public apiResultMessage: string;
     onSaveEditStudent() {
-        this.error_message = '';
-        var i = this.editing_name.lastIndexOf(' ');
-        var new_last_name = this.editing_name.substr(i + 1, this.editing_name.length - 1);
-        var new_first_name = this.editing_name.substr(0, i);
-        //Check for malform in name
-        //
-
-        this.studentService.updateStudentInfo(this.student.id, new_first_name, new_last_name, this.editing_mail, this.editing_phone, this.editing_status)
+        this.studentService.updateStudent(this.student.id, this.editing_name, this.editing_mail, this.editing_phone, this.editing_status)
             .subscribe(result => {
+                this.apiResult = result.result;
+                this.apiResultMessage = result.message;
                 if (result.result == 'success') {
-                    this.success_message = result.message;
                     this.isEditingStudent = false;
                     this.student.email = this.editing_mail;
                     this.student.phone = this.editing_phone;
                     this.student.status = this.editing_status;
-                    this.student.last_name = new_last_name;
-                    this.student.first_name = new_first_name;
-                    setTimeout(() => {
-                        this.success_message = '';
-                    }, 3000);
-                } else {
-                    this.error_message = result.message;
                 }
-
+                //this.resultMessageModal.onOpenModal();
+                this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
             }, error => { console.log(error) });
     }
 }

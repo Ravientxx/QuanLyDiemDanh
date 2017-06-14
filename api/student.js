@@ -221,12 +221,8 @@ router.put('/update', function(req, res, next) {
         _global.sendError(res, null, "Student code is required");
         return;
     }
-    if (req.body.first_name == undefined || req.body.first_name == '') {
-        _global.sendError(res, null, "First name is required");
-        return;
-    }
-    if (req.body.last_name == undefined || req.body.last_name == '') {
-        _global.sendError(res, null, "Last name is required");
+    if (req.body.name == undefined || req.body.name == '') {
+        _global.sendError(res, null, "Name is required");
         return;
     }
     if (req.body.email == undefined || req.body.email == '') {
@@ -242,8 +238,8 @@ router.put('/update', function(req, res, next) {
         return;
     }
     var user_id = req.body.id;
-    var new_first_name = req.body.first_name;
-    var new_last_name = req.body.last_name;
+    var new_last_name = _global.getLastName(req.body.name);
+    var new_first_name = _global.getFirstName(req.body.name);
     var new_email = req.body.email;
     var new_phone = req.body.phone;
     var new_status = req.body.status;

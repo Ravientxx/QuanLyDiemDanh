@@ -1,3 +1,55 @@
-<!-- <staff-courses-list *ngIf="userType == role.staff"></staff-courses-list> -->
-<!-- <student-feedback-table *ngIf="userType == role.student"></student-feedback-table> -->
-<!-- <teacher-home-page *ngIf="userType == role.teacher"></teacher-home-page> -->
+<div class="col-xs-12">
+        <div class="x_panel">
+            <div class="x_title">
+                <h3>Feedbacks</h3>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <div class="row">
+                    <div class="col-xs-4">
+                        <input placeholder="Search" class="form-control" [(ngModel)]="search_text" (ngModelChange)="onSearchChange()" />
+                    </div>
+                    <div class="col-xs-2">
+                        <select class="form-control" [(ngModel)]="selected_role" (ngModelChange)="onChangeRole()">
+                            <option *ngFor="let role of roles" [value]="role.id">{{role.name}}</option>
+                        </select>
+                    </div>
+                </div>
+                <br/>
+                <table class="table table-bordered text-center table-hover">
+                    <thead>
+                        <tr>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Title</th>
+                            <th>Submited At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let feedback of feedbacks; let i = index" (click)="onClickFeedback(i)" [ngClass]="{'new_feedback':!feedback.read}">
+                            <td>{{feedback._from}}</td>
+                            <td>{{feedback._to}}</td>
+                            <td>{{feedback.title}}</td>
+                            <td>{{feedback.created_at | date: 'dd/MM/yyyy'}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+</div>
+<div class="modal fade" id="feedbackDetailModal" role="dialog">
+    <div class="vertical-alignment-helper">
+        <div class="modal-dialog vertical-align-center">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">{{feedback_title}}</h4>
+                </div>
+                <div class="modal-body">
+                    {{feedback_content}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

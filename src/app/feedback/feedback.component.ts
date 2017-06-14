@@ -1,34 +1,64 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { AppService } from '../shared/shared.module';
-
+import { AppService, FeedbackService } from '../shared/shared.module';
+declare var jQuery:any;
 @Component({
     selector: 'app-feedback',
     templateUrl: './feedback.component.html'
 })
 export class FeedbackComponent implements OnInit {
     
-    //public htmlContent: string = null;
-    public userType: number = null;
+    constructor(private appService: AppService,private feebackService: FeedbackService) {
 
-    public role: object = null;
-
-    constructor(private appService: AppService) {
-        /*switch (appService.current_userType){
-            case globalVariable.userType.staff:
-                this.htmlContent = '<staff-home-page></staff-home-page>';
-                break;
-            case globalVariable.userType.student:
-                this.htmlContent = '<student-home-page></student-home-page>';
-                break;
-            case globalVariable.userType.teacher:
-                this.htmlContent = '<teacher-home-page></teacher-home-page>';
-                break;
-        }*/
-
-        // this.userType = appService.current_userType;
-        // this.role = this.appService.userType;
     }
+    getFeedbacks(){
+        this.feebackService.getFeedbacks(this.search_text,this.selected_role).subscribe(result=>{
+            this.feedbacks = result.feedbacks;
+        },error=>{console.log(error)});
+    }
+    ngOnInit() {
+        this.getFeedbacks();
+    }
+    feedbacks =[];
+    roles = [
+        {
+            id: 0,
+            name: 'All'
+        },
+        {
+            id: 1,
+            name: 'Student' 
+        },
+        {
+            id: 2,
+            name: 'Teacher'
+        },
+        {
+            id: 3,
+            name: 'Anonymous'
+        },
+    ];
 
-    ngOnInit() {}
+    search_text = '';
+    selected_role = 0;
+    selected_feedback;
+    feedback_title = '';
+    feedback_content = '';
+    onChangeRole(){
+        this.getFeedbacks();
+    }
+    onClickFeedback(index){
+        this.selected_feedback = index;
+        this.feedback_content = this.feedbacks[index].content;
+        this.feedback_title = this.feedbacks[index].title;
+        this.feebackService.readFeedbacks(this.feedbacks[index].id).subscribe(result=>{
+            this.getFeedbacks();
+            jQuery('#feedbackDetailModal').modal('show');
+        },error=>{console.log(error)});
+    }
+    onSearchChange(){
+        if(this.search_text.length > 3 || this.search_text.length == 0){
+            this.getFeedbacks();
+        }
+    }
 }

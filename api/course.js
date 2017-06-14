@@ -103,7 +103,9 @@ router.post('/list/current', function(req, res, next) {
                         FROM courses, class_has_course
                         WHERE class_has_course.course_id = courses.id AND 
                             courses.program_id = ? AND
-                            courses.semester_id = (SELECT MAX(ID) FROM semesters)`,
+                            courses.semester_id = (SELECT MAX(ID) FROM semesters)
+                        GROUP BY courses.code
+                        ORDER BY courses.id`,
                 program_id, return_function);
         } else {
             connection.query(`SELECT courses.id,courses.code,courses.name,attendance_count,total_stud, 
@@ -116,7 +118,9 @@ router.post('/list/current', function(req, res, next) {
                         WHERE class_has_course.course_id = courses.id AND 
                             courses.program_id = ? AND 
                             class_has_course.class_id = ? AND
-                            courses.semester_id = (SELECT MAX(ID) FROM semesters)`, [program_id, class_id], return_function);
+                            courses.semester_id = (SELECT MAX(ID) FROM semesters)
+                        GROUP BY courses.code
+                        ORDER BY courses.id`, [program_id, class_id], return_function);
         }
     });
 });
@@ -174,7 +178,9 @@ router.post('/list/previous', function(req, res, next) {
                         FROM courses, class_has_course
                         WHERE class_has_course.course_id = courses.id AND 
                             courses.program_id = ? AND
-                            courses.semester_id <> (SELECT MAX(ID) FROM semesters)`,
+                            courses.semester_id <> (SELECT MAX(ID) FROM semesters)
+                        GROUP BY courses.code
+                        ORDER BY courses.id`,
                 program_id, return_function);
         } else {
             connection.query(`SELECT courses.id,courses.code,courses.name,attendance_count,total_stud, 
@@ -187,7 +193,9 @@ router.post('/list/previous', function(req, res, next) {
                         WHERE class_has_course.course_id = courses.id AND 
                             courses.program_id = ? AND 
                             class_has_course.class_id = ? AND
-                            courses.semester_id <> (SELECT MAX(ID) FROM semesters)`, [program_id, class_id], return_function);
+                            courses.semester_id <> (SELECT MAX(ID) FROM semesters)
+                        GROUP BY courses.code
+                        ORDER BY courses.id`, [program_id, class_id], return_function);
         }
     });
 });

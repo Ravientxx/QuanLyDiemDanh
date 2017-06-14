@@ -26,7 +26,8 @@ const ROUTES = [{
         { path: 'teachers', loadChildren: 'app/teachers/teachers.module#TeachersModule' },
         { path: 'schedule', loadChildren: 'app/schedule/schedule.module#ScheduleModule' },
         { path: 'absence-requests', loadChildren: 'app/absence-requests/absence-requests.module#AbsenceRequestsModule' },
-        { path: 'feedback', loadChildren: 'app/feedback/feedback.module#FeedbackModule' },
+        { path: 'feedbacks', loadChildren: 'app/feedback/feedback.module#FeedbackModule' },
+        { path: 'settings', loadChildren: 'app/settings/setting.module#SettingModule' },
     ]
 }, ];
 @NgModule({

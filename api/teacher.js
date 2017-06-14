@@ -6,6 +6,7 @@ var mysql = require('mysql');
 var pool = mysql.createPool(_global.db);
 var bcrypt = require('bcrypt');
 var teacher_list = [];
+var async = require("async");
 
 router.post('/list', function(req, res, next) {
     var searchText = req.body.searchText;
@@ -197,6 +198,81 @@ router.post('/add', function(req, res, next) {
                 });
             });
         });
+    });
+});
+
+router.put('/update', function(req, res, next) {
+    if (req.body.id == undefined || req.body.id == '') {
+        _global.sendError(res, null, "Teacher id is required");
+        return;
+    }
+    if (req.body.name == undefined || req.body.name == '') {
+        _global.sendError(res, null, "Name is required");
+        return;
+    }
+    if (req.body.email == undefined || req.body.email == '') {
+        _global.sendError(res, null, "Email is required");
+        return;
+    }
+    if (req.body.email.indexOf('@') == -1) {
+        _global.sendError(res, null, "Invalid Email");
+        return;
+    }
+    if (req.body.phone == undefined || isNaN(req.body.phone)) {
+        _global.sendError(res, null, "Invalid Phone Number");
+        return;
+    }
+    var user_id = req.body.id;
+    var new_last_name = _global.getLastName(req.body.name);
+    var new_first_name = _global.getFirstName(req.body.name);
+    var new_email = req.body.email;
+    var new_phone = req.body.phone;
+
+    pool.getConnection(function(error, connection) {
+        if (error) {
+            _global.sendError(res, error.message);
+            throw error;
+        }
+
+        async.series([
+                    //Start transaction
+                    function(callback) {
+                        connection.beginTransaction(function(error) {
+                            if (error) callback(error);
+                            else callback();
+                        });
+                    },
+                    //update user table
+                    function(callback) {
+                        connection.query(`UPDATE users SET first_name = ?, last_name = ?, email = ?, phone = ? WHERE id = ?`, [new_first_name,new_last_name,new_email,new_phone, user_id], function(error, results, fields) {
+                            if (error) {
+                                console.log(error.message + ' at Update Users info');
+                                callback(error);
+                            } else {
+                                callback();
+                            }
+                        });
+                    },
+                    //Commit transaction
+                    function(callback) {
+                        connection.commit(function(error) {
+                            if (error) callback(error);
+                            else callback();
+                        });
+                    },
+                ], function(error) {
+                    if (error) {
+                        _global.sendError(res, error.message);
+                        connection.rollback(function() {
+                            throw error;
+                        });
+                        throw error;
+                    } else {
+                        console.log('success updating teacher!---------------------------------------');
+                        res.send({ result: 'success', message: 'Teacher Updated Successfully' });
+                    }
+                    connection.release();
+                });
     });
 });
 

@@ -1,105 +1,68 @@
-<div class="page-title">
-    <div class="title_left">
-        <h3>Student Absense Requests</h3>
-    </div>
-</div>
-<div class="clearfix"></div>
-<div class="col-md-12 col-sm-12 col-xs-12">
-    <div class="x_panel">
-        <div class="x_title">
-            <h2>New Requests<small>(Only accept when you received their letter)</small></h2>
-            <ul class="nav navbar-right panel_toolbox">
-                <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
-            </ul>
-            <div class="clearfix"></div>
+<div class="col-xs-12">
+        <div class="x_panel">
+            <div class="x_title">
+                <h3>Absence Requests<small> (Only accept when you received their letter)</small></h3>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <div class="row">
+                    <div class="col-xs-4">
+                        <input placeholder="Search Code/Name" class="form-control" [(ngModel)]="search_text" (ngModelChange)="onSearchChange()" />
+                    </div>
+                    <div class="col-xs-3">
+                        <select class="form-control" [(ngModel)]="selectedStatus" (ngModelChange)="onChangeStatus()">
+                            <option *ngFor="let status of absence_request_status" [value]="status.id">{{status.title}}</option>
+                        </select>
+                    </div>
+                </div>
+                <br/>
+                <table class="table table-bordered text-center table-hover">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Reason</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Submited At</th>
+                            <th>Accepted/Rejected At</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let request of absence_requests">
+                            <td>{{request.code}}</td>
+                            <td>{{request.name}}</td>
+                            <td>{{request.reason}}</td>
+                            <td>{{request.start_date | date: 'dd/MM/yyyy'}}</td>
+                            <td>{{request.end_date | date: 'dd/MM/yyyy'}}</td>
+                            <td>{{request.created_at | date: 'short'}}</td>
+                            <td *ngIf="request.status == appService.absence_request_status.new.id"></td>
+                            <td *ngIf="request.status != appService.absence_request_status.new.id">{{request.updated_at | date: 'short'}}</td>
+                            <td *ngIf="request.status == appService.absence_request_status.new.id"><button class="btn btn-success btn-sm" (click)="onAcceptRequest(request.id)">Accept</button><button class="btn btn-danger btn-sm" (click)="onRejectRequest(request.id)">Reject</button>
+                            </td>
+                            <td *ngIf="request.status != appService.absence_request_status.new.id"><button class="btn btn-warning btn-sm" (click)="onUndoRequest(request.id)">Undo</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-        <div class="x_content">
-            <table id="datatable" class="table table-bordered text-center table-hover">
-                <thead>
-                    <tr>
-                        <th>Code</th>
-                        <th>Name</th>
-                        <th>Reason</th>
-                        <th>From-To</th>
-                        <th>Days</th>
-                        <th>Submited At</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let request of newRequests">
-                        <td>{{request.code}}</td>
-                        <td>{{request.name}}</td>
-                        <td>{{request.reason}}</td>
-                        <td>{{request.from_to}}</td>
-                        <td>{{request.days}}</td>
-                        <td>{{request.submited_at}}</td>
-                        <td>
-                            <a class="btn btn-primary btn-xs" (click)="clickRequest(request,'accept')" data-toggle="modal" data-target="#confirmModal"><i class="fa fa-check"></i> Accept </a>
-                            <a class="btn btn-danger btn-xs" (click)="clickRequest(request,'reject')" data-toggle="modal" data-target="#confirmModal"><i class="fa fa-close"></i> Reject </a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-<div class="clearfix"></div>
-<div class="col-md-12 col-sm-12 col-xs-12">
-    <div class="x_panel">
-        <div class="x_title">
-            <h2>Accepted</h2>
-            <ul class="nav navbar-right panel_toolbox">
-                <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
-            </ul>
-            <div class="clearfix"></div>
-        </div>
-        <div class="x_content">
-            <table id="datatable-fixed-header" class="table table-bordered text-center table-hover">
-                <thead>
-                    <tr>
-                        <th>Code</th>
-                        <th>Name</th>
-                        <th>Reason</th>
-                        <th>From-To</th>
-                        <th>Days</th>
-                        <th>Accepted At</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let request of acceptedRequests">
-                        <td>{{request.code}}</td>
-                        <td>{{request.name}}</td>
-                        <td>{{request.reason}}</td>
-                        <td>{{request.from_to}}</td>
-                        <td>{{request.days}}</td>
-                        <td>{{request.accepted_at}}</td>
-                        <td>
-                            <a class="btn btn-warning btn-xs" (click)="clickRequest(request,'undo')" data-toggle="modal" data-target="#confirmModal"><i class="fa fa-check"></i> Undo </a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
 </div>
 <!-- Modal -->
 <div class="modal fade" id="confirmModal" role="dialog">
-    <div class="modal-dialog">
-        <!-- Modal content-->
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">{{confirm_modal_title}}</h4>
-            </div>
-            <div class="modal-body">
-                <div class="ln_solid"></div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-default btn-success" (click)="confirmAction()" data-dismiss="modal">Confirm</button>
+    <div class="vertical-alignment-helper">
+        <div class="modal-dialog modal-sm vertical-align-center">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">{{confirm_modal_title}}</h4>
+                </div>
+                <div class="modal-body">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-default btn-success" (click)="confirmAction()" data-dismiss="modal">Confirm</button>
+                </div>
             </div>
         </div>
     </div>
 </div>
-

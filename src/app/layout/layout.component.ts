@@ -1,30 +1,29 @@
-import { Component, AfterViewInit } from '@angular/core';
+import { Component, AfterViewInit, AfterViewChecked } from '@angular/core';
 import { Router } from '@angular/router';
+import * as PNotify from 'pnotify';
 declare var jQuery: any;
 @Component({
     selector: 'app-layout',
     templateUrl: './layout.component.html',
 })
-export class LayoutComponent implements AfterViewInit {
+export class LayoutComponent implements AfterViewInit, AfterViewChecked {
     constructor() {}
 
     ngAfterViewInit() {
         jQuery(document).ready(function() {
+
             console.log('jQuery ready');
             var CURRENT_PATH = window.location.protocol + "//" + window.location.host + window.location.pathname;
             var setContentHeight = function() {
-                // reset height
-                jQuery('.right_col').css('min-height', jQuery(window).height());
-
-                var bodyHeight = jQuery('body').outerHeight(),
-                    footerHeight = jQuery('body').hasClass('footer_fixed') ? -10 : jQuery('footer').height(),
-                    leftColHeight = jQuery('.left_col').eq(1).height() + jQuery('.sidebar-footer').height(),
-                    contentHeight = bodyHeight < leftColHeight ? leftColHeight : bodyHeight;
-
-                // normalize content
-                contentHeight -= jQuery('.nav_menu').height() + footerHeight;
-
-                jQuery('.right_col').css('min-height', contentHeight);
+                jQuery('#app_content').css('height', jQuery('#app_content_inner').outerHeight());
+                jQuery('.left_col').css('height', jQuery('.left_col_content').outerHeight());
+                var leftColHeight = jQuery('.left_col').outerHeight();
+                var rightColHeight = jQuery('#app_content').outerHeight() + jQuery('.top_nav').outerHeight() + jQuery('#footer').outerHeight() + 10;
+                if (leftColHeight < rightColHeight) {
+                    jQuery('.left_col').css('height', rightColHeight);
+                } else {
+                    jQuery('#app_content').css('height', leftColHeight - jQuery('.top_nav').outerHeight() - jQuery('#footer').outerHeight() - 10);
+                }
             };
 
             jQuery('#sidebar-menu').find('a').on('click', function(ev) {
@@ -95,5 +94,18 @@ export class LayoutComponent implements AfterViewInit {
                 });
             }
         });
+    }
+
+    ngAfterViewChecked() {
+        jQuery('#app_content').css('height', jQuery('#app_content_inner').outerHeight());
+        jQuery('.left_col').css('height', jQuery('.left_col_content').outerHeight());
+        var leftColHeight = jQuery('.left_col').outerHeight();
+        var rightColHeight = jQuery('#app_content').outerHeight() + jQuery('.top_nav').outerHeight() + jQuery('#footer').outerHeight() + 10;
+        if (leftColHeight < rightColHeight) {
+            jQuery('.left_col').css('height', rightColHeight);
+        } else {
+            jQuery('#app_content').css('height', leftColHeight - jQuery('.top_nav').outerHeight() - jQuery('#footer').outerHeight() - 10);
+        }
+
     }
 }

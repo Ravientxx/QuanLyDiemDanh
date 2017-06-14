@@ -5,13 +5,31 @@ module.exports = {
         password: '',
         database: 'qldd'
     },
-
+    host : 'localhost:4200',
     role: {
+        admin: 0,
         student: 1,
         teacher: 2,
         staff: 3,
     },
+    absence_request_status: {
+        new: 0,
+        accepted: 1,
+        rejected: 2
+    },
 
+    jwt_secret_key : '13530191353049',
+    jwt_expire_time : '1d',
+    jwt_reset_password_expire_time : 30 * 60,
+
+    default_page: 1,
+    default_limit: 10,
+
+    lecturer_role: 0,
+    ta_role: 1,
+
+    api_ver: 1,
+    
     sendError: function(res, detail = null, message = "Server error") {
         res.send({ result: 'failure', detail: detail, message: message });
     },
@@ -48,15 +66,14 @@ module.exports = {
             }
         }
     },
-
-    jwt_secret_key : '13530191353049',
-    jwt_expire_time : '1d',
-
-    default_page: 1,
-    default_limit: 10,
-
-    lecturer_role: 0,
-    ta_role: 1,
-
-    api_ver: 1,
+    getFirstName: function(name){
+        var i = name.lastIndexOf(' ');
+        var first_name = name.substr(0, i);
+        return first_name;
+    }, 
+    getLastName: function(name){
+        var i = name.lastIndexOf(' ');
+        var last_name = name.substr(i + 1, name.length - 1);
+        return last_name;
+    },
 };

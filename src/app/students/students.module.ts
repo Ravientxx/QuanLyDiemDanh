@@ -10,6 +10,8 @@ import { Ng2TableModule } from 'ng2-table/ng2-table';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
 import {FileUploadModule} from "ng2-file-upload";
+
+import { SharedModule } from '../shared/shared.module';
 const studentsRoutes: Routes = [
   { path: '',  component: StudentsComponent },
   { path: ':id', component: StudentDetailComponent }
@@ -23,7 +25,8 @@ const studentsRoutes: Routes = [
     Ng2TableModule,
     PaginationModule.forRoot(),
     TabsModule.forRoot(),
-    FileUploadModule
+    FileUploadModule,
+    SharedModule
   ],
   declarations: [
     StudentsComponent,

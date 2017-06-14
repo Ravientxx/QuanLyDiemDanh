@@ -1,5 +1,4 @@
-<div class="row">
-    <div class="col-md-12">
+<div class="col-md-12">
         <div class="x_panel">
             <div class="x_title">
                 <h3 class="course_title">{{course.code}} - {{course.name}} ({{course.semester_name}})</h3>
@@ -49,17 +48,16 @@
                     </div>
                 </div>
                 <br>
-                <div class="row">
-                    <!-- <div class="col-xs-4">
-                        <input placeholder="Search Student" class="form-control" [(ngModel)]="searchText" (ngModelChange)="onSearchChange()" />
-                    </div> -->
+                <div>
                     <div class="pull-right">
                         <button type="button" class="btn btn-primary btn-round" (click)="onEditAttendance()"> <i class="fa fa-pencil"></i> Edit Attendance</button>
                         <button type="button" class="btn btn-primary btn-round"> <i class="fa fa-upload"></i> Import</button>
                         <button type="button" class="btn btn-primary btn-round"> <i class="fa fa-download"></i> Export</button>
                     </div>
+                    <ul class="nav nav-tabs" *ngIf="class_has_course.length > 1">
+                          <li *ngFor="let class of class_has_course; let i = index" [ngClass]="{'active': i == selected_class_index}" (click)="onChangeClass(i)"><a>{{class.class_name}}</a></li>
+                    </ul>
                 </div>
-                <br>
                 <div *ngIf="!isEdittingAttendance">
                     <table class="table table-bordered text-center table-hover">
                         <thead>
@@ -155,9 +153,9 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr *ngFor="let attendance of temp_attendance_list;let i = index">
+                            <tr *ngFor="let attendance of temp_attendance_lists[selected_class_index];let i = index">
                                 <td (click)="onRemoveAttendanceClick(i)"><i class="fa fa-close attendance-check" style="color:red"></i></td>
-                                <td><input class="form-control" [(ngModel)]="attendance.code" name="code{{i}}" /></td>
+                                <td>{{attendance.code}}</td>
                                 <td><input class="form-control" [(ngModel)]="attendance.name" name="name{{i}}" /></td>
                                 <td *ngFor="let attendance_detail of attendance.attendance_details;let j = index" (click)="onAttendanceCheckClick(i,j)"><i *ngIf="attendance_detail.attendance_type" class="fa fa-check attendance-check"></i></td>
                             </tr>
@@ -174,22 +172,17 @@
                             </div>
                             <button class="btn btn-success" (click)="onAddToAttendanceList()"><i class="fa fa-plus"></i> Add</button>
                         </div>
-                        <div class="form-group">
-                            <div *ngIf="error_message" class="alert-danger alert text-center col-sm-2 col-sm-offset-3" style="padding-top: 6px;padding-bottom: 6px">
-                                {{error_message}}
-                            </div>
-                            <div class="pull-right">
-                                <button class="btn btn-default" (click)="onCancelEditAttendance()">Cancel</button>
-                                <button class="btn btn-success" (click)="onSaveEditAttendance()">Save</button>
-                            </div>
+                        <div class="pull-right">
+                            <button class="btn btn-default" (click)="onCancelEditAttendance()">Cancel</button>
+                            <button class="btn btn-success" (click)="onSaveEditAttendance()">Save</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 </div>
 <edit-schedule-modal [modal_id]="scheduleModal.id" [modal_title]="scheduleModal.title" [classes]="class_has_course" (onSave)="onSaveSchedule($event)"></edit-schedule-modal>
+<result-message-modal [modal_title]="apiResult" [modal_message]="apiResultMessage"></result-message-modal>
 <div class="modal fade" id="progressModal" role="dialog">
     <div class="vertical-alignment-helper">
         <div class="modal-dialog modal-sm vertical-align-center">

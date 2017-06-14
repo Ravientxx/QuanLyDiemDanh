@@ -8,6 +8,7 @@ import { TeacherDetailComponent } from './teacher-detail/teacher-detail.componen
 
 import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
+import { SharedModule } from '../shared/shared.module';
 
 const teachersRoutes: Routes = [
   { path: '',  component: TeachersComponent },
@@ -21,6 +22,7 @@ const teachersRoutes: Routes = [
     RouterModule.forChild(teachersRoutes),
     PaginationModule.forRoot(),
     TabsModule.forRoot(),
+    SharedModule
   ],
   declarations: [
     TeachersComponent,

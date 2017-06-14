@@ -45,6 +45,8 @@ router.use('/schedule', require('./schedule'));
 router.use('/course', require('./course'));
 router.use('/attendance', require('./attendance'));
 router.use('/user', require('./user'));
+router.use('/semester', require('./semester'));
+router.use('/feedback', require('./feedback'));
 
 router.get('/semesters-programs-classes', function(req, res, next) {
     var program_id = req.body.program_id;

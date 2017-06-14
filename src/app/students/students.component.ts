@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { StudentService, AppService } from '../shared/shared.module';
+import { StudentService, AppService,ResultMessageModalComponent } from '../shared/shared.module';
 import { FileUploader } from "ng2-file-upload/ng2-file-upload";
 declare var jQuery: any;
 @Component({
@@ -9,9 +9,8 @@ declare var jQuery: any;
 })
 export class StudentsComponent implements OnInit {
 
-    public apiCallResult: string;
-    public error_message: any;
-    public success_message: any;
+    public apiResult: string;
+    public apiResultMessage: any;
     public sort = 'none'; // ['none', 'asc', 'dsc'];
     public sort_tag = '';
 
@@ -57,7 +56,6 @@ export class StudentsComponent implements OnInit {
             .subscribe(result => {
                 this.student_list = result.student_list;
                 this.totalItems = result.total_items;
-                this.apiCallResult = result.result;
             }, error => { console.log(error) });
     }
 
@@ -91,21 +89,22 @@ export class StudentsComponent implements OnInit {
         this.newClass = this.newProgram = 0;
         jQuery("#addStudentModal").modal("hide");
     }
+    @ViewChild(ResultMessageModalComponent)
+    private resultMessageModal: ResultMessageModalComponent;
     public onAddStudent() {
-        jQuery("#progressModal").modal("show");
+        //jQuery("#progressModal").modal("show");
         this.studentService.addStudent(this.newProgram, this.newClass, this.newCode, this.newFirstName, this.newLastName, this.newEmail, this.newPhone, this.newNote)
             .subscribe(list => {
-                this.apiCallResult = list.result;
-                if (this.apiCallResult == 'failure') {
-                    this.error_message = list.message;
-                }
-                if (this.apiCallResult == 'success') {
-                    this.success_message = list.message;
+                this.apiResult = list.result;
+                this.apiResultMessage = list.message;
+                if (this.apiResult == 'success') {
                     this.newFirstName = this.newLastName = this.newPhone = this.newEmail = this.newCode = this.newNote = '';
                     this.newClass = this.newProgram = 0;
                     this.getCurrentList();
                 }
-                jQuery("#progressModal").modal("hide");
+                //jQuery("#progressModal").modal("hide");
+                //this.resultMessageModal.onOpenModal();
+                this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
             }, err => { console.log(err) });
     }
     public new_programs = [];

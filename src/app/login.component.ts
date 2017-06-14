@@ -39,4 +39,7 @@ export class LoginComponent implements OnInit {
             }
         },error=>{console.log(error)});
     }
+    forgotPassword(){
+        this.router.navigate(['/forgot-password']);
+    }
 }

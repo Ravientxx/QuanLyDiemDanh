@@ -81,12 +81,11 @@ export class StudentService {
                 return Observable.throw(error || 'Server error');
             });
     }
-    private updateStudentInfoUrl = this.appConfig.apiHost + '/student/update';
-    updateStudentInfo(id:number , first_name: string, last_name: string, email: string, phone: string = null, status:number): Observable < { result: string, message: string } > {
+    private updateStudentUrl = this.appConfig.apiHost + '/student/update';
+    updateStudent(id:number , name: string, email: string, phone: string = null, status:number): Observable < { result: string, message: string } > {
         var params = {
             'id': id,
-            'first_name': first_name,
-            'last_name': last_name,
+            'name': name,
             'email': email,
             'phone': phone,
             'status': status
@@ -95,7 +94,7 @@ export class StudentService {
         let headers = new Headers();
         headers.append('x-access-token', `${authToken}`);
         let options = new RequestOptions({ headers: headers });
-        return this.http.put(this.updateStudentInfoUrl, params, options)
+        return this.http.put(this.updateStudentUrl, params, options)
             // ...and calling .json() on the response to return data
             .map((res: Response) => res.json())
             //...errors if any

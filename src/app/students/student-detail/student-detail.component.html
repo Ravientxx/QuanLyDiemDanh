@@ -1,10 +1,9 @@
-<div class="row">
-    <div class="col-md-12 col-sm-12 col-xs-12">
+<div class="col-md-12 col-sm-12 col-xs-12">
         <div class="x_panel">
             <div class="x_content">
                 <div class="col-md-3 col-sm-3 col-xs-12 profile_left">
                     <ng-container *ngIf="!isEditingStudent">
-                        <h3>{{student.first_name}} {{student.last_name}}</h3>
+                        <h3>{{editing_name}}</h3>
                         <ul class="list-unstyled user_data" style="font-size: medium;">
                             <li *ngIf="student.status == appService.student_status.active.id" style="color: green">
                                 <i class="fa fa-info-circle"></i> {{appService.student_status.active.title}}
@@ -46,26 +45,19 @@
                             </li>
                             <li>
                                 <i class="fa fa-group"></i> {{student.class_name}}
-                                <li>
-                                    <i class="fa fa-phone"></i>
-                                    <input class="form-control" type="text" name="editing_phone" [(ngModel)]="editing_phone">
-                                </li>
-                                <li>
-                                    <i class="fa fa-envelope-o"></i>
-                                    <input class="form-control" type="text" name="editing_mail" [(ngModel)]="editing_mail">
-                                </li>
+                            </li>
+                            <li>
+                                <i class="fa fa-phone"></i>
+                                <input class="form-control" type="text" name="editing_phone" [(ngModel)]="editing_phone">
+                            </li>
+                            <li>
+                                <i class="fa fa-envelope-o"></i>
+                                <input class="form-control" type="text" name="editing_mail" [(ngModel)]="editing_mail">
+                            </li>
                         </ul>
                         <button class="btn btn-default" (click)="onCancelEditStudent()">Cancel</button>
                         <button class="btn btn-success" (click)="onSaveEditStudent()">Save</button>
                     </ng-container>
-                    <div class="form-group">
-                        <div *ngIf="error_message" class="alert alert-danger text-center col-xs-8 col-xs-offset-2">
-                            {{error_message}}
-                        </div>
-                        <div *ngIf="success_message" class="alert alert-success text-center col-xs-8 col-xs-offset-2">
-                            {{success_message}}
-                        </div>
-                    </div>
                     <br />
                 </div>
                 <div class="col-md-9 col-sm-9 col-xs-12">
@@ -131,8 +123,8 @@
             </div>
         </div>
     </div>
-</div>
 <!-- Modal -->
+<result-message-modal [modal_title]="apiResult" [modal_message]="apiResultMessage"></result-message-modal>
 <div class="modal fade" id="confirmModal" role="dialog">
     <div class="vertical-alignment-helper">
         <div class="modal-dialog modal-sm vertical-align-center">
