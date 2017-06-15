@@ -1,4 +1,26 @@
 /**
+ * @swagger
+ * tags:
+ *   name: Test
+ *   description: ez test ez life
+ */
+
+/**
+ * @swagger
+ * /authenticate/test:
+ *   post:
+ *     summary: test
+ *     description:
+ *     tags: [Test]
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *     responses:
+ *       200:
+ *         description: json
+ */
+
+/**
 * @swagger
 * tags:
 *   name: Auth
@@ -7,7 +29,7 @@
 
 /**
  * @swagger
- * /api/authenticate/login:
+ * /authenticate/login:
  *   post:
  *     summary: login and retrieve token
  *     description:
@@ -32,7 +54,7 @@
 
 /**
  * @swagger
- * /api/authenticate/logout:
+ * /authenticate/logout:
  *   post:
  *     summary: logout
  *     description:
@@ -45,21 +67,6 @@
  *         in: formData
  *         required: true
  *         type: string
- *     responses:
- *       200:
- *         description: json
- */
-
-/**
- * @swagger
- * /api/authenticate/test:
- *   post:
- *     summary: test
- *     description:
- *     tags: [Auth]
- *     produces:
- *       - application/json
- *     parameters:
  *     responses:
  *       200:
  *         description: json
