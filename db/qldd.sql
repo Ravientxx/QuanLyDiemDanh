@@ -87,7 +87,6 @@ CREATE TABLE `courses` (
   `semester_id` tinyint(1) DEFAULT NULL,
   `program_id` int(11) DEFAULT NULL,
   `attendance_count` tinyint(1) NOT NULL DEFAULT '0',
-  `total_stud` tinyint(1) NOT NULL DEFAULT '0',
   `note` varchar(255) NULL,
   `office_hour` varchar(50) NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
@@ -249,6 +248,7 @@ CREATE TABLE `class_has_course` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `class_id` int(11) NOT NULL,
   `course_id` int(11) NOT NULL,
+  `total_stud` tinyint(1) NOT NULL DEFAULT '0',
   `schedules` varchar(255) CHARACTER SET utf8 DEFAULT NULL,
   PRIMARY KEY (`id`,`class_id`,`course_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -335,9 +335,9 @@ BEGIN
     UPDATE students
 	SET current_courses = current_courses - 1
 	WHERE id = OLD.student_id;
-	UPDATE courses
-	SET total_stud = total_stud + 1
-	WHERE id = (SELECT course_id FROM class_has_course WHERE id = OLD.class_has_course_id LIMIT 1);
+	UPDATE class_has_course
+	SET total_stud = total_stud - 1
+	WHERE course_id = (SELECT course_id FROM class_has_course WHERE id = OLD.class_has_course_id LIMIT 1);
 END//
 DELIMITER ;
 
@@ -353,9 +353,9 @@ BEGIN
     UPDATE students
 	SET current_courses = current_courses + 1
 	WHERE id = NEW.student_id;
-	UPDATE courses
+	UPDATE class_has_course
 	SET total_stud = total_stud + 1
-	WHERE id = (SELECT course_id FROM class_has_course WHERE id = NEW.class_has_course_id LIMIT 1);
+	WHERE course_id = (SELECT course_id FROM class_has_course WHERE id = NEW.class_has_course_id LIMIT 1);
 END//
 DELIMITER ;
 
