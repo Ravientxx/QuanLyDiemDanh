@@ -49,6 +49,7 @@ router.get('/detail/:id', function(req, res, next) {
         });
     });
 });
+
 router.post('/list/current', function(req, res, next) {
     var searchText = req.body.searchText;
     var page = req.body.page != null ? req.body.page : _global.default_page;
@@ -124,6 +125,7 @@ router.post('/list/current', function(req, res, next) {
         }
     });
 });
+
 router.post('/list/previous', function(req, res, next) {
     var searchText = req.body.searchText;
     var page = req.body.page != null ? req.body.page : _global.default_page;
@@ -199,6 +201,7 @@ router.post('/list/previous', function(req, res, next) {
         }
     });
 });
+
 router.post('/add', function(req, res, next) {
     if (req.body.code === undefined || req.body.code == '') {
         _global.sendError(res, null, "Course code is required");
@@ -442,6 +445,7 @@ router.post('/add', function(req, res, next) {
         });
     });
 });
+
 router.post('/edit', function(req, res, next) {
     if (req.body.id === undefined || req.body.id == 0) {
         _global.sendError(res, null, "Course ID is required");
@@ -563,4 +567,47 @@ router.post('/edit', function(req, res, next) {
         });
     });
 });
+
+//API mobile
+
+router.post('/teachinglist', function(req, res, next){
+    var teacher_id = req.body.teacher_id;
+
+    if(teacher_id){
+        pool.getConnection(function(error, connection) {
+            if (error) {
+                _global.sendError(res, error.message);
+                throw error;
+            }
+        
+            var return_function = function(error, rows, fields) {
+                if (error) {
+                    _global.sendError(res, error.message);
+                    throw error;
+                }
+
+                res.send({
+                    result: 'success',
+                    total_items: rows.length,
+                    courses: rows
+                });
+
+                connection.release();
+            };
+
+            connection.query(`SELECT courses.id, courses.code, courses.name 
+                                FROM courses JOIN teacher_teach_course ON course_id = courses.id
+                                WHERE teacher_id = ? AND
+                                    courses.semester_id = (SELECT MAX(ID) FROM semesters)`,
+                                    [teacher_id], return_function);
+        });
+    }
+    else {
+        return res.status(401).send({
+            result: 'failure',
+            message: 'teacher_id is required'
+        });
+    }    
+});
+
 module.exports = router;

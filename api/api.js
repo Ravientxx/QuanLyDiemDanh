@@ -38,6 +38,7 @@ router.use(function(req, res, next) {
 
     }
 });
+
 router.use('/teacher', require('./teacher'));
 router.use('/absence-request', require('./absence-request'));
 router.use('/student', require('./student'));

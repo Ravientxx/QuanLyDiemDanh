@@ -62,6 +62,7 @@ router.post('/list', function(req, res, next) {
         }
     });
 });
+
 router.post('/add', function(req, res, next) {
     if (req.body.program_id == undefined || req.body.program_id == 0) {
         _global.sendError(res, null, "Program is required");
@@ -186,6 +187,7 @@ router.post('/add', function(req, res, next) {
         });
     });
 });
+
 router.get('/detail/:id', function(req, res, next) {
     var id = req.params['id'];
     pool.getConnection(function(error, connection) {
@@ -216,6 +218,7 @@ router.get('/detail/:id', function(req, res, next) {
         });
     });
 });
+
 router.put('/update', function(req, res, next) {
     if (req.body.id == undefined || req.body.id == '') {
         _global.sendError(res, null, "Student code is required");
@@ -301,4 +304,5 @@ router.put('/update', function(req, res, next) {
                 });
     });
 });
+
 module.exports = router;

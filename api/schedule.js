@@ -39,6 +39,7 @@ router.put('/update/', function(req, res, next) {
         });
     });
 });
+
 router.post('/schedules-and-courses/', function(req, res, next) {
     if (req.body.program_id == undefined || req.body.program_id == 0) {
         _global.sendError(res, null, "Program is required");

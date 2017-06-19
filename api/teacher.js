@@ -79,40 +79,6 @@ router.get('/detail/:id', function(req, res, next) {
     });
 });
 
-/**
-* @swagger
-* /api/teacher/add:
-*   post:
-*     summary: Add a teacher
-*     description: 
-*     tags: [Teacher]
-*     produces:
-*       - application/json
-*     parameters:
-*       - name: firstname
-*         description: user firstname
-*         in: formData
-*         required: true
-*         type: string
-*       - name: lastname
-*         description: user lastname
-*         in: formData
-*         required: true
-*         type: string
-*       - name: email
-*         description: user email
-*         in: formData
-*         required: true
-*         type: string
-*         format: email
-*       - name: phone
-*         description: user phone
-*         in: formData
-*         type: string
-*     responses:
-*       200:
-*         description: json
-*/
 router.post('/add', function(req, res, next) {
     if (req.body.first_name == ''){
         _global.sendError(res, null, "First name is required");

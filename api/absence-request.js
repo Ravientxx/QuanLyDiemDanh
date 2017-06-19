@@ -19,6 +19,7 @@ router.get('/by-student/:id', function(req, res, next) {
         });
     });
 });
+
 router.put('/change-status', function(req, res, next) {
     if (req.body.id == undefined || req.body.id == 0) {
         _global.sendError(res, null, "Request Id is required");
@@ -41,6 +42,7 @@ router.put('/change-status', function(req, res, next) {
         });
     });
 });
+
 router.post('/list', function(req, res, next) {
     var status = req.body.status ? req.body.status : 0;
     var search_text = req.body.search_text ? req.body.search_text : '';
