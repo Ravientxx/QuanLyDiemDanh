@@ -8,6 +8,7 @@ declare var jQuery: any;
 export class EditScheduleModalComponent implements OnInit {
 	@Input() modal_id : string;
 	@Input() modal_title : string;
+    @Input() view_only: boolean = false;
 	@Input() classes : Array<any>;
 	@Output() onSave : EventEmitter<Array<string>> = new EventEmitter<Array<string>>();
 

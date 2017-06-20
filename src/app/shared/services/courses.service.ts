@@ -131,4 +131,27 @@ export class CourseService {
                 return Observable.throw(error || 'Server error');
             });
     }
+    private getTeachingCoursesUrl = this.appConfig.apiHost + '/course/list/teaching';
+    getTeachingCourses(teacher_id: number,searchText: string = null, program_id: number = 1, class_id: number = 0): Observable < { result: string, courses: Array < any >, message:string } > {
+        var params = {
+            'teacher_id': teacher_id,
+            'searchText': searchText,
+            'program_id': program_id,
+            'class_id': class_id,
+        };
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.getTeachingCoursesUrl, params, options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => {
+                if(error.status == 401){
+                    this.authService.tokenExpired(this.router.url);
+                }
+                return Observable.throw(error || 'Server error');
+            });
+    }
 }

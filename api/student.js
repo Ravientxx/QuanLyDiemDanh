@@ -242,7 +242,7 @@ router.put('/update', function(req, res, next) {
     var new_first_name = _global.getFirstName(req.body.name);
     var new_email = req.body.email;
     var new_phone = req.body.phone;
-    var new_status = req.body.status;
+    var new_status = req.body.status ? req.body.status : 0;
     pool.getConnection(function(error, connection) {
         if (error) {
             _global.sendError(res, error.message);

@@ -21,6 +21,33 @@ app.set('port', port);
 
 var server = http.createServer(app);
 
+var io = require('socket.io').listen(server);
+
+
+io.sockets.on('connection', function(socket){
+  console.log('Socket connected');
+
+  // Socket event for Check Attendance updated
+  socket.on('checkAttendanceUpdated', function(checkAttendanceUpdated){
+    console.log('checkAttendanceUpdated');
+    //socket.broadcast.emit('checkAttendanceUpdated', checkAttendanceUpdated);
+    io.emit('checkAttendanceUpdated', checkAttendanceUpdated);
+  });
+
+  // Socket event for Check Attendance created
+  socket.on('checkAttendanceCreated', function(checkAttendanceCreated){
+    console.log('checkAttendanceCreated');
+    //socket.broadcast.emit('checkAttendanceCreated', checkAttendanceCreated);
+    io.emit('checkAttendanceCreated', checkAttendanceCreated);
+  });
+
+  // Socket event for Check Attendance created
+  socket.on('checkAttendanceStopped', function(checkAttendanceStopped){
+    console.log('checkAttendanceStopped');
+    //socket.broadcast.emit('checkAttendanceStopped', checkAttendanceStopped);
+    io.emit('checkAttendanceStopped', checkAttendanceStopped);
+  });
+});
 /**
  * Listen on provided port, on all network interfaces.
  */

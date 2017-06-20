@@ -30,6 +30,7 @@ export class AppService {
             });
     }
     showPNotify(title,message,type) {
+        PNotify.desktop.permission();
         new PNotify({
             title: title,
             text: message,
@@ -38,7 +39,7 @@ export class AppService {
             animation: "fade",
             styling: 'fontawesome',
             buttons: { closer: true, sticker: false},
-            stack: { "dir1": "down", "dir2": "right", "firstpos1": 25, "firstpos2": (jQuery(window).width() / 2) - (Number(PNotify.prototype.options.width.replace(/\D/g, '')) / 2) }
+            stack: { "dir1": "down", "dir2": "right", "firstpos1": 25, "firstpos2": (jQuery(window).width() / 2) - (Number(PNotify.prototype.options.width.replace(/\D/g, '')) / 2) },
         });
     }
     public student_status = {

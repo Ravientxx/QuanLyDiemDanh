@@ -4,11 +4,11 @@ import { FormsModule }    from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 
 import { AbsenceRequestsComponent } from './absence-requests.component';
-
-import { CollapseModule } from 'ngx-bootstrap';
+import { AbsenceRequestsStaffComponent } from './absence-requests-staff/absence-requests-staff.component';
+import { AbsenceRequestsStudentComponent } from './absence-requests-student/absence-requests-student.component';
+import { CollapseModule , DatepickerModule, TabsModule, PaginationModule} from 'ngx-bootstrap';
 import { Ng2TableModule } from 'ng2-table/ng2-table';
-import { PaginationModule } from 'ngx-bootstrap/pagination';
-import { TabsModule } from 'ngx-bootstrap/tabs';
+import { SharedModule } from '../shared/shared.module';
 
 const AbsenceRequestsRoutes: Routes = [
   { path: '',  component: AbsenceRequestsComponent },
@@ -23,9 +23,13 @@ const AbsenceRequestsRoutes: Routes = [
     Ng2TableModule,
     PaginationModule.forRoot(),
     TabsModule,
+    DatepickerModule,
+    SharedModule
   ],
   declarations: [
     AbsenceRequestsComponent,
+    AbsenceRequestsStaffComponent,
+    AbsenceRequestsStudentComponent
   ],
   providers: []
 })

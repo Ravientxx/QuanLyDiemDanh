@@ -6,7 +6,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { LayoutComponent } from './layout.component';
 
 import { SharedModule } from '../shared/shared.module';
-import { HomePageModule } from '../home-page/home-page.module';
+import { DashboardModule } from '../dashboard/dashboard.module';
 import { StudentsModule } from '../students/students.module';
 import { CoursesModule } from '../courses/courses.module';
 import { TeachersModule } from '../teachers/teachers.module';
@@ -20,7 +20,7 @@ const ROUTES = [{
     component: LayoutComponent,
     canActivateChild: [AuthGuardService],
     children: [
-        { path: '', loadChildren: 'app/home-page/home-page.module#HomePageModule' },
+        { path: '', loadChildren: 'app/dashboard/dashboard.module#DashboardModule' },
         { path: 'courses', loadChildren: 'app/courses/courses.module#CoursesModule' },
         { path: 'students', loadChildren: 'app/students/students.module#StudentsModule' },
         { path: 'teachers', loadChildren: 'app/teachers/teachers.module#TeachersModule' },
@@ -28,6 +28,7 @@ const ROUTES = [{
         { path: 'absence-requests', loadChildren: 'app/absence-requests/absence-requests.module#AbsenceRequestsModule' },
         { path: 'feedbacks', loadChildren: 'app/feedback/feedback.module#FeedbackModule' },
         { path: 'settings', loadChildren: 'app/settings/setting.module#SettingModule' },
+        { path: 'check-attendance', loadChildren: 'app/check-attendance/check-attendance.module#CheckAttendanceModule' },
     ]
 }, ];
 @NgModule({

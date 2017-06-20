@@ -72,13 +72,19 @@ router.put('/update', function (req, res, next){
             var params = [];
             var query = '';
 
-            if (req.body.firstname != null){
-            	params.push(req.body.firstname);
+            if (req.body.firs_tname != null){
+            	params.push(req.body.first_name);
             	query = 'first_name = ?';
             }
-            if (req.body.lastname != null){
-            	params.push(req.body.lastname);
+            if (req.body.last_name != null){
+            	params.push(req.body.last_name);
             	query += ', last_name = ?';
+            }
+            if (req.body.name != null){
+                params.push(_global.getFirstName(req.body.name));
+                query += ', first_name = ?';
+                params.push(_global.getLastName(req.body.name));
+                query += ', last_name = ?';
             }
             if (req.body.email != null){
             	params.push(req.body.email);

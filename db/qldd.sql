@@ -40,7 +40,7 @@ CREATE TABLE `attendance` (
   `course_id` int(11) DEFAULT NULL,
   `class_id` int(11) DEFAULT NULL,
   `time` datetime DEFAULT NULL,
-  `student_count` tinyint(1) DEFAULT NULL,
+  `student_count` tinyint(1) DEFAULT 0,
   `teacher_checkin` datetime DEFAULT NULL,
   `teacher_checkout` datetime DEFAULT NULL,
   `created_by` int(11) DEFAULT NULL,
@@ -49,6 +49,7 @@ CREATE TABLE `attendance` (
   `addition_info` varchar(50) CHARACTER SET utf8 DEFAULT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime ON UPDATE CURRENT_TIMESTAMP,
+  `closed` boolean DEFAULT FALSE,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -87,7 +88,6 @@ CREATE TABLE `courses` (
   `semester_id` tinyint(1) DEFAULT NULL,
   `program_id` int(11) DEFAULT NULL,
   `attendance_count` tinyint(1) NOT NULL DEFAULT '0',
-  `total_stud` tinyint(1) NOT NULL DEFAULT '0',
   `note` varchar(255) NULL,
   `office_hour` varchar(50) NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
@@ -249,6 +249,7 @@ CREATE TABLE `class_has_course` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `class_id` int(11) NOT NULL,
   `course_id` int(11) NOT NULL,
+  `total_stud` tinyint(1) NOT NULL DEFAULT '0',
   `schedules` varchar(255) CHARACTER SET utf8 DEFAULT NULL,
   PRIMARY KEY (`id`,`class_id`,`course_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -335,9 +336,9 @@ BEGIN
     UPDATE students
 	SET current_courses = current_courses - 1
 	WHERE id = OLD.student_id;
-	UPDATE courses
+	UPDATE class_has_course
 	SET total_stud = total_stud + 1
-	WHERE id = (SELECT course_id FROM class_has_course WHERE id = OLD.class_has_course_id LIMIT 1);
+	WHERE id =  OLD.class_has_course_id;
 END//
 DELIMITER ;
 
@@ -353,9 +354,9 @@ BEGIN
     UPDATE students
 	SET current_courses = current_courses + 1
 	WHERE id = NEW.student_id;
-	UPDATE courses
+	UPDATE class_has_course
 	SET total_stud = total_stud + 1
-	WHERE id = (SELECT course_id FROM class_has_course WHERE id = NEW.class_has_course_id LIMIT 1);
+	WHERE id = NEW.class_has_course_id;
 END//
 DELIMITER ;
 
@@ -374,30 +375,55 @@ BEGIN
 END//
 DELIMITER ;
 
+-- ----------------------------
+-- Trigger for update course attendance count
+-- ----------------------------
+DELIMITER //
+DROP TRIGGER IF EXISTS trigger_delete_attendance//
+CREATE TRIGGER trigger_delete_attendance
+    BEFORE DELETE ON attendance
+    FOR EACH ROW
+BEGIN
+  UPDATE courses
+  SET attendance_count = attendance_count - 1
+  WHERE id = OLD.course_id;
+
+  DELETE FROM attendance_detail
+  WHERE attendance_id = OLD.id;
+END//
+DELIMITER ;
+
 
 -- ----------------------------
 -- Trigger for update attendance's student count
 -- ----------------------------
 DELIMITER //
-DROP TRIGGER IF EXISTS trigger_insert_attendance_detail//
-CREATE TRIGGER trigger_insert_attendance_detail
-    AFTER INSERT ON attendance_detail
+DROP TRIGGER IF EXISTS trigger_update_attendance_detail//
+CREATE TRIGGER trigger_update_attendance_detail
+    AFTER UPDATE ON attendance_detail
     FOR EACH ROW
 BEGIN
+  IF NEW.attendance_type = 1 AND OLD.attendance_type = 0 THEN
     UPDATE attendance
-  SET student_count = student_count + 1
-  WHERE id = NEW.attendance_id;
+    SET student_count = student_count + 1
+    WHERE id = NEW.attendance_id;
+  END IF;
+  IF NEW.attendance_type = 0 AND OLD.attendance_type = 1 THEN
+    UPDATE attendance
+    SET student_count = student_count - 1
+    WHERE id = NEW.attendance_id;
+  END IF;
 END//
 DELIMITER ;
 
-DELIMITER //
-DROP TRIGGER IF EXISTS trigger_delete_attendance_detail//
-CREATE TRIGGER trigger_delete_attendance_detail
-    AFTER DELETE ON attendance_detail
-    FOR EACH ROW
-BEGIN
-    UPDATE attendance
-  SET student_count = student_count - 1
-  WHERE id = OLD.attendance_id;
-END//
+-- DELIMITER //
+-- DROP TRIGGER IF EXISTS trigger_delete_attendance_detail//
+-- CREATE TRIGGER trigger_delete_attendance_detail
+--     AFTER DELETE ON attendance_detail
+--     FOR EACH ROW
+-- BEGIN
+--     UPDATE attendance
+--   SET student_count = student_count - 1
+--   WHERE id = OLD.attendance_id;
+-- END//
 DELIMITER ;

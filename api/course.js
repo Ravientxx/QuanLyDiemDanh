@@ -563,4 +563,71 @@ router.post('/edit', function(req, res, next) {
         });
     });
 });
+router.post('/list/teaching', function(req, res, next) {
+    if (req.body.teacher_id === undefined || req.body.teacher_id == 0) {
+        _global.sendError(res, null, "Teacher id is required");
+        return;
+    }
+    var teacher_id = req.body.teacher_id;
+    var searchText = req.body.searchText;
+    var program_id = req.body.program_id != null ? req.body.program_id : 0;
+    var class_id = req.body.class_id != null ? req.body.class_id : 0;
+
+    pool.getConnection(function(error, connection) {
+        if (error) {
+            _global.sendError(res, error.message);
+            throw error;
+        }
+        var return_function = function(error, rows, fields) {
+            if (error) {
+                _global.sendError(res, error.message);
+                throw error;
+            }
+
+            course_list = rows;
+            var search_list = [];
+            if (searchText == null) {
+                search_list = course_list;
+            } else {
+                for (var i = 0; i < course_list.length; i++) {
+                    if (course_list[i].code.toLowerCase().indexOf(searchText.toLowerCase()) != -1 ||
+                        course_list[i].name.toLowerCase().indexOf(searchText.toLowerCase()) != -1 ||
+                        course_list[i].lecturers.toLowerCase().indexOf(searchText.toLowerCase()) != -1) {
+                        search_list.push(course_list[i]);
+                    }
+                }
+            }
+            res.send({
+                result: 'success',
+                courses: search_list
+            });
+
+            connection.release();
+        };
+        var query = `SELECT courses.id,courses.code,courses.name,total_stud,classes.id as class_id,classes.name as class_name, 
+                            (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
+                            FROM teacher_teach_course,users 
+                            WHERE users.id = teacher_teach_course.teacher_id AND 
+                                courses.id = teacher_teach_course.course_id AND 
+                                teacher_teach_course.teacher_role = 0) as lecturers, 
+                            (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
+                            FROM teacher_teach_course,users 
+                            WHERE users.id = teacher_teach_course.teacher_id AND 
+                                courses.id = teacher_teach_course.course_id AND 
+                                teacher_teach_course.teacher_role = 1) as TAs 
+                    FROM courses, class_has_course, teacher_teach_course, classes
+                    WHERE teacher_teach_course.teacher_id = 1 AND
+                        teacher_teach_course.course_id = courses.id AND 
+                        class_has_course.course_id = courses.id AND
+                        class_has_course.class_id = classes.id AND
+                        courses.semester_id = (SELECT MAX(ID) FROM semesters)`;
+        if(class_id != 0){
+            query += ' AND class_has_course.class_id = ' + class_id;
+        }
+        if(program_id != 0){
+            query += ' AND courses.program_id = ' + program_id;
+        }
+        connection.query(query,program_id, return_function);
+    });
+});
 module.exports = router;

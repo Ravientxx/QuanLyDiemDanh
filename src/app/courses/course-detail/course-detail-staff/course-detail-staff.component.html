@@ -1,0 +1,220 @@
+<div class="col-md-12">
+        <div class="x_panel">
+            <div class="x_title">
+                <h3 class="course_title">{{course.code}} - {{course.name}} ({{course.semester_name}})</h3>
+                <div class="pull-right">
+                    <button type="button" class="btn btn-success btn-round navbar-btn" (click)="onEditCourse()"> <i class="fa fa-pencil"></i> Edit Course</button>
+                    <button type="button" class="btn btn-success btn-round navbar-btn" (click)="onOpenSchedule()"> <i class="fa fa-calendar"></i> Schedule</button>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <div class="form-horizontal">
+                    <div class="row">
+                        <div class="col-xs-2" style="text-align: right">
+                            <h4>Lecturer :</h4>
+                        </div>
+                        <div class="col-xs-3">
+                            <h4 *ngFor="let lecturer of lecturers"><a href="/teachers/{{lecturer.id}}">{{lecturer.first_name}} {{lecturer.last_name}}</a></h4>
+                        </div>
+                        <div class="col-xs-1" style="text-align: right">
+                            <h4>TAs :</h4>
+                        </div>
+                        <div class="col-xs-3">
+                            <h4 *ngFor="let TA of TAs"><a href="/teachers/{{TA.id}}">{{TA.first_name}} {{TA.last_name}}</a></h4>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div *ngIf="course.office_hour" class="col-xs-2" style="text-align: right">
+                            <h4>Office hour :</h4>
+                        </div>
+                        <div *ngIf="course.office_hour" class="col-xs-2">
+                            <h4>{{course.office_hour}}</h4>
+                        </div>
+                        <div *ngIf="course.note" class="col-xs-2" style="text-align: right">
+                            <h4>Note :</h4>
+                        </div>
+                        <div *ngIf="course.note" class="col-xs-6">
+                            <h4>{{course.note}}</h4>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-2" style="text-align: right;">
+                            <h4>Total Students :</h4>
+                        </div>
+                        <div class="col-xs-2">
+                            <h4>{{course.total_stud}}</h4>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div>
+                    <div class="pull-right">
+                        <button type="button" class="btn btn-primary btn-round" (click)="onEditAttendance()"> <i class="fa fa-pencil"></i> Edit Attendance</button>
+                        <button type="button" class="btn btn-primary btn-round"> <i class="fa fa-upload"></i> Import</button>
+                        <button type="button" class="btn btn-primary btn-round"> <i class="fa fa-download"></i> Export</button>
+                    </div>
+                    <ul class="nav nav-tabs" *ngIf="class_has_course.length > 1">
+                          <li *ngFor="let class of class_has_course; let i = index" [ngClass]="{'active': i == selected_class_index}" (click)="onChangeClass(i)"><a>{{class.class_name}}</a></li>
+                    </ul>
+                </div>
+                <div *ngIf="!isEdittingAttendance">
+                    <table class="table table-bordered text-center table-hover">
+                        <thead>
+                            <tr>
+                                <th colspan="3"></th>
+                                <th colspan="2">Week 1</th>
+                                <th colspan="2">Week 2</th>
+                                <th colspan="2">Week 3</th>
+                                <th colspan="2">Week 4</th>
+                                <th colspan="2">Week 5</th>
+                                <th colspan="2">Week 6</th>
+                                <th colspan="2">Week 7</th>
+                                <th colspan="2">Week 8</th>
+                                <th colspan="2">Week 9</th>
+                                <th colspan="2">Week 10</th>
+                            </tr>
+                            <tr>
+                                <th>No</th>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>1-1</th>
+                                <th>1-2</th>
+                                <th>2-1</th>
+                                <th>2-2</th>
+                                <th>3-1</th>
+                                <th>3-2</th>
+                                <th>4-1</th>
+                                <th>4-2</th>
+                                <th>5-1</th>
+                                <th>5-2</th>
+                                <th>6-1</th>
+                                <th>6-2</th>
+                                <th>7-1</th>
+                                <th>7-2</th>
+                                <th>8-1</th>
+                                <th>8-2</th>
+                                <th>9-1</th>
+                                <th>9-2</th>
+                                <th>10-1</th>
+                                <th>10-2</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let attendance of attendance_list;let i = index">
+                                <td>{{i+1}}</td>
+                                <td>{{attendance.code}}</td>
+                                <td>{{attendance.name}}</td>
+                                <td *ngFor="let attendance_detail of attendance.attendance_details;let j = index"><i *ngIf="attendance_detail.attendance_type" class="fa fa-check attendance-check"></i></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div *ngIf="isEdittingAttendance">
+                    <table class="table table-bordered text-center table-hover">
+                        <thead>
+                            <tr>
+                                <th colspan="3"></th>
+                                <th colspan="2">Week 1</th>
+                                <th colspan="2">Week 2</th>
+                                <th colspan="2">Week 3</th>
+                                <th colspan="2">Week 4</th>
+                                <th colspan="2">Week 5</th>
+                                <th colspan="2">Week 6</th>
+                                <th colspan="2">Week 7</th>
+                                <th colspan="2">Week 8</th>
+                                <th colspan="2">Week 9</th>
+                                <th colspan="2">Week 10</th>
+                            </tr>
+                            <tr>
+                                <th width="3%"></th>
+                                <th width="10%">Code</th>
+                                <th width="27%">Name</th>
+                                <th width="3%">1-1</th>
+                                <th width="3%">1-2</th>
+                                <th width="3%">2-1</th>
+                                <th width="3%">2-2</th>
+                                <th width="3%">3-1</th>
+                                <th width="3%">3-2</th>
+                                <th width="3%">4-1</th>
+                                <th width="3%">4-2</th>
+                                <th width="3%">5-1</th>
+                                <th width="3%">5-2</th>
+                                <th width="3%">6-1</th>
+                                <th width="3%">6-2</th>
+                                <th width="3%">7-1</th>
+                                <th width="3%">7-2</th>
+                                <th width="3%">8-1</th>
+                                <th width="3%">8-2</th>
+                                <th width="3%">9-1</th>
+                                <th width="3%">9-2</th>
+                                <th width="3%">10-1</th>
+                                <th width="3%">10-2</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let attendance of temp_attendance_lists[selected_class_index];let i = index">
+                                <td (click)="onRemoveAttendanceClick(i)"><i class="fa fa-close attendance-check" style="color:red"></i></td>
+                                <td>{{attendance.code}}</td>
+                                <td><input class="form-control" [(ngModel)]="attendance.name" name="name{{i}}" /></td>
+                                <td *ngFor="let attendance_detail of attendance.attendance_details;let j = index" (click)="onAttendanceCheckClick(i,j)"><i *ngIf="attendance_detail.attendance_type" class="fa fa-check attendance-check"></i></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="control-label col-sm-2">Add student to course : </label>
+                            <div class="col-sm-2">
+                                <input type="text" placeholder="Code" [(ngModel)]="new_code" name="new_code" required="required" class="form-control">
+                            </div>
+                            <div class="col-sm-3">
+                                <input type="text" placeholder="Name" [(ngModel)]="new_name" name="new_name" required="required" class="form-control">
+                            </div>
+                            <button class="btn btn-success" (click)="onAddToAttendanceList()"><i class="fa fa-plus"></i> Add</button>
+                        </div>
+                        <div class="pull-right">
+                            <button class="btn btn-default" (click)="onCancelEditAttendance()">Cancel</button>
+                            <button class="btn btn-success" (click)="onSaveEditAttendance()">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+<edit-schedule-modal [modal_id]="scheduleModal.id" [modal_title]="scheduleModal.title" [classes]="class_has_course" (onSave)="onSaveSchedule($event)"></edit-schedule-modal>
+<result-message-modal [modal_title]="apiResult" [modal_message]="apiResultMessage"></result-message-modal>
+<div class="modal fade" id="progressModal" role="dialog">
+    <div class="vertical-alignment-helper">
+        <div class="modal-dialog modal-sm vertical-align-center">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="text-center">
+                        <h2>Loading</h2>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="confirmRemoveModal" role="dialog">
+    <div class="vertical-alignment-helper">
+        <div class="modal-dialog modal-sm vertical-align-center">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Remove this student from the list ?</h4>
+                </div>
+                <div class="modal-body">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-default btn-success" (click)="confirmRemoveAttendance()" data-dismiss="modal">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
