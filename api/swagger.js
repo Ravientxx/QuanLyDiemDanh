@@ -135,30 +135,24 @@
 
 /**
 * @swagger
-* /api/student/list:
+* /api/student/studying:
 *   post:
-*     summary: Get student list
-*     description: 
+*     summary: Get students of course
+*     description:
 *     tags: [Student]
 *     produces:
 *       - application/json
 *     parameters:
-*       - name: searchText
-*         description: words exist in name
+*       - name: token
+*         description: user token
 *         in: formData
+*         required: true
 *         type: string
-*       - name: page
-*         description: page number for pagination
+*       - name: course_id
+*         description: course_id
 *         in: formData
+*         required: true
 *         type: integer
-*       - name: limit
-*         description: number records per page
-*         in: formData
-*         type: integer
-*       - name: sort
-*         description: asc or dsc
-*         in: formData
-*         type: string
 *     responses:
 *       200:
 *         description: json
@@ -174,24 +168,24 @@
 
 /**
 * @swagger
-* /api/course/teachinglist:
+* /api/course/teaching:
 *   post:
 *     summary: Get Course list
-*     description: 
+*     description:
 *     tags: [Course]
 *     produces:
 *       - application/json
 *     parameters:
-*       - name: teacher_id
-*         description: courses list
-*         in: formData
-*         required: true
-*         type: integer
 *       - name: token
 *         description: token
 *         in: formData
 *         required: true
 *         type: string
+*       - name: teacher_id
+*         description: courses list
+*         in: formData
+*         required: true
+*         type: integer
 *     responses:
 *       200:
 *         description: json
@@ -199,19 +193,131 @@
 
 /**
 * @swagger
-* /api/course/detail:
+* tags:
+*   name: Attendance
+*   description: Attendance support data
+*/
+
+/**
+* @swagger
+* /api/attendance/create:
 *   post:
-*     summary: get a Course detail
-*     description: 
-*     tags: [Course]
+*     summary: request an attendance id from server
+*     description:
+*     tags: [Attendance]
 *     produces:
 *       - application/json
 *     parameters:
-*       - name: id
-*         description: course id
+*       - name: token
+*         description: token
 *         in: formData
-*         type: integer
 *         required: true
+*         type: string
+*       - name: course_id
+*         description: courses id
+*         in: formData
+*         required: true
+*         type: integer
+*       - name: teacher_id
+*         description: teacher id
+*         in: formData
+*         required: true
+*         type: integer
+*     responses:
+*       200:
+*         description: json
+*/
+
+/**
+* @swagger
+* /api/attendance/delete:
+*   post:
+*     summary: delete an attendance
+*     description:
+*     tags: [Attendance]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: token
+*         in: formData
+*         required: true
+*         type: string
+*       - name: attend_id
+*         description: attend id
+*         in: formData
+*         required: true
+*         type: integer
+*       - name: teacher_id
+*         description: teacher id
+*         in: formData
+*         required: true
+*         type: integer
+*     responses:
+*       200:
+*         description: json
+*/
+
+/**
+* @swagger
+* /api/attendance/sync:
+*   post:
+*     summary: sync attendance data
+*     description:
+*     tags: [Attendance]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: token
+*         in: formData
+*         required: true
+*         type: string
+*       - name: attend_id
+*         description: attend id
+*         in: formData
+*         required: true
+*         type: integer
+*       - name: teacher_id
+*         description: teacher id
+*         in: formData
+*         required: true
+*         type: integer
+*       - name: data
+*         description: data
+*         in: formData
+*         required: true
+*         type: array
+*     responses:
+*       200:
+*         description: json
+*/
+
+/**
+* @swagger
+* /api/attendance/updateStatus:
+*   post:
+*     summary: change status of attendance
+*     description:
+*     tags: [Attendance]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: token
+*         in: formData
+*         required: true
+*         type: string
+*       - name: status
+*         description: new status
+*         in: formData
+*         required: true
+*         type: integer
+*       - name: teacher_id
+*         description: teacher id
+*         in: formData
+*         required: true
+*         type: integer
 *     responses:
 *       200:
 *         description: json
