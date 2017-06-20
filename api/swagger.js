@@ -1,6 +1,73 @@
 /**
 * @swagger
 * tags:
+*   name: Auth
+*   description: Authenticate
+*/
+
+/**
+ * @swagger
+ * /api/authenticate/login:
+ *   post:
+ *     summary: login and retrieve token
+ *     description:
+ *     tags: [Auth]
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: email
+ *         description: user ID
+ *         in: formData
+ *         required: true
+ *         type: string
+ *       - name: password
+ *         description: user password
+ *         in: formData
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: json
+ */
+
+/**
+ * @swagger
+ * /api/authenticate/logout:
+ *   post:
+ *     summary: logout
+ *     description:
+ *     tags: [Auth]
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: formData
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: json
+ */
+
+/**
+ * @swagger
+ * /api/authenticate/test:
+ *   post:
+ *     summary: test
+ *     description:
+ *     tags: [Auth]
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *     responses:
+ *       200:
+ *         description: json
+ */
+
+/**
+* @swagger
+* tags:
 *   name: User
 *   description: User management
 */

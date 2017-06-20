@@ -337,7 +337,7 @@ BEGIN
 	SET current_courses = current_courses - 1
 	WHERE id = OLD.student_id;
 	UPDATE class_has_course
-	SET total_stud = total_stud + 1
+	SET total_stud = total_stud - 1
 	WHERE id =  OLD.class_has_course_id;
 END//
 DELIMITER ;
@@ -426,4 +426,4 @@ DELIMITER ;
 --   SET student_count = student_count - 1
 --   WHERE id = OLD.attendance_id;
 -- END//
-DELIMITER ;
+-- DELIMITER ;
