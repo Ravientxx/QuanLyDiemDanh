@@ -89,7 +89,7 @@
             <div class="row">
                 <div class="pull-right">
                     <button class="btn btn-danger" (click)="onCancelAttendanceSession()">Cancel Attendance Session</button>
-                    <button class="btn btn-success" (click)="onEndAttendanceSession()">End Attendance Session</button>
+                    <button class="btn btn-success" (click)="onCloseAttendanceSession()">Close Attendance Session</button>
                 </div>
             </div>
         </div>
@@ -133,7 +133,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-default btn-success" (click)="confirmEndAttendanceSession()" data-dismiss="modal">Confirm</button>
+                    <button type="button" class="btn btn-default btn-success" (click)="confirmCloseAttendanceSession()" data-dismiss="modal">Confirm</button>
                 </div>
             </div>
         </div>

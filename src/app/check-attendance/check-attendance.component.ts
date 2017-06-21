@@ -125,17 +125,20 @@ export class CheckAttendanceComponent implements OnInit {
     onCancelAttendanceSession(){
         jQuery('#confirmCancelModal').modal('show');
     }
-    onEndAttendanceSession(){
+    onCloseAttendanceSession(){
         jQuery('#confirmEndModal').modal('show');
     }
     confirmCancelAttendanceSession(){
         this.attendanceService.cancelAttendance(this.selected_attendance['id']).subscribe(result=>{
-            this.checkAttendanceSocketService.emitEventOnCheckAttendanceStopped('cancelled');
+            this.checkAttendanceSocketService.emitEventOnCheckAttendanceStopped('cancelled by ' + this.authService.current_user.first_name + ' ' + this.authService.current_user.last_name);
             this.router.navigate(['/dashboard']);
-        },error=>{this.appService.showPNotify('failure', "Server Error! Can't create new attendances", 'error');});
+        },error=>{this.appService.showPNotify('failure', "Server Error! Can't cancel attendance session", 'error');});
     }
-    confirmEndAttendanceSession(){
-        
+    confirmCloseAttendanceSession(){
+        this.attendanceService.closeAttendance(this.selected_attendance['id']).subscribe(result=>{
+            this.checkAttendanceSocketService.emitEventOnCheckAttendanceStopped('closed by ' + this.authService.current_user.first_name + ' ' + this.authService.current_user.last_name);
+            this.router.navigate(['/dashboard']);
+        },error=>{this.appService.showPNotify('failure', "Server Error! Can't close attendance session", 'error');});
     }
     showQRCode(){
         var check_attendance_url = this.appConfig.apiHost + "/check-attendance/qr-code/" + this.selected_attendance_id;

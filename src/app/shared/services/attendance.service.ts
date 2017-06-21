@@ -137,6 +137,26 @@ export class AttendanceService {
                 return Observable.throw(error || 'Server error');
             });
     }
+    private closeAttendanceUrl = this.appConfig.apiHost + '/attendance/close';
+    closeAttendance(attendance_id:number): Observable < { result: string, message:string} > {
+        var params = {
+            'attendance_id': attendance_id,
+        };
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.closeAttendanceUrl,params,options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => {
+                if(error.status == 401){
+                    this.authService.tokenExpired(this.router.url);
+                }
+                return Observable.throw(error || 'Server error');
+            });
+    }
 
     private getCheckAttendanceListUrl = this.appConfig.apiHost + '/attendance/check-attendance-list';
     getCheckAttendanceList(course_id: number, class_id: number): Observable < { result: string, check_attendance_list: Array<any>, message:string} > {
