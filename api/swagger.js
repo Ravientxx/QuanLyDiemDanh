@@ -161,8 +161,13 @@
 *         in: formData
 *         required: true
 *         type: string
+*       - name: teacher_id
+*         description: teacher id
+*         in: formData
+*         required: true
+*         type: integer
 *       - name: course_id
-*         description: course_id
+*         description: course id
 *         in: formData
 *         required: true
 *         type: integer

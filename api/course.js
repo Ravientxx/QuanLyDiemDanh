@@ -659,32 +659,42 @@ router.post('/teaching', function(req, res, next){
                 for (var i = 0; i < rows.length; i++){
                     if (courses[rows[i].id]){
                         courses[rows[i].id].class.push(rows[i].class);
+                        courses[rows[i].id].chcid.push(rows[i].chcid);
+                        courses[rows[i].id].total_stud.push(rows[i].total_stud);
                     }
                     else {
                         courses[rows[i].id] = rows[i];
                         tmp = courses[rows[i].id].class;
                         courses[rows[i].id].class = [];
                         courses[rows[i].id].class.push(tmp);
+
+                        tmp = courses[rows[i].id].chcid;
+                        courses[rows[i].id].chcid = [];
+                        courses[rows[i].id].chcid.push(tmp);
+
+                        tmp = courses[rows[i].id].total_stud;
+                        courses[rows[i].id].total_stud = [];
+                        courses[rows[i].id].total_stud.push(tmp);
                     }
                 }
 
-                var remove_null = [];
+                var removed_null = [];
                 for (var j = 0; j < courses.length; j++){
                     if (courses[j] != null){
-                        remove_null.push(courses[j]);
+                        removed_null.push(courses[j]);
                     }
                 }
 
                 res.send({
                     result: 'success',
-                    total_items: remove_null.length,
-                    courses: remove_null
+                    total_items: removed_null.length,
+                    courses: removed_null
                 });
 
                 connection.release();
             };
 
-            connection.query(`SELECT courses.id, courses.code, courses.name, class_has_course.class_id as class 
+            connection.query(`SELECT courses.id, courses.code, courses.name, class_has_course.class_id as class, class_has_course.id as chcid, class_has_course.total_stud as total_stud 
                                 FROM courses JOIN teacher_teach_course ON course_id = courses.id
                                     JOIN class_has_course on class_has_course.course_id = courses.id
                                 WHERE teacher_id = ? AND

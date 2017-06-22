@@ -458,7 +458,7 @@ router.post('/create', function(req, res, next) {
                                 throw error;
                             } else {
                                 console.log('insert attendance_details');
-                                res.send({ result: 'success' });
+                                res.send({ result: 'success', attendance_id: inserted.insertId });
                                 connection.release();
                             }
                         });
