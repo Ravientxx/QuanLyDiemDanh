@@ -87,7 +87,6 @@ CREATE TABLE `courses` (
   `name` varchar(255) CHARACTER SET utf8 NOT NULL DEFAULT '',
   `semester_id` tinyint(1) DEFAULT NULL,
   `program_id` int(11) DEFAULT NULL,
-  `attendance_count` tinyint(1) NOT NULL DEFAULT '0',
   `note` varchar(255) NULL,
   `office_hour` varchar(50) NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
@@ -251,6 +250,7 @@ CREATE TABLE `class_has_course` (
   `course_id` int(11) NOT NULL,
   `total_stud` tinyint(1) NOT NULL DEFAULT '0',
   `schedules` varchar(255) CHARACTER SET utf8 DEFAULT NULL,
+  `attendance_count` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`,`class_id`,`course_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -369,9 +369,9 @@ CREATE TRIGGER trigger_insert_attendance
     AFTER INSERT ON attendance
     FOR EACH ROW
 BEGIN
-    UPDATE courses
+    UPDATE class_has_course
 	SET attendance_count = attendance_count + 1
-	WHERE id = NEW.course_id;
+	WHERE course_id = NEW.course_id AND class_id = NEW.class_id;
 END//
 DELIMITER ;
 
