@@ -1,6 +1,6 @@
 import { Component, ChangeDetectorRef, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { StudentService, AppService, AbsenceRequestService,ResultMessageModalComponent } from '../../shared/shared.module';
+import { StudentService, AppService, AbsenceRequestService,ResultMessageModalComponent, AuthService } from '../../shared/shared.module';
 declare var jQuery: any;
 @Component({
     selector: 'students-detail',
@@ -10,7 +10,7 @@ export class StudentDetailComponent implements OnInit {
 
     student_id: number;
 
-    public constructor(private route: ActivatedRoute, private router: Router, private studentService: StudentService, private appService: AppService, private absenceRequestService: AbsenceRequestService) {
+    public constructor(private route: ActivatedRoute, private router: Router, private studentService: StudentService,private authService: AuthService, private appService: AppService, private absenceRequestService: AbsenceRequestService) {
 
     }
     @ViewChild(ResultMessageModalComponent)
@@ -35,13 +35,11 @@ export class StudentDetailComponent implements OnInit {
             this.student = result.student;
             this.current_courses = result.current_courses;
             this.editing_name = this.student.first_name + ' ' + this.student.last_name;
-            console.log(this.student.status);
-        }, error => { console.log(error) });
-
-        this.absenceRequestService.getRequestsByStudent(this.student_id)
+            this.absenceRequestService.getRequestsByStudent(this.student_id,-1,'')
             .subscribe(result => {
                 this.absence_requests = result.absence_requests;
             }, error => { console.log(error) });
+        }, error => { console.log(error) });
     }
     public onCourseClick(id: number) {
         this.router.navigate(['/courses/', id]);
@@ -71,7 +69,7 @@ export class StudentDetailComponent implements OnInit {
     public confirmAction() {
         this.absenceRequestService.changeRequestStatus(this.current_request_id, this.current_request_status)
             .subscribe(result => {
-                this.absenceRequestService.getRequestsByStudent(this.student_id)
+                this.absenceRequestService.getRequestsByStudent(this.student_id,-1,'')
                     .subscribe(result => {
                         this.absence_requests = result.absence_requests;
                         jQuery('#confirmModal').modal("hide");

@@ -4,7 +4,7 @@ var bcrypt = require('bcrypt');
 var _global = require('../global.js');
 var mysql = require('mysql');
 var pool = mysql.createPool(_global.db);
-
+var async = require("async");
 
 //[name]
 var insert_roles = [
@@ -82,53 +82,53 @@ var insert_courses = [
 ];
 //[class_id,course_id,schedules]
 var insert_class_has_course = [
-    ['1', '1', '4-I44-LT;8-I41-LT;14-I11C-TH;15-I11C-TH;22-I44-LT'],//1
-    ['1', '2', '2-I42-TH;3-I42-TH;5-I44-LT;12-I44-LT'],//2
-    ['1', '3', '13-I42-LT;15-I42-TH;18-I42-LT;19-I42-TH'],//3
-    ['1', '4', '16-I44-LT;17-I44-LT'],//4
-    ['1', '5', '20-OUT-TH;21-OUT-TH'],//5
+    ['1', '1', '4-I44-LT;8-I41-LT;14-I11C-TH;15-I11C-TH;22-I44-LT'], //1
+    ['1', '2', '2-I42-TH;3-I42-TH;5-I44-LT;12-I44-LT'], //2
+    ['1', '3', '13-I42-LT;15-I42-TH;18-I42-LT;19-I42-TH'], //3
+    ['1', '4', '16-I44-LT;17-I44-LT'], //4
+    ['1', '5', '20-OUT-TH;21-OUT-TH'], //5
 
-    ['2', '6', '12-I42-LT;20-I42-LT'],//6
-    ['2', '7', '8-I42-LT;9-I42-LT;18-B11A-TH'],//7
-    ['2', '8', '1-I42-LT;10-I23-TH;11-I23-TH;17-I23-LT'],//8
-    ['2', '9', '14-I23-LT;15-I23-LT'],//9
-    ['2', '10', '6-B11A-LT;7-B11A-LT;13-I11C-TH'],//10
+    ['2', '6', '12-I42-LT;20-I42-LT'], //6
+    ['2', '7', '8-I42-LT;9-I42-LT;18-B11A-TH'], //7
+    ['2', '8', '1-I42-LT;10-I23-TH;11-I23-TH;17-I23-LT'], //8
+    ['2', '9', '14-I23-LT;15-I23-LT'], //9
+    ['2', '10', '6-B11A-LT;7-B11A-LT;13-I11C-TH'], //10
 
-    ['3', '11', '1-I23-LT;5-I23-LT;12-I11C-TH;12-I44-LT'],//11
-    ['3', '12', '0-I23-LT;6-I11C-TH;7-I11C-TH;16-I23-LT'],//12
-    ['3', '13', '4-I23-LT;13-I23-LT;22-I23-TH'],//13
-    ['3', '14', '2-I11C-TH;11-I44-LT;19-I44-LT'],//14
-    ['3', '15', '3-I44-LT;20-I44-LT;23-I23-TH'],//15
-    ['3', '16', '8-I23-LT;9-I23-LT'],//16
+    ['3', '11', '1-I23-LT;5-I23-LT;12-I11C-TH;12-I44-LT'], //11
+    ['3', '12', '0-I23-LT;6-I11C-TH;7-I11C-TH;16-I23-LT'], //12
+    ['3', '13', '4-I23-LT;13-I23-LT;22-I23-TH'], //13
+    ['3', '14', '2-I11C-TH;11-I44-LT;19-I44-LT'], //14
+    ['3', '15', '3-I44-LT;20-I44-LT;23-I23-TH'], //15
+    ['3', '16', '8-I23-LT;9-I23-LT'], //16
 
-    ['4', '17', '6-I44-LT;7-I41-LT'],//17
-    ['4', '18', '2-I44-LT;10-I44-LT'],//18
-    ['4', '19', '12-I41-LT;13-I41-LT'],//19
+    ['4', '17', '6-I44-LT;7-I41-LT'], //17
+    ['4', '18', '2-I44-LT;10-I44-LT'], //18
+    ['4', '19', '12-I41-LT;13-I41-LT'], //19
 
-    ['9', '20', '0-B11A-LT;7-I61-TH;20-B11A-LT'],//20
-    ['9', '21', '5-B11A-LT;21-I41-LT'],//21
-    ['9', '22', '14-B11A-LT;15-B11A-LT;23-I41-TH'],//22
-    ['9', '23', '10-B11A-LT;19-I41-TH;22-IB11A-LT'],//23
+    ['9', '20', '0-B11A-LT;7-I61-TH;20-B11A-LT'], //20
+    ['9', '21', '5-B11A-LT;21-I41-LT'], //21
+    ['9', '22', '14-B11A-LT;15-B11A-LT;23-I41-TH'], //22
+    ['9', '23', '10-B11A-LT;19-I41-TH;22-IB11A-LT'], //23
 
-    ['10', '20', '1-B11A-LT;6-I61-TH;21-B11A-LT'],//24
-    ['10', '21', '4-B11A-LT;20-B11A-LT'],//25
-    ['10', '22', '12-B11A-LT;13-B11A-TH;22-I41-TH'],//26
-    ['10', '23', '11-B11A-LT;18-I41-TH;23-IB11A-LT'],//27
+    ['10', '20', '1-B11A-LT;6-I61-TH;21-B11A-LT'], //24
+    ['10', '21', '4-B11A-LT;20-B11A-LT'], //25
+    ['10', '22', '12-B11A-LT;13-B11A-TH;22-I41-TH'], //26
+    ['10', '23', '11-B11A-LT;18-I41-TH;23-IB11A-LT'], //27
 
-    ['11', '24', '1-B11A-LT;6-I61-TH;21-B11A-LT'],//28
-    ['11', '25', '4-B11A-LT;20-B11A-LT'],//29
-    ['11', '26', '12-B11A-LT;13-B11A-TH;22-I41-TH'],//30
-    ['11', '27', '11-B11A-LT;18-I41-TH;23-IB11A-LT'],//31
-    ['11', '28', '11-B11A-LT;18-I41-TH;23-IB11A-LT'],//32
+    ['11', '24', '1-B11A-LT;6-I61-TH;21-B11A-LT'], //28
+    ['11', '25', '4-B11A-LT;20-B11A-LT'], //29
+    ['11', '26', '12-B11A-LT;13-B11A-TH;22-I41-TH'], //30
+    ['11', '27', '11-B11A-LT;18-I41-TH;23-IB11A-LT'], //31
+    ['11', '28', '11-B11A-LT;18-I41-TH;23-IB11A-LT'], //32
 
-    ['12', '29', '11-B11A-LT;18-I41-TH;23-IB11A-LT'],//33
-    ['12', '30', '16-I41-LT;17-I41-LT'],//34
-    ['12', '31', '10-B11B-LT;11-B11B-LT'],//35
-    ['12', '32', '6-B11B-LT;7-B11B-TH'],//36
-    ['12', '33', '1-I44-LT;18-I44-LT'],//37
+    ['12', '29', '11-B11A-LT;18-I41-TH;23-IB11A-LT'], //33
+    ['12', '30', '16-I41-LT;17-I41-LT'], //34
+    ['12', '31', '10-B11B-LT;11-B11B-LT'], //35
+    ['12', '32', '6-B11B-LT;7-B11B-TH'], //36
+    ['12', '33', '1-I44-LT;18-I44-LT'], //37
 
-    ['13', '34', '6-I42-LT;7-I42-LT'],//38
-    ['13', '35', '16-B11A-LT;17-B11A-LT'],//39
+    ['13', '34', '6-I42-LT;7-I42-LT'], //38
+    ['13', '35', '16-B11A-LT;17-B11A-LT'], //39
 ];
 //[first_name,last_name,email,phone,password,role_id]
 var insert_users = [
@@ -196,127 +196,127 @@ var insert_users = [
     ['Bùi Đắc', 'Thịnh', 'bdthinh@fit.hcmus.edu.vn', '090xxxx', bcrypt.hashSync('bdthinh', 10), 2], //62
 
     //16APCS
-    ['Nguyễn Toàn', 'Anh', '1651001@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ],//63
-    ['Võ Thành', 'An', '1651002@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ],//64
-    ['Huỳnh Gia', 'Bảo', '1651003@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ],//65
-    ['Phan Bình', 'Khang', '1651004@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ],//66
-    ['Cao Khắc Lê', 'Duy', '1651006@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //67
-    ['Lê Thanh', 'Duy', '1651007@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //68
-    ['Lê Sử Trường', 'Giang', '1651008@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //69
-    ['Lê Lưu Quỳnh,', 'Giao', '1651009@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //70
-    ['Nguyễn Đình,', 'Hiếu', '1651010@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //71
-    ['Nguyễn Huy', 'Hoàng', '1651011@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //72
-    ['Võ Anh', 'Hoàng', '1651012@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //73
+    ['Nguyễn Toàn', 'Anh', '1651001@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //63
+    ['Võ Thành', 'An', '1651002@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //64
+    ['Huỳnh Gia', 'Bảo', '1651003@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //65
+    ['Phan Bình', 'Khang', '1651004@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //66
+    ['Cao Khắc Lê', 'Duy', '1651006@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //67
+    ['Lê Thanh', 'Duy', '1651007@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //68
+    ['Lê Sử Trường', 'Giang', '1651008@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //69
+    ['Lê Lưu Quỳnh,', 'Giao', '1651009@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //70
+    ['Nguyễn Đình,', 'Hiếu', '1651010@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //71
+    ['Nguyễn Huy', 'Hoàng', '1651011@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //72
+    ['Võ Anh', 'Hoàng', '1651012@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //73
     //15APCS
-    ['Nguyễn Đăng,', 'Hoàn', '1551001@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //74
-    ['Nguyễn Hoàng Phúc', 'Huy', '1551002@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //75
-    ['Trần Quang', 'Huy', '1551003@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //76
-    ['Lâm Gia', 'Khang', '1551004@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //77
-    ['Nguyễn Trần Duy', 'Khang', '1551005@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //78
-    ['Võ Thành Đăng', 'Khoa', '1551006@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //79
-    ['Hoàng', 'Khôi', '1551007@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //80
-    ['Chương Thế', 'Kiệt', '1551008@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //81
-    ['Võ Hồng', 'Lâm', '1551009@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //82
-    ['Triệu Quốc', 'Lập', '1551010@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //83
-    ['Võ Thị Nhật', 'Linh', '1551011@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //84
-    ['Đào Khước Anh', 'Nguyên', '1551012@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //85
-    ['Nguyễn Phúc', 'Nguyên', '1551013@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //86
+    ['Nguyễn Đăng,', 'Hoàn', '1551001@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //74
+    ['Nguyễn Hoàng Phúc', 'Huy', '1551002@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //75
+    ['Trần Quang', 'Huy', '1551003@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //76
+    ['Lâm Gia', 'Khang', '1551004@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //77
+    ['Nguyễn Trần Duy', 'Khang', '1551005@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //78
+    ['Võ Thành Đăng', 'Khoa', '1551006@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //79
+    ['Hoàng', 'Khôi', '1551007@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //80
+    ['Chương Thế', 'Kiệt', '1551008@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //81
+    ['Võ Hồng', 'Lâm', '1551009@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //82
+    ['Triệu Quốc', 'Lập', '1551010@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //83
+    ['Võ Thị Nhật', 'Linh', '1551011@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //84
+    ['Đào Khước Anh', 'Nguyên', '1551012@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //85
+    ['Nguyễn Phúc', 'Nguyên', '1551013@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //86
     //14APCS
-    ['Hồ Hữu', 'Phát', '1451001@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //87
-    ['Huỳnh Trần Anh', 'Phương', '1451002@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //88
-    ['Nguyễn Ngọc', 'Thanh', '1451003@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //89
-    ['Kim Nhật', 'Thành', '1451004@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //90
-    ['Thái', 'Thiện', '1451005@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //91
-    ['Nguyễn Bảo', 'Toàn', '1451006@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //92
-    ['Trịnh Hoàng', 'Triều', '1451007@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //93
-    ['Lê Minh', 'Trí', '1451008@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //94
-    ['Nguyễn Quang Minh', 'Trí', '1451009@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //95
-    ['Quách Minh', 'Trí', '1451010@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //96
-    ['Lê Quốc', 'Trung', '1451011@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //97
-    ['Huỳnh Minh', 'Tú', '1451012@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //98
+    ['Hồ Hữu', 'Phát', '1451001@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //87
+    ['Huỳnh Trần Anh', 'Phương', '1451002@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //88
+    ['Nguyễn Ngọc', 'Thanh', '1451003@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //89
+    ['Kim Nhật', 'Thành', '1451004@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //90
+    ['Thái', 'Thiện', '1451005@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //91
+    ['Nguyễn Bảo', 'Toàn', '1451006@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //92
+    ['Trịnh Hoàng', 'Triều', '1451007@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //93
+    ['Lê Minh', 'Trí', '1451008@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //94
+    ['Nguyễn Quang Minh', 'Trí', '1451009@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //95
+    ['Quách Minh', 'Trí', '1451010@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //96
+    ['Lê Quốc', 'Trung', '1451011@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //97
+    ['Huỳnh Minh', 'Tú', '1451012@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //98
     //13APCS
-    ['Cao Thanh', 'Tùng', '1351001@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //99
-    ['Huỳnh Thanh Quang', 'Tùng', '1351002@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //100
-    ['Văn Duy', 'Vinh', '1351003@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //101
-    ['Nguyễn Lê', 'Bảo', '1351004@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //102
-    ['Trương Minh', 'Bảo', '1351005@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //103
-    ['Phan Văn', 'Thuyên', '1351006@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //104
-    ['Trình Xuân', 'Sơn', '1351007@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //105
-    ['Hồ Ngọc Huỳnh', 'Mai', '1351008@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //106
-    ['Nguyễn Đắc', 'Phúc', '1351009@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //107
-    ['Đinh Duy', 'Tùng', '1351010@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //108
-    ['Trần Tinh', 'Chí', '1351011@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //109
-    ['Lê Trần Ngọc', 'Minh', '1351012@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //110
-    ['Dương Gia', 'Tuấn', '1351013@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //111
-    ['Phan Hoàng', 'Anh', '1351014@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //112
-    ['Ngụy Thiên', 'Ban', '1351015@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //113
+    ['Cao Thanh', 'Tùng', '1351001@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //99
+    ['Huỳnh Thanh Quang', 'Tùng', '1351002@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //100
+    ['Văn Duy', 'Vinh', '1351003@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //101
+    ['Nguyễn Lê', 'Bảo', '1351004@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //102
+    ['Trương Minh', 'Bảo', '1351005@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //103
+    ['Phan Văn', 'Thuyên', '1351006@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //104
+    ['Trình Xuân', 'Sơn', '1351007@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //105
+    ['Hồ Ngọc Huỳnh', 'Mai', '1351008@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //106
+    ['Nguyễn Đắc', 'Phúc', '1351009@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //107
+    ['Đinh Duy', 'Tùng', '1351010@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //108
+    ['Trần Tinh', 'Chí', '1351011@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //109
+    ['Lê Trần Ngọc', 'Minh', '1351012@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //110
+    ['Dương Gia', 'Tuấn', '1351013@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //111
+    ['Phan Hoàng', 'Anh', '1351014@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //112
+    ['Ngụy Thiên', 'Ban', '1351015@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //113
 
     //16CLC1
-    ['Nguyễn Toàn', 'Hai', '1653001@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //114
-    ['Võ Thành', 'Nguyen', '1653002@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //115
-    ['Huỳnh Gia', 'Thang', '1653003@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //116
-    ['Phan Bình', 'Gia', '1653004@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //117
-    ['Lý Trung', 'Dung', '1653005@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //118
-    ['Cao Khắc Lê', 'Vien', '1653006@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //119
-    ['Lê Thanh', 'Tri', '1653007@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //120
-    ['Lê Sử Trường', 'Duong', '1653008@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //121
-    ['Lê Lưu Quỳnh,', 'Khan', '1653009@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //122
-    ['Nguyễn Đình,', 'Duong', '1653010@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //123
-    ['Nguyễn Huy', 'Khanh', '1653011@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //124
-	//16CLC2
-    ['Võ Anh', 'Thuy', '1653012@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //125
-    ['Nguyễn Đăng,', 'Dao', '1653013@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //126
-    ['Nguyễn Hoàng Phúc', 'Uoc', '1653014@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //127
-    ['Trần Quang', 'Xuan', '1653015@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //128
-    ['Lâm Gia', 'Huong', '1653016@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //129
-    ['Nguyễn Trần Duy', 'Khang', '1653017@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //130
-    ['Võ Thành Đăng', 'Khoa', '1653018@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //131
-    ['Hoàng', 'Van', '1653019@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //132
-    ['Chương Thế', 'Don', '1653020@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //133
-    ['Võ Hồng', 'Lien', '1653021@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //134
-    ['Triệu Quốc', 'Lập', '1653022@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //135
+    ['Nguyễn Toàn', 'Hai', '1653001@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //114
+    ['Võ Thành', 'Nguyen', '1653002@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //115
+    ['Huỳnh Gia', 'Thang', '1653003@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //116
+    ['Phan Bình', 'Gia', '1653004@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //117
+    ['Lý Trung', 'Dung', '1653005@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //118
+    ['Cao Khắc Lê', 'Vien', '1653006@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //119
+    ['Lê Thanh', 'Tri', '1653007@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //120
+    ['Lê Sử Trường', 'Duong', '1653008@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //121
+    ['Lê Lưu Quỳnh,', 'Khan', '1653009@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //122
+    ['Nguyễn Đình,', 'Duong', '1653010@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //123
+    ['Nguyễn Huy', 'Khanh', '1653011@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //124
+    //16CLC2
+    ['Võ Anh', 'Thuy', '1653012@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //125
+    ['Nguyễn Đăng,', 'Dao', '1653013@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //126
+    ['Nguyễn Hoàng Phúc', 'Uoc', '1653014@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //127
+    ['Trần Quang', 'Xuan', '1653015@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //128
+    ['Lâm Gia', 'Huong', '1653016@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //129
+    ['Nguyễn Trần Duy', 'Khang', '1653017@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //130
+    ['Võ Thành Đăng', 'Khoa', '1653018@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //131
+    ['Hoàng', 'Van', '1653019@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //132
+    ['Chương Thế', 'Don', '1653020@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //133
+    ['Võ Hồng', 'Lien', '1653021@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //134
+    ['Triệu Quốc', 'Lập', '1653022@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //135
     //15CLC
-    ['Võ Thị Nhật', 'Linh', '1553001@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //136
-    ['Đào Khước Anh', 'Nguyên', '1553002@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //137
-    ['Nguyễn Phúc', 'Nguyên', '1553003@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //138
-    ['Hồ Hữu', 'Phát', '1553004@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //139
-    ['Huỳnh Trần Anh', 'Phương', '1553005@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //140
-    ['Nguyễn Ngọc', 'Thanh', '1553006@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //141
-    ['Kim Nhật', 'Thành', '1553007@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //142
-    ['Thái', 'Thiện', '1553008@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //143
-    ['Nguyễn Bảo', 'Minh', '1553009@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //144
-    ['Trịnh Hoàng', 'Triều', '1553010@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //145
+    ['Võ Thị Nhật', 'Linh', '1553001@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //136
+    ['Đào Khước Anh', 'Nguyên', '1553002@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //137
+    ['Nguyễn Phúc', 'Nguyên', '1553003@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //138
+    ['Hồ Hữu', 'Phát', '1553004@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //139
+    ['Huỳnh Trần Anh', 'Phương', '1553005@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //140
+    ['Nguyễn Ngọc', 'Thanh', '1553006@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //141
+    ['Kim Nhật', 'Thành', '1553007@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //142
+    ['Thái', 'Thiện', '1553008@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //143
+    ['Nguyễn Bảo', 'Minh', '1553009@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //144
+    ['Trịnh Hoàng', 'Triều', '1553010@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //145
     //14CLC
-    ['Lê Minh', 'Trí', '1453001@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //146
-    ['Nguyễn Quang Minh', 'Trí', '1453002@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //147
-    ['Quách Minh', 'Trí', '1453003@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //148
-    ['Lê Quốc', 'Trung', '1453004@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //149
-    ['Huỳnh Minh', 'Tú', '1453005@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //150
-    ['Cao Thanh', 'Tùng', '1453006@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //151
-    ['Huỳnh Thanh Quang', 'Tùng', '1453007@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //152
-    ['Văn Duy', 'Vinh', '1453008@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //153
-    ['Nguyễn Lê', 'Bảo', '1453009@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //154
-    ['Trương Minh', 'Bảo', '1453010@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //155
+    ['Lê Minh', 'Trí', '1453001@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //146
+    ['Nguyễn Quang Minh', 'Trí', '1453002@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //147
+    ['Quách Minh', 'Trí', '1453003@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //148
+    ['Lê Quốc', 'Trung', '1453004@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //149
+    ['Huỳnh Minh', 'Tú', '1453005@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //150
+    ['Cao Thanh', 'Tùng', '1453006@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //151
+    ['Huỳnh Thanh Quang', 'Tùng', '1453007@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //152
+    ['Văn Duy', 'Vinh', '1453008@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //153
+    ['Nguyễn Lê', 'Bảo', '1453009@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //154
+    ['Trương Minh', 'Bảo', '1453010@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //155
     //13CLC
-    ['Phan Văn', 'Thuyên', '1353001@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //156
-    ['Trình Xuân', 'Sơn', '1353002@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //157
-    ['Hồ Ngọc Huỳnh', 'Mai', '1353003@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //158
-    ['Nguyễn Đắc', 'Phúc', '1353004@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //159
-    ['Đinh Duy', 'Tùng', '1353005@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //160
-    ['Trần Tinh', 'Chí', '1353006@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //161
-    ['Lê Trần Ngọc', 'Minh', '1353007@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //162
-    ['Dương Gia', 'Tuấn', '1353008@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //163
-    ['Phan Hoàng', 'Anh', '1353009@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //164
-    ['Ngụy Thiên', 'Ban', '1353010@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //165
-    ['Ngô Trường', 'Đạt', '1353011@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353011', 10), 1 ], //166
-    ['Nguyễn Thanh', 'Hoàng', '1353012@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353012', 10), 1 ], //167
+    ['Phan Văn', 'Thuyên', '1353001@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //156
+    ['Trình Xuân', 'Sơn', '1353002@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //157
+    ['Hồ Ngọc Huỳnh', 'Mai', '1353003@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //158
+    ['Nguyễn Đắc', 'Phúc', '1353004@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //159
+    ['Đinh Duy', 'Tùng', '1353005@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //160
+    ['Trần Tinh', 'Chí', '1353006@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //161
+    ['Lê Trần Ngọc', 'Minh', '1353007@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //162
+    ['Dương Gia', 'Tuấn', '1353008@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //163
+    ['Phan Hoàng', 'Anh', '1353009@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //164
+    ['Ngụy Thiên', 'Ban', '1353010@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //165
+    ['Ngô Trường', 'Đạt', '1353011@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353011', 10), 1], //166
+    ['Nguyễn Thanh', 'Hoàng', '1353012@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353012', 10), 1], //167
 
-    ['Lê Anh', 'Thảo', 'lathao@fit.hcmus.edu.vn', '01228718705', bcrypt.hashSync('lathao', 10), 3 ], //168
-    ['Nguyễn Thị Minh', 'Phúc', 'ntmphuc@fit.hcmus.edu.vn', '01228718705', bcrypt.hashSync('ntmphuc', 10), 3 ], //169
+    ['Lê Anh', 'Thảo', 'lathao@fit.hcmus.edu.vn', '01228718705', bcrypt.hashSync('lathao', 10), 3], //168
+    ['Nguyễn Thị Minh', 'Phúc', 'ntmphuc@fit.hcmus.edu.vn', '01228718705', bcrypt.hashSync('ntmphuc', 10), 3], //169
 
-    ['', 'Admin', 'admin@fit.hcmus.edu.vn', '01228718705', bcrypt.hashSync('admin', 10), 0], //170
+    ['', 'Admin', 'admin@fit.hcmus.edu.vn', '01228718705', bcrypt.hashSync('admin', 10), 3], //170
 
-    ['Huỳnh Hữu', 'Nghĩa', '1353019@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1 ], //171
+    ['Huỳnh Hữu', 'Nghĩa', '1353019@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //171
 ];
 //[teacher_id,course_id,teacher_role],
 var insert_teacher_teach_course = [
@@ -448,11 +448,11 @@ var insert_teacher_teach_course = [
 ];
 //[id, stud_id, class_id]
 var insert_students = [
-	//16APCS
-    [63, '1651001', '1'],//63
-    [64, '1651002', '1' ],//64
-    [65, '1651003', '1'],//65
-    [66, '1651004', '1'],//66
+    //16APCS
+    [63, '1651001', '1'], //63
+    [64, '1651002', '1'], //64
+    [65, '1651003', '1'], //65
+    [66, '1651004', '1'], //66
     [67, '1651006', '1'], //67
     [68, '1651007', '1'], //68
     [69, '1651008', '1'], //69
@@ -516,7 +516,7 @@ var insert_students = [
     [122, '1653009', '9'], //122
     [123, '1653010', '9'], //123
     [124, '1653011', '9'], //124
-	//16CLC2
+    //16CLC2
     [125, '1653012', '10'], //125
     [126, '1653013', '10'], //126
     [127, '1653014', '10'], //127
@@ -567,10 +567,10 @@ var insert_students = [
 //[course_id , student_id]
 var insert_student_enroll_course = [
     //16APCS
-    [1, 63],//63
-    [1, 64],//64
-    [1, 65],//65
-    [1, 66],//66
+    [1, 63], //63
+    [1, 64], //64
+    [1, 65], //65
+    [1, 66], //66
     [1, 67], //67
     [1, 68], //68
     [1, 69], //69
@@ -579,10 +579,10 @@ var insert_student_enroll_course = [
     [1, 72], //72
     [1, 73], //73
 
-    [2, 63],//63
-    [2, 64],//64
-    [2, 65],//65
-    [2, 66],//66
+    [2, 63], //63
+    [2, 64], //64
+    [2, 65], //65
+    [2, 66], //66
     [2, 67], //67
     [2, 68], //68
     [2, 69], //69
@@ -591,10 +591,10 @@ var insert_student_enroll_course = [
     [2, 72], //72
     [2, 73], //73
 
-    [3, 63],//63
-    [3, 64],//64
-    [3, 65],//65
-    [3, 66],//66
+    [3, 63], //63
+    [3, 64], //64
+    [3, 65], //65
+    [3, 66], //66
     [3, 67], //67
     [3, 68], //68
     [3, 69], //69
@@ -603,10 +603,10 @@ var insert_student_enroll_course = [
     [3, 72], //72
     [3, 73], //73
 
-    [4, 63],//63
-    [4, 64],//64
-    [4, 65],//65
-    [4, 66],//66
+    [4, 63], //63
+    [4, 64], //64
+    [4, 65], //65
+    [4, 66], //66
     [4, 67], //67
     [4, 68], //68
     [4, 69], //69
@@ -615,10 +615,10 @@ var insert_student_enroll_course = [
     [4, 72], //72
     [4, 73], //73
 
-    [5, 63],//63
-    [5, 64],//64
-    [5, 65],//65
-    [5, 66],//66
+    [5, 63], //63
+    [5, 64], //64
+    [5, 65], //65
+    [5, 66], //66
     [5, 67], //67
     [5, 68], //68
     [5, 69], //69
@@ -1012,7 +1012,7 @@ var insert_student_enroll_course = [
     [35, 153], //153
     [35, 154], //154
     [35, 155], //155
-        
+
     [36, 146], //146
     [36, 147], //147
     [36, 148], //148
@@ -1023,7 +1023,7 @@ var insert_student_enroll_course = [
     [36, 153], //153
     [36, 154], //154
     [36, 155], //155
-    
+
     [37, 146], //146
     [37, 147], //147
     [37, 148], //148
@@ -1065,212 +1065,228 @@ var insert_absence_requests = [
     [63, 'Đi khám nghĩa vụ quân sự', '2017-05-31 00:00:00', '2017-06-01 00:00:00'],
     [63, 'Đi thi ACM', '2017-06-03 00:00:00', '2017-06-10 00:00:00'],
 ];
-//[course_id,class_id]
+//[course_id,class_id,closed]
 var insert_attendance = [
-    [20,9],//1
-    [20,9],//2
-    [20,10],//3
-    [20,10],//4
+    [20, 9, 1], //1
+    [20, 9, 1], //2
+    [20, 10, 1], //3
+    [20, 10, 0], //4
 ];
 //[attendance_id, student_id, attendance_type]
 var insert_attendance_detail = [
-    [1, 114,1],
-    [1, 115,0],
-    [1, 116,1], 
-    [1, 117,0],
-    [1, 118,1],
-    [1, 119,0], 
-    [1, 120,1],
-    [1, 121,0],
-    [1, 122,1],
-    [1, 123,0],
-    [1, 124,1], 
+    [1, 114, 1],
+    [1, 115, 0],
+    [1, 116, 1],
+    [1, 117, 0],
+    [1, 118, 1],
+    [1, 119, 0],
+    [1, 120, 1],
+    [1, 121, 0],
+    [1, 122, 1],
+    [1, 123, 0],
+    [1, 124, 1],
 
-    [2, 114,0],
-    [2, 115,1],
-    [2, 116,0], 
-    [2, 117,1],
-    [2, 118,0],
-    [2, 119,1], 
-    [2, 120,0],
-    [2, 121,1],
-    [2, 122,0],
-    [2, 123,1],
-    [2, 124,0],
+    [2, 114, 0],
+    [2, 115, 1],
+    [2, 116, 0],
+    [2, 117, 1],
+    [2, 118, 0],
+    [2, 119, 1],
+    [2, 120, 0],
+    [2, 121, 1],
+    [2, 122, 0],
+    [2, 123, 1],
+    [2, 124, 0],
 
-    [3, 125,0],
-    [3, 126,1],
-    [3, 127,0], 
-    [3, 128,1],
-    [3, 129,0],
-    [3, 130,1], 
-    [3, 131,0],
-    [3, 132,1],
-    [3, 133,0],
-    [3, 134,1],
-    [3, 135,0],
+    [3, 125, 0],
+    [3, 126, 1],
+    [3, 127, 0],
+    [3, 128, 1],
+    [3, 129, 0],
+    [3, 130, 1],
+    [3, 131, 0],
+    [3, 132, 1],
+    [3, 133, 0],
+    [3, 134, 1],
+    [3, 135, 0],
 
-    [4, 125,0],
-    [4, 126,1],
-    [4, 127,0], 
-    [4, 128,1],
-    [4, 129,0],
-    [4, 130,1], 
-    [4, 131,0],
-    [4, 132,1],
-    [4, 133,0],
-    [4, 134,1],
-    [4, 135,0],
+    [4, 125, 0],
+    [4, 126, 1],
+    [4, 127, 0],
+    [4, 128, 1],
+    [4, 129, 0],
+    [4, 130, 1],
+    [4, 131, 0],
+    [4, 132, 1],
+    [4, 133, 0],
+    [4, 134, 1],
+    [4, 135, 0],
 ];
 //[from_id, to_id, title, content, type]
 var insert_feeback = [
-    [null,null,'Phòng học kém chất lương','Máy lạnh nóng quớ',3],
-    [63,1,'Thầy dạy quá nhanh','Thầy có thể dạy chậm lại cho em dễ hiểu ?',1],
-    [null,2,'Cô hớt tóc mới','Tóc mới của cô làm em khó tập trung quá!',3],
-    [63,null,'Ổ điện hỏng','Ổ điện thứ 3 từ trên xuống của dãy giữa phòng I44 bị hỏng, cô hãy fix giúp tụi em',1],
-    [1,null,'Lớp 13CLC hư','Lớp 13CLC nói chuyện quá nhiều trong giờ học, dẫn đến khó dạy.',2]
+    [null, null, 'Phòng học kém chất lương', 'Máy lạnh nóng quớ', 3],
+    [63, 1, 'Thầy dạy quá nhanh', 'Thầy có thể dạy chậm lại cho em dễ hiểu ?', 1],
+    [null, 2, 'Cô hớt tóc mới', 'Tóc mới của cô làm em khó tập trung quá!', 3],
+    [63, null, 'Ổ điện hỏng', 'Ổ điện thứ 3 từ trên xuống của dãy giữa phòng I44 bị hỏng, cô hãy fix giúp tụi em', 1],
+    [1, null, 'Lớp 13CLC hư', 'Lớp 13CLC nói chuyện quá nhiều trong giờ học, dẫn đến khó dạy.', 2]
 ];
 router.get('/', function(req, res, next) {
     pool.getConnection(function(error, connection) {
-        connection.beginTransaction(function(error) {
-            if (error) throw error;
-            // var check = 0;
-            // while(true){
-            // 	if()
-            // }
-            connection.query('INSERT INTO roles (name) VALUES ?', [insert_roles],
-                function(error, results, fields) {
+        async.series([
+            //Start transaction
+            function(callback) {
+                connection.beginTransaction(function(error) {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+            function(callback) {
+                connection.query('INSERT INTO roles (name) VALUES ?', [insert_roles], function(error, results, fields) {
                     if (error) {
-                        return connection.rollback(function() {
-                            throw error;
-                        });
+                        callback(error);
+                    } else {
+                        callback();
                     }
                 });
-
-            connection.query('INSERT INTO semesters (name,start_date,end_date,vacation_time) VALUES ?', [insert_semesters],
-                function(error, results, fields) {
+            },
+            function(callback) {
+                connection.query('INSERT INTO semesters (name,start_date,end_date,vacation_time) VALUES ?', [insert_semesters], function(error, results, fields) {
                     if (error) {
-                        return connection.rollback(function() {
-                            throw error;
-                        });
+                        callback(error);
+                    } else {
+                        callback();
                     }
                 });
-
-            connection.query('INSERT INTO programs (name,code) VALUES ?', [insert_programs],
-                function(error, results, fields) {
+            },
+            function(callback) {
+                connection.query('INSERT INTO programs (name,code) VALUES ?', [insert_programs], function(error, results, fields) {
                     if (error) {
-                        return connection.rollback(function() {
-                            throw error;
-                        });
+                        callback(error);
+                    } else {
+                        callback();
                     }
                 });
-
-            connection.query('INSERT INTO classes (name,email,program_id) VALUES ?', [insert_classes],
-                function(error, results, fields) {
+            },
+            function(callback) {
+                connection.query('INSERT INTO classes (name,email,program_id) VALUES ?', [insert_classes], function(error, results, fields) {
                     if (error) {
-                        return connection.rollback(function() {
-                            throw error;
-                        });
+                        callback(error);
+                    } else {
+                        callback();
                     }
                 });
-
-            connection.query('INSERT INTO courses (code,name,semester_id,program_id,office_hour,note) VALUES ?', [insert_courses],
-                function(error, results, fields) {
+            },
+            function(callback) {
+                connection.query('INSERT INTO courses (code,name,semester_id,program_id,office_hour,note) VALUES ?', [insert_courses], function(error, results, fields) {
                     if (error) {
-                        return connection.rollback(function() {
-                            throw error;
-                        });
+                        callback(error);
+                    } else {
+                        callback();
                     }
                 });
-
-            connection.query('INSERT INTO class_has_course (class_id,course_id,schedules) VALUES ?', [insert_class_has_course],
-                function(error, results, fields) {
+            },
+            function(callback) {
+                connection.query('INSERT INTO class_has_course (class_id,course_id,schedules) VALUES ?', [insert_class_has_course], function(error, results, fields) {
                     if (error) {
-                        return connection.rollback(function() {
-                            throw error;
-                        });
+                        callback(error);
+                    } else {
+                        callback();
                     }
                 });
-
-            connection.query('INSERT INTO users (first_name,last_name,email,phone,password,role_id) VALUES ?', [insert_users],
-                function(error, results, fields) {
+            },
+            function(callback) {
+                connection.query('INSERT INTO users (first_name,last_name,email,phone,password,role_id) VALUES ?', [insert_users], function(error, results, fields) {
                     if (error) {
-                        return connection.rollback(function() {
-                            throw error;
-                        });
-                    }
-                    //Teacher
-                    // Move to trigger
-                });
-
-            connection.query('INSERT INTO teacher_teach_course (teacher_id,course_id,teacher_role) VALUES ?', [insert_teacher_teach_course],
-                function(error, results, fields) {
-                    if (error) {
-                        return connection.rollback(function() {
-                            throw error;
-                        });
+                        callback(error);
+                    } else {
+                        callback();
                     }
                 });
-            connection.query('INSERT INTO students (id,stud_id,class_id) VALUES ?', [insert_students],
-                function(error, results, fields) {
+            },
+            function(callback) {
+                connection.query('INSERT INTO teacher_teach_course (teacher_id,course_id,teacher_role) VALUES ?', [insert_teacher_teach_course], function(error, results, fields) {
                     if (error) {
-                        return connection.rollback(function() {
-                            throw error;
-                        });
+                        callback(error);
+                    } else {
+                        callback();
                     }
                 });
-            connection.query('INSERT INTO student_enroll_course (class_has_course_id,student_id) VALUES ?', [insert_student_enroll_course],
-                function(error, results, fields) {
+            },
+            function(callback) {
+                connection.query('INSERT INTO students (id,stud_id,class_id) VALUES ?', [insert_students], function(error, results, fields) {
                     if (error) {
-                        return connection.rollback(function() {
-                            throw error;
-                        });
+                        callback(error);
+                    } else {
+                        callback();
                     }
                 });
-            connection.query('INSERT INTO absence_requests (student_id, reason, start_date, end_date) VALUES ?', [insert_absence_requests],
-                function(error, results, fields) {
+            },
+            function(callback) {
+                connection.query('INSERT INTO student_enroll_course (class_has_course_id,student_id) VALUES ?', [insert_student_enroll_course], function(error, results, fields) {
                     if (error) {
-                        return connection.rollback(function() {
-                            throw error;
-                        });
+                        callback(error);
+                    } else {
+                        callback();
                     }
                 });
-            connection.query('INSERT INTO attendance (course_id,class_id) VALUES ?', [insert_attendance],
-                function(error, results, fields) {
+            },
+            function(callback) {
+                connection.query('INSERT INTO absence_requests (student_id, reason, start_date, end_date) VALUES ?', [insert_absence_requests], function(error, results, fields) {
                     if (error) {
-                        return connection.rollback(function() {
-                            throw error;
-                        });
+                        callback(error);
+                    } else {
+                        callback();
                     }
                 });
-            connection.query('INSERT INTO attendance_detail (attendance_id, student_id, attendance_type) VALUES ?', [insert_attendance_detail],
-                function(error, results, fields) {
+            },
+            function(callback) {
+                connection.query('INSERT INTO attendance (course_id,class_id,closed) VALUES ?', [insert_attendance], function(error, results, fields) {
                     if (error) {
-                        return connection.rollback(function() {
-                            throw error;
-                        });
+                        callback(error);
+                    } else {
+                        callback();
                     }
                 });
-            connection.query('INSERT INTO feedbacks (from_id, to_id, title, content, type) VALUES ?', [insert_feeback],
-                function(error, results, fields) {
+            },
+            function(callback) {
+                connection.query('INSERT INTO attendance_detail (attendance_id, student_id, attendance_type) VALUES ?', [insert_attendance_detail], function(error, results, fields) {
                     if (error) {
-                        return connection.rollback(function() {
-                            throw error;
-                        });
+                        callback(error);
+                    } else {
+                        callback();
                     }
                 });
-            connection.commit(function(err) {
-                if (err) {
-                    return connection.rollback(function() {
-                        throw err;
-                    });
-                }
-                res.send('success');
-                console.log('success seeding!');
-            });
+            },
+            function(callback) {
+                connection.query('INSERT INTO feedbacks (from_id, to_id, title, content, type) VALUES ?', [insert_feeback], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            //Commit transaction
+            function(callback) {
+                connection.commit(function(error) {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+        ], function(error) {
+            if (error) {
+                _global.sendError(res, error.message);
+                connection.rollback(function() {
+                    throw error;
+                });
+                throw error;
+            } else {
+                console.log('success seeding!---------------------------------------');
+                res.send({ result: 'success', message: 'success seeding' });
+            }
+            connection.release();
         });
-        connection.release();
-        if (error) throw error;
+        
     });
 });
 module.exports = router;

@@ -8,7 +8,10 @@ import { CollapseModule } from 'ngx-bootstrap';
 import { CoursesComponent } from './courses.component'
 import { AddCourseComponent } from './add-course/add-course.component'
 import { CourseDetailComponent } from './course-detail/course-detail.component'
+import { CourseDetailStaffComponent } from './course-detail/course-detail-staff/course-detail-staff.component'
+import { CourseDetailTeacherComponent } from './course-detail/course-detail-teacher/course-detail-teacher.component'
 import { EditCourseComponent } from './edit-course/edit-course.component'
+
 
 import { TooltipModule } from 'ngx-bootstrap';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
@@ -37,6 +40,8 @@ const coursesRoutes: Routes = [
   declarations: [
     CoursesComponent,
     CourseDetailComponent,
+    CourseDetailTeacherComponent,
+    CourseDetailStaffComponent,
     AddCourseComponent,
     EditCourseComponent
   ],

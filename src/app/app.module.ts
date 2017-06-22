@@ -7,21 +7,26 @@ import { FileUploadModule } from "ng2-file-upload";
 
 import { AppComponent } from './app.component';
 import { LoginComponent } from './login.component';
+import { LogoutComponent } from './logout.component';
 import { ForgotPasswordComponent } from './forgot-password.component';
-import { SharedModule, PageNotFoundComponent, AuthService, AuthGuardService } from './shared/shared.module';
+import { SharedModule,QRCodeComponent, PageNotFoundComponent, AuthService, AuthGuardService } from './shared/shared.module';
 
 const ROUTES = [
     { path: '', loadChildren: 'app/layout/layout.module#LayoutModule' }, 
     { path: 'login', component: LoginComponent},
+    { path: 'logout', component: LogoutComponent},
     { path: 'forgot-password', component: ForgotPasswordComponent},
+    { path: 'qr-code', component: QRCodeComponent },
     { path: '**', component: PageNotFoundComponent },
+
 ];
 
 @NgModule({
     declarations: [
         AppComponent,
         LoginComponent,
-        ForgotPasswordComponent
+        ForgotPasswordComponent,
+        LogoutComponent
     ],
     imports: [
         BrowserModule,

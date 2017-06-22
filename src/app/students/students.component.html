@@ -164,53 +164,5 @@
         </div>
     </div>
 </div>
-<div class="modal fade" id="importModal" role="dialog">
-    <div class="vertical-alignment-helper">
-        <div class="modal-dialog vertical-align-center">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Import Student</h4>
-                </div>
-                <div class="modal-body">
-                    <div class="file-drop nv-file-over" ng2FileDrop [uploader]="uploader" (onFileDrop)="onSelectFile($event)">
-                        <h2>Drag files here</h2>
-                    </div>
-                    <br> Or click here
-                    <label class="btn btn-primary btn-sm btn-file">
-                        Choose files
-                        <input type="file" multiple accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" style="display:none;" (change)="onSelectFile($event.target.files)">
-                    </label>
-                    <table *ngIf="import_files.length > 0" class="table text-center">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Status</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let file of import_files; let i = index">
-                                <td>{{file['name']}}</td>
-                                <td *ngIf="import_results[i] == ''"></td>
-                                <td *ngIf="import_results[i] == 'success'" style="color: green"><i class="fa fa-check-circle"></i></td>
-                                <td *ngIf="import_results[i] == 'failure'" style="color: red"><i class="fa fa-exclamation-circle"></i></td>
-                                <td><button class="btn btn-danger btn-sm" (click)="onRemoveFile(i)">Remove</button></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div *ngIf="import_files.length > 0">
-                        Progress:
-                        <div class="progress" style="">
-                            <div class="progress-bar" role="progressbar" [ngStyle]="{ 'width': import_progress + '%' }"></div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default" (click)="onCancelImport()">Cancel</button>
-                        <button type="button" class="btn btn-success" (click)="onImport()">Import</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<import-modal [modal_title]="'Import Student'"></import-modal>
+'

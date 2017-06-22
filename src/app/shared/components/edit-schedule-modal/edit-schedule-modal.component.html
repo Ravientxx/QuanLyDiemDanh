@@ -96,7 +96,7 @@
                                 </tr>
                             </tbody>
                         </table>
-                        <div class="form-group" *ngIf="editingCellIndex != -1">
+                        <div class="form-group" *ngIf="editingCellIndex != -1 && !view_only">
                             <label class="control-label col-sm-1 col-xs-6"> Room:</label>
                             <div class="col-sm-3 col-xs-6">
                                 <input id="roomInput" class="form-control col-md-7 col-xs-12" name="room" [(ngModel)]="temp_room">
@@ -115,7 +115,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
+                    <div *ngIf="!view_only" class="modal-footer">
                         <button type="button" class="btn btn-default" (click)="onCancelModal()">Cancel</button>
                         <button type="button" class="btn btn-default btn-success" (click)="onSaveModal()">Save</button>
                     </div>

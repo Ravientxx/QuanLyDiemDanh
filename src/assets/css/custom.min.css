@@ -453,7 +453,7 @@ table.tile_info td p {
 
 .nav-md .container.body .col-md-3.left_col.menu_fixed {
     height: 100%;
-    position: fixed
+    position: fixed;
 }
 
 body .container.body .right_col {
@@ -1402,6 +1402,9 @@ legend {
 
 .profile_details .profile_left {
     background: #fff
+}
+.profile_left{
+    border-right: 1px solid #333;
 }
 
 .pagination.pagination-split li {
@@ -5035,4 +5038,12 @@ table td {
 }
 .new_feedback{
     background-color: #E5EAF2;
+}
+
+#menu_fixed:hover{
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.gray_background{
+    background: #ededed;
 }

@@ -70,4 +70,35 @@ router.put('/read', function(req, res, next) {
         });
     });
 });
+router.post('/send', function(req, res, next) {
+    if (req.body.title == undefined || req.body.title == '') {
+        _global.sendError(res, null, "title is required");
+        return;
+    }
+    if (req.body.content == undefined || req.body.content == '') {
+        _global.sendError(res, null, "content is required");
+        return;
+    }
+    var feedback = {
+        title: req.body.title,
+        content: req.body.content,
+        to_id : null,
+        from_id : (req.body.isAnonymous ? null : req.decoded.id),
+        type : (req.body.isAnonymous ? 3 : (req.decoded.role_id == _global.role.student ? 1 : 2)),
+    };
+    pool.getConnection(function(error, connection) {
+        if (error) {
+            _global.sendError(res, error.message);
+            throw error;
+        }
+        connection.query(`INSERT INTO feedbacks SET ?`,feedback,function(error, rows, fields) {
+            if (error) {
+                _global.sendError(res, error.message);
+                throw error;
+            }
+            res.send({ result: 'success', message: 'Feedback sent successfully'});
+            connection.release();
+        });
+    });
+});
 module.exports = router;

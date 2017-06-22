@@ -15,15 +15,15 @@ export class LayoutComponent implements AfterViewInit, AfterViewChecked {
             console.log('jQuery ready');
             var CURRENT_PATH = window.location.protocol + "//" + window.location.host + window.location.pathname;
             var setContentHeight = function() {
-                jQuery('#app_content').css('height', jQuery('#app_content_inner').outerHeight());
-                jQuery('.left_col').css('height', jQuery('.left_col_content').outerHeight());
-                var leftColHeight = jQuery('.left_col').outerHeight();
-                var rightColHeight = jQuery('#app_content').outerHeight() + jQuery('.top_nav').outerHeight() + jQuery('#footer').outerHeight() + 10;
-                if (leftColHeight < rightColHeight) {
-                    jQuery('.left_col').css('height', rightColHeight);
-                } else {
-                    jQuery('#app_content').css('height', leftColHeight - jQuery('.top_nav').outerHeight() - jQuery('#footer').outerHeight() - 10);
-                }
+                // jQuery('#app_content').css('height', jQuery('#app_content_inner').outerHeight());
+                // jQuery('.left_col').css('height', jQuery('.left_col_content').outerHeight());
+                // var leftColHeight = jQuery('.left_col').outerHeight();
+                // var rightColHeight = jQuery('#app_content').outerHeight() + jQuery('.top_nav').outerHeight() + jQuery('#footer').outerHeight() + 10;
+                // if (leftColHeight < rightColHeight) {
+                //     jQuery('.left_col').css('height', rightColHeight);
+                // } else {
+                //     jQuery('#app_content').css('height', leftColHeight - jQuery('.top_nav').outerHeight() - jQuery('#footer').outerHeight() - 10);
+                // }
             };
 
             jQuery('#sidebar-menu').find('a').on('click', function(ev) {
@@ -90,22 +90,25 @@ export class LayoutComponent implements AfterViewInit, AfterViewChecked {
                 jQuery('.menu_fixed').mCustomScrollbar({
                     autoHideScrollbar: true,
                     theme: 'minimal',
-                    mouseWheel: { preventDefault: true }
+                    mouseWheel: { preventDefault: true, scrollAmount: 150 }
                 });
             }
+            jQuery(function() {
+                console.log('test');
+            });
         });
     }
 
     ngAfterViewChecked() {
-        jQuery('#app_content').css('height', jQuery('#app_content_inner').outerHeight());
-        jQuery('.left_col').css('height', jQuery('.left_col_content').outerHeight());
-        var leftColHeight = jQuery('.left_col').outerHeight();
-        var rightColHeight = jQuery('#app_content').outerHeight() + jQuery('.top_nav').outerHeight() + jQuery('#footer').outerHeight() + 10;
-        if (leftColHeight < rightColHeight) {
-            jQuery('.left_col').css('height', rightColHeight);
-        } else {
-            jQuery('#app_content').css('height', leftColHeight - jQuery('.top_nav').outerHeight() - jQuery('#footer').outerHeight() - 10);
-        }
+        // jQuery('#app_content').css('height', jQuery('#app_content_inner').outerHeight());
+        // jQuery('.left_col').css('height', jQuery('.left_col_content').outerHeight());
+        // var leftColHeight = jQuery('.left_col').outerHeight();
+        // var rightColHeight = jQuery('#app_content').outerHeight() + jQuery('.top_nav').outerHeight() + jQuery('#footer').outerHeight() + 10;
+        // if (leftColHeight < rightColHeight) {
+        //     jQuery('.left_col').css('height', rightColHeight);
+        // } else {
+        //     jQuery('#app_content').css('height', leftColHeight - jQuery('.top_nav').outerHeight() - jQuery('#footer').outerHeight() - 10);
+        // }
 
     }
 }

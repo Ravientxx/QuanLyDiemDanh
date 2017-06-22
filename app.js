@@ -6,7 +6,6 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var cors = require('cors');
 var swaggerJSDoc = require('swagger-jsdoc');
-
 var app = express();
 
 // swagger definition
@@ -46,6 +45,7 @@ app.get('/api/swagger.json', function(req, res) {
 app.use('/authenticate', require('./api/authenticate'));
 app.use('/seed', require('./api/seed'));
 app.use('/api', require('./api/api'));
+
 
 //Xác định trang "public" cho client
 app.use(express.static(path.join(__dirname, 'dist')));

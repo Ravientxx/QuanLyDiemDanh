@@ -6,6 +6,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { CollapseModule } from 'ngx-bootstrap';
 
 import { FeedbackComponent } from './feedback.component';
+import { FeedbackStaffComponent } from './feedback-staff/feedback-staff.component';
 
 import { Ng2TableModule } from 'ng2-table/ng2-table';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
@@ -29,6 +30,7 @@ const feedbackRoutes: Routes = [
   ],
   declarations: [
     FeedbackComponent,
+    FeedbackStaffComponent,
   ],
   providers: [
   ]
