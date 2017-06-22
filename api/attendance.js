@@ -9,7 +9,7 @@ var async = require("async");
 
 router.post('/list-by-course/', function(req, res, next) {
     if (req.body.course_id == null) {
-        _global.sendError(res, null, "Course_id is required");
+        _global.sendError(res, null, "Course id is required");
         throw "Course_id is required";
     }
     if (req.body.classes_id == null || req.body.classes_id.length == 0) {
@@ -80,6 +80,7 @@ router.post('/list-by-course/', function(req, res, next) {
 
     });
 });
+
 router.post('/check-add-to-course/', function(req, res, next) {
     if (req.body.course_id == null || req.body.course_id == 0) {
         _global.sendError(res, null, "Course_id is required");
@@ -123,6 +124,7 @@ router.post('/check-add-to-course/', function(req, res, next) {
         });
     });
 });
+
 router.post('/update-list-by-course/', function(req, res, next) {
     if (req.body.course_id == null || req.body.course_id == 0) {
         _global.sendError(res, null, "Course_id is required");
@@ -342,4 +344,5 @@ router.post('/update-list-by-course/', function(req, res, next) {
         });
     });
 });
+
 module.exports = router;

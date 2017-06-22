@@ -570,7 +570,7 @@ router.post('/edit', function(req, res, next) {
 
 //API mobile
 
-router.post('/teachinglist', function(req, res, next){
+router.post('/teaching', function(req, res, next){
     var teacher_id = req.body.teacher_id;
 
     if(teacher_id){
@@ -586,17 +586,39 @@ router.post('/teachinglist', function(req, res, next){
                     throw error;
                 }
 
+                var courses = [];
+                var tmp;
+                for (var i = 0; i < rows.length; i++){
+                    if (courses[rows[i].id]){
+                        courses[rows[i].id].class.push(rows[i].class);
+                    }
+                    else {
+                        courses[rows[i].id] = rows[i];
+                        tmp = courses[rows[i].id].class;
+                        courses[rows[i].id].class = [];
+                        courses[rows[i].id].class.push(tmp);
+                    }
+                }
+
+                var remove_null = [];
+                for (var j = 0; j < courses.length; j++){
+                    if (courses[j] != null){
+                        remove_null.push(courses[j]);
+                    }
+                }
+
                 res.send({
                     result: 'success',
-                    total_items: rows.length,
-                    courses: rows
+                    total_items: remove_null.length,
+                    courses: remove_null
                 });
 
                 connection.release();
             };
 
-            connection.query(`SELECT courses.id, courses.code, courses.name 
+            connection.query(`SELECT courses.id, courses.code, courses.name, class_has_course.class_id as class 
                                 FROM courses JOIN teacher_teach_course ON course_id = courses.id
+                                    JOIN class_has_course on class_has_course.course_id = courses.id
                                 WHERE teacher_id = ? AND
                                     courses.semester_id = (SELECT MAX(ID) FROM semesters)`,
                                     [teacher_id], return_function);

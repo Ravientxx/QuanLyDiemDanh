@@ -20,6 +20,8 @@
  *         description: json
  */
 
+// Authenticate
+
 /**
 * @swagger
 * tags:
@@ -67,10 +69,17 @@
  *         in: formData
  *         required: true
  *         type: string
+ *       - name: user_id
+ *         description: user id
+ *         in: formData
+ *         required: true
+ *         type: integer
  *     responses:
  *       200:
  *         description: json
  */
+
+// User
 
 /**
 * @swagger
@@ -99,6 +108,8 @@
 *         description: json
 */
 
+// Teacher
+
 /**
 * @swagger
 * tags:
@@ -125,6 +136,8 @@
 *       200:
 *         description: json
 */
+
+// Student
 
 /**
 * @swagger
@@ -158,6 +171,7 @@
 *         description: json
 */
 
+// Course
 
 /**
 * @swagger
@@ -182,7 +196,7 @@
 *         required: true
 *         type: string
 *       - name: teacher_id
-*         description: courses list
+*         description: teacher id
 *         in: formData
 *         required: true
 *         type: integer
@@ -191,11 +205,13 @@
 *         description: json
 */
 
+// Attendance
+
 /**
 * @swagger
 * tags:
 *   name: Attendance
-*   description: Attendance support data
+*   description: Attendance management
 */
 
 /**
@@ -220,6 +236,11 @@
 *         type: integer
 *       - name: teacher_id
 *         description: teacher id
+*         in: formData
+*         required: true
+*         type: integer
+*       - name: class_id
+*         description: class id
 *         in: formData
 *         required: true
 *         type: integer
