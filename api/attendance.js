@@ -488,7 +488,7 @@ router.post('/delete', function(req, res, next) {
     }
     var attendance_id = req.body.attendance_id;
     pool.getConnection(function(error, connection) {
-        connection.query(`DELETE FROM attendance WHERE id = ?`, attendance_id, function(error, results, fields) {
+        connection.query(`DELETE FROM attendance WHERE id = ? LIMIT 1`, attendance_id, function(error, results, fields) {
             if (error) {
                 _global.sendError(res, null, 'error at delete attendances');
                 throw (error.message + ' at delete attendances');
@@ -507,7 +507,7 @@ router.post('/close', function(req, res, next) {
     }
     var attendance_id = req.body.attendance_id;
     pool.getConnection(function(error, connection) {
-        connection.query(`UPDATE attendance SET closed = 1 WHERE id = ?`, attendance_id, function(error, results, fields) {
+        connection.query(`UPDATE attendance SET closed = 1 WHERE id = ? LIMIT 1`, attendance_id, function(error, results, fields) {
             if (error) {
                 _global.sendError(res, null, 'error at close attendances');
                 throw (error.message + ' at close attendances');
@@ -588,6 +588,46 @@ router.post('/check-attendance-list/', function(req, res, next) {
                     connection.release();
                 }
             });
+        });
+
+    });
+});
+
+router.post('/check-attendance/', function(req, res, next) {
+    if (req.body.attendance_id == null || req.body.attendance_id == 0) {
+        _global.sendError(res, null, "attendance_id is required");
+        throw "attendance_id is required";
+    }
+
+    var attendance_id = req.body.attendance_id;
+    pool.getConnection(function(error, connection) {
+        if (error) {
+            var message = error.message + ' at get student_list by course';
+            _global.sendError(res, message);
+            throw message;
+        }
+
+        connection.query(`SELECT students.id as id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name, attendance_detail.attendance_type as status 
+            FROM users, attendance_detail, students 
+            WHERE users.id = students.id
+            AND attendance_detail.student_id = students.id
+            AND attendance_detail.attendance_id = ?`, [attendance_id], function(error, rows, fields) {
+            
+            if (error) {
+                var message = error.message + ' at get student_list by course';
+                _global.sendError(res, message);
+                throw message;
+            }
+
+            console.log('loaded check_attendance_list');
+            
+            res.send({
+                result: 'success',
+                length: rows.length,
+                check_attendance_list: rows
+            });
+
+            connection.release();
         });
 
     });

@@ -33,6 +33,7 @@ router.post('/check-list', function(req, res, next) {
         });
     });
 });
+
 router.post('/qr-code/:id', function(req, res, next) {
     var attendance_id = req.params['id'];
     if (attendance_id == null || attendance_id == 0) {

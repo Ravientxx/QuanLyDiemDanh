@@ -61,7 +61,7 @@ CREATE TABLE `attendance_detail` (
   `attendance_id` int(11) NOT NULL,
   `student_id` int(11) NOT NULL,
   `attendance_time` datetime DEFAULT NULL,
-  `attendance_type` tinyint(1) NOT NULL DEFAULT '0',
+  `attendance_type` tinyint(1) NOT NULL DEFAULT '5',
   PRIMARY KEY (`attendance_id`,`student_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 

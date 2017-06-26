@@ -100,6 +100,31 @@
 *         description: json
 */
 
+/**
+* @swagger
+* /api/attendance/check-attendance:
+*   post:
+*     summary: Get students of course
+*     description:
+*     tags: [Student]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: user token
+*         in: formData
+*         required: true
+*         type: string
+*       - name: attendance_id
+*         description: attendance id
+*         in: formData
+*         required: true
+*         type: integer
+*     responses:
+*       200:
+*         description: json
+*/
+
 // Course
 
 /**
@@ -212,13 +237,33 @@
 *         in: formData
 *         required: true
 *         type: string
-*       - name: attend_id
+*       - name: attendance_id
 *         description: attend id
 *         in: formData
 *         required: true
 *         type: integer
-*       - name: teacher_id
-*         description: teacher id
+*     responses:
+*       200:
+*         description: json
+*/
+
+/**
+* @swagger
+* /api/attendance/close:
+*   post:
+*     summary: delete an attendance
+*     description:
+*     tags: [Attendance]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: token
+*         in: formData
+*         required: true
+*         type: string
+*       - name: attendance_id
+*         description: attend id
 *         in: formData
 *         required: true
 *         type: integer
@@ -257,36 +302,6 @@
 *         in: formData
 *         required: true
 *         type: array
-*     responses:
-*       200:
-*         description: json
-*/
-
-/**
-* @swagger
-* /api/attendance/updateStatus:
-*   post:
-*     summary: change status of attendance
-*     description:
-*     tags: [Attendance]
-*     produces:
-*       - application/json
-*     parameters:
-*       - name: token
-*         description: token
-*         in: formData
-*         required: true
-*         type: string
-*       - name: status
-*         description: new status
-*         in: formData
-*         required: true
-*         type: integer
-*       - name: teacher_id
-*         description: teacher id
-*         in: formData
-*         required: true
-*         type: integer
 *     responses:
 *       200:
 *         description: json
