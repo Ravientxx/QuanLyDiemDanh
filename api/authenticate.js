@@ -39,9 +39,11 @@ router.post('/login', function(req, res, next) {
                 throw 'Email is not existed';
             }
             var password_hash = rows[0].password;
+            console.log(rows[0]);
             if (bcrypt.compareSync(password, password_hash)) {
                 var token = jwt.sign(rows[0], _global.jwt_secret_key, { expiresIn: _global.jwt_expire_time });
                 res.send({ result: 'success', token: token, user: rows[0] });
+                console.log(token);
                 connection.release();
             } else {
                 _global.sendError(res, null, 'Wrong password');

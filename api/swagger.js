@@ -1,25 +1,3 @@
-/**
- * @swagger
- * tags:
- *   name: Test
- *   description: ez test ez life
- */
-
-/**
- * @swagger
- * /authenticate/test:
- *   post:
- *     summary: test
- *     description:
- *     tags: [Test]
- *     produces:
- *       - application/json
- *     parameters:
- *     responses:
- *       200:
- *         description: json
- */
-
 // Authenticate
 
 /**
@@ -79,64 +57,6 @@
  *         description: json
  */
 
-// User
-
-/**
-* @swagger
-* tags:
-*   name: User
-*   description: User data
-*/
-
-/**
-* @swagger
-* /api/user/detail:
-*   post:
-*     summary: Get a user profile
-*     description: 
-*     tags: [User]
-*     produces:
-*       - application/json
-*     parameters:
-*       - name: id
-*         description: user ID
-*         in: formData
-*         required: true
-*         type: integer
-*     responses:
-*       200:
-*         description: json
-*/
-
-// Teacher
-
-/**
-* @swagger
-* tags:
-*   name: Teacher
-*   description: Teacher data
-*/
-
-/**
-* @swagger
-* /api/teacher/detail:
-*   get:
-*     summary: Get a teacher profile
-*     description: 
-*     tags: [Teacher]
-*     produces:
-*       - application/json
-*     parameters:
-*       - name: id
-*         description: user ID
-*         in: formData
-*         required: true
-*         type: integer
-*     responses:
-*       200:
-*         description: json
-*/
-
 // Student
 
 /**
@@ -148,7 +68,7 @@
 
 /**
 * @swagger
-* /api/student/studying:
+* /api/attendance/check-attendance-list:
 *   post:
 *     summary: Get students of course
 *     description:
@@ -161,8 +81,8 @@
 *         in: formData
 *         required: true
 *         type: string
-*       - name: teacher_id
-*         description: teacher id
+*       - name: class_id
+*         description: class id
 *         in: formData
 *         required: true
 *         type: integer
@@ -170,6 +90,10 @@
 *         description: course id
 *         in: formData
 *         required: true
+*         type: integer
+*       - name: islistOnly
+*         description: islistOnly
+*         in: formData
 *         type: integer
 *     responses:
 *       200:
@@ -200,11 +124,6 @@
 *         in: formData
 *         required: true
 *         type: string
-*       - name: teacher_id
-*         description: teacher id
-*         in: formData
-*         required: true
-*         type: integer
 *     responses:
 *       200:
 *         description: json
@@ -217,6 +136,35 @@
 * tags:
 *   name: Attendance
 *   description: Attendance management
+*/
+
+/**
+* @swagger
+* /api/attendance/opening-by-teacher:
+*   post:
+*     summary: Get opening attendance
+*     description:
+*     tags: [Attendance]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: token
+*         in: formData
+*         required: true
+*         type: string
+*       - name: teacher_id
+*         description: teacher id
+*         in: formData
+*         required: true
+*         type: integer
+*       - name: isMobile
+*         description: mobile reduce data
+*         in: formData
+*         type: integer
+*     responses:
+*       200:
+*         description: json
 */
 
 /**
@@ -236,11 +184,6 @@
 *         type: string
 *       - name: course_id
 *         description: courses id
-*         in: formData
-*         required: true
-*         type: integer
-*       - name: teacher_id
-*         description: teacher id
 *         in: formData
 *         required: true
 *         type: integer
@@ -348,3 +291,5 @@
 *       200:
 *         description: json
 */
+
+//check-attendance-list attendant_id

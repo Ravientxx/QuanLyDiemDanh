@@ -639,7 +639,7 @@ router.post('/list/teaching', function(req, res, next) {
 //API mobile
 
 router.post('/teaching', function(req, res, next){
-    var teacher_id = req.body.teacher_id;
+    var teacher_id = req.decoded.id;
 
     if(teacher_id){
         pool.getConnection(function(error, connection) {
@@ -654,49 +654,19 @@ router.post('/teaching', function(req, res, next){
                     throw error;
                 }
 
-                var courses = [];
-                var tmp;
-                for (var i = 0; i < rows.length; i++){
-                    if (courses[rows[i].id]){
-                        courses[rows[i].id].class.push(rows[i].class);
-                        courses[rows[i].id].chcid.push(rows[i].chcid);
-                        courses[rows[i].id].total_stud.push(rows[i].total_stud);
-                    }
-                    else {
-                        courses[rows[i].id] = rows[i];
-                        tmp = courses[rows[i].id].class;
-                        courses[rows[i].id].class = [];
-                        courses[rows[i].id].class.push(tmp);
-
-                        tmp = courses[rows[i].id].chcid;
-                        courses[rows[i].id].chcid = [];
-                        courses[rows[i].id].chcid.push(tmp);
-
-                        tmp = courses[rows[i].id].total_stud;
-                        courses[rows[i].id].total_stud = [];
-                        courses[rows[i].id].total_stud.push(tmp);
-                    }
-                }
-
-                var removed_null = [];
-                for (var j = 0; j < courses.length; j++){
-                    if (courses[j] != null){
-                        removed_null.push(courses[j]);
-                    }
-                }
-
                 res.send({
                     result: 'success',
-                    total_items: removed_null.length,
-                    courses: removed_null
+                    total_items: rows.length,
+                    courses: rows
                 });
 
                 connection.release();
             };
 
-            connection.query(`SELECT courses.id, courses.code, courses.name, class_has_course.class_id as class, class_has_course.id as chcid, class_has_course.total_stud as total_stud 
+            connection.query(`SELECT courses.id, courses.code, courses.name, class_has_course.class_id as class, classes.name as class_name, class_has_course.id as chcid, class_has_course.total_stud as total_stud 
                                 FROM courses JOIN teacher_teach_course ON course_id = courses.id
                                     JOIN class_has_course on class_has_course.course_id = courses.id
+                                    JOIN classes on class_has_course.class_id = classes.id
                                 WHERE teacher_id = ? AND
                                     courses.semester_id = (SELECT MAX(ID) FROM semesters)`,
                 [teacher_id], return_function);

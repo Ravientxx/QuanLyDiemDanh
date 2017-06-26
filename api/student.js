@@ -308,10 +308,11 @@ router.put('/update', function(req, res, next) {
 //API mobile
 
 router.post('/studying', function (req, res, next) {
-    var teacher_id = req.body.teacher_id;
+    var teacher_id = req.decoded.id;
+    var class_id = req.body.class_id;
     var course_id = req.body.course_id;
 
-    if(teacher_id && course_id){
+    if(class_id && course_id){
         pool.getConnection(function(error, connection) {
             if (error) {
                 _global.sendError(res, error.message);
@@ -337,7 +338,7 @@ router.post('/studying', function (req, res, next) {
                                 FROM users join students on students.id = users.id 
                                 join student_enroll_course on students.id = student_enroll_course.student_id 
                                 join class_has_course on class_has_course.id = student_enroll_course.class_has_course_id
-                                where class_has_course.course_id = ?`,
+                                where class_has_course.course_id = ? and student_enroll_course.attendance_status = 0`,
                 [course_id], return_function);
         });
     }
