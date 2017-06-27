@@ -675,4 +675,30 @@ router.post('/update-attendance', function(req, res, next){
     });
 });
 
+router.post('/opening-for-student', function(req, res, next) {
+    var student_id = req.decoded.id;
+    pool.getConnection(function(error, connection) {
+        query = `SELECT class_has_course.id as class_has_course_id, attendance.id as attendance_id
+            FROM student_enroll_course, class_has_course, attendance
+            WHERE attendance.closed = 0 AND student_enroll_course.student_id = ? AND
+                student_enroll_course.class_has_course_id = class_has_course.id AND
+                class_has_course.class_id = attendance.class_id`;
+
+        connection.query(query, student_id, function(error, results, fields) {
+            if (error) {
+                _global.sendError(res, null, 'error at get opening attendances');
+                return console.log(error.message + ' at get opening attendances');
+            } else {
+                res.send({
+                    result: 'success',
+                    length: results.length,
+                    opening_attendances: results
+                });
+                connection.release();
+            }
+        });
+    });
+});
+
+
 module.exports = router;
