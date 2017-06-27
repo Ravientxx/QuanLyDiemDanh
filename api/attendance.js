@@ -8,7 +8,7 @@ var bcrypt = require('bcrypt');
 var async = require("async");
 
 
-router.post('/list-by-course/', function(req, res, next) {
+router.post('/list-by-course', function(req, res, next) {
     if (req.body.course_id == null) {
         _global.sendError(res, null, "Course id is required");
         throw "Course_id is required";
@@ -82,7 +82,7 @@ router.post('/list-by-course/', function(req, res, next) {
     });
 });
 
-router.post('/check-add-to-course/', function(req, res, next) {
+router.post('/check-add-to-course', function(req, res, next) {
     if (req.body.course_id == null || req.body.course_id == 0) {
         _global.sendError(res, null, "Course_id is required");
         throw "Course_id is required";
@@ -126,7 +126,7 @@ router.post('/check-add-to-course/', function(req, res, next) {
     });
 });
 
-router.post('/update-list-by-course/', function(req, res, next) {
+router.post('/update-list-by-course', function(req, res, next) {
     if (req.body.course_id == null || req.body.course_id == 0) {
         _global.sendError(res, null, "Course_id is required");
         throw "Course_id is required";
@@ -378,7 +378,7 @@ router.post('/update-list-by-course/', function(req, res, next) {
     });
 });
 
-router.post('/opening-by-teacher/', function(req, res, next) {
+router.post('/opening-by-teacher', function(req, res, next) {
     if (req.body.teacher_id == null || req.body.teacher_id == 0) {
         _global.sendError(res, null, "teacher_id is required");
         throw "teacher_id is required";
@@ -519,7 +519,7 @@ router.post('/close', function(req, res, next) {
     });
 });
 
-router.post('/check-attendance-list/', function(req, res, next) {
+router.post('/check-attendance-list', function(req, res, next) {
     var listOnlyFlag = req.body.islistOnly == null ? 0 : 1;
 
     if (req.body.course_id == null || req.body.course_id == 0) {
@@ -593,7 +593,7 @@ router.post('/check-attendance-list/', function(req, res, next) {
     });
 });
 
-router.post('/check-attendance/', function(req, res, next) {
+router.post('/check-attendance', function(req, res, next) {
     if (req.body.attendance_id == null || req.body.attendance_id == 0) {
         _global.sendError(res, null, "attendance_id is required");
         throw "attendance_id is required";
@@ -630,6 +630,48 @@ router.post('/check-attendance/', function(req, res, next) {
             connection.release();
         });
 
+    });
+});
+
+router.post('/update-attendance', function(req, res, next){
+    if (req.body.attendance_id == null || req.body.attendance_id == 0) {
+        _global.sendError(res, null, "attendance_id is required");
+        throw "attendance_id is required";
+    }
+
+    var attendance_id = req.body.attendance_id;
+    pool.getConnection(function(error, connection) {
+        if (error) {
+            var message = error.message + ' at get attendance data by course';
+            _global.sendError(res, message);
+            throw message;
+        }
+
+        var attendance_detail = req.body.data;        
+
+        async.each(attendance_detail, function(detail, callback) {
+            connection.query(`UPDATE attendance_detail
+                SET attendance_detail.attendance_type = ?, attendance_detail.attendance_time = ?
+                WHERE attendance_detail.student_id = ? AND attendance_detail.attendance_id = ?`, [detail.status, new Date(), 
+                detail.student_id, attendance_id], function(error, results, fields) {
+                if (error) {
+                    console.log(error.message + ' at get attendance_details');
+                    callback(error);
+                }
+                else {
+                    callback();
+                }
+            });
+        }, function(error) {
+            if (error) {
+                _global.sendError(res, error.message);
+                throw error;
+            }
+            else {
+                res.send({result: "success"});
+                connection.release();
+            }
+        });
     });
 });
 

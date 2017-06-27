@@ -663,7 +663,8 @@ router.post('/teaching', function(req, res, next){
                 connection.release();
             };
 
-            connection.query(`SELECT courses.id, courses.code, courses.name, class_has_course.class_id as class, classes.name as class_name, class_has_course.id as chcid, class_has_course.total_stud as total_stud 
+            connection.query(`SELECT courses.id, courses.code, courses.name, class_has_course.class_id as class, classes.name as class_name, 
+                class_has_course.id as chcid, class_has_course.total_stud as total_stud 
                                 FROM courses JOIN teacher_teach_course ON course_id = courses.id
                                     JOIN class_has_course on class_has_course.course_id = courses.id
                                     JOIN classes on class_has_course.class_id = classes.id
@@ -676,6 +677,49 @@ router.post('/teaching', function(req, res, next){
         return res.status(401).send({
             result: 'failure',
             message: 'teacher_id is required'
+        });
+    }
+});
+
+router.post('/studying', function(req, res, next) {
+    var student_id = req.decoded.id;
+
+    if (student_id){
+        pool.getConnection(function(error, connection) {
+            if (error) {
+                _global.sendError(res, error.message);
+                throw error;
+            }
+
+            var return_function = function(error, rows, fields) {
+                if (error) {
+                    _global.sendError(res, error.message);
+                    throw error;
+                }
+
+                res.send({
+                    result: 'success',
+                    total_items: rows.length,
+                    courses: rows
+                });
+
+                connection.release();
+            };
+
+            connection.query(`SELECT courses.id, courses.code, courses.name, class_has_course.class_id as class, classes.name as class_name, 
+                class_has_course.id as chcid, class_has_course.total_stud as total_stud 
+                                FROM courses JOIN class_has_course ON class_has_course.course_id = courses.id
+                                    JOIN classes ON class_has_course.class_id = classes.id
+                                    JOIN student_enroll_course ON class_has_course.id = student_enroll_course.class_has_course_id
+                                WHERE student_id = ? AND
+                                    courses.semester_id = (SELECT MAX(ID) FROM semesters)`,
+                [student_id], return_function);
+        });
+    }
+    else {
+        return res.status(401).send({
+            result: 'failure',
+            message: 'student_id is required'
         });
     }
 });

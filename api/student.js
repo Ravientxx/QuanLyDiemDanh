@@ -305,49 +305,4 @@ router.put('/update', function(req, res, next) {
     });
 });
 
-//API mobile
-
-router.post('/studying', function (req, res, next) {
-    var teacher_id = req.decoded.id;
-    var class_id = req.body.class_id;
-    var course_id = req.body.course_id;
-
-    if(class_id && course_id){
-        pool.getConnection(function(error, connection) {
-            if (error) {
-                _global.sendError(res, error.message);
-                throw error;
-            }
-
-            var return_function = function(error, rows, fields) {
-                if (error) {
-                    _global.sendError(res, error.message);
-                    throw error;
-                }
-
-                res.send({
-                    result: 'success',
-                    total_items: rows.length,
-                    courses: rows
-                });
-
-                connection.release();
-            };
-
-            connection.query(`SELECT users.first_name, users.last_name, students.stud_id
-                                FROM users join students on students.id = users.id 
-                                join student_enroll_course on students.id = student_enroll_course.student_id 
-                                join class_has_course on class_has_course.id = student_enroll_course.class_has_course_id
-                                where class_has_course.course_id = ? and student_enroll_course.attendance_status = 0`,
-                [course_id], return_function);
-        });
-    }
-    else {
-        return res.status(401).send({
-            result: 'failure',
-            message: teacher_id === undefined ? 'teacher_id' : 'course_id' + 'is required'
-        });
-    }
-});
-
 module.exports = router;

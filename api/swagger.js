@@ -154,6 +154,26 @@
 *         description: json
 */
 
+/**
+* @swagger
+* /api/course/studying:
+*   post:
+*     summary: Get Course list
+*     description:
+*     tags: [Course]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: token
+*         in: formData
+*         required: true
+*         type: string
+*     responses:
+*       200:
+*         description: json
+*/
+
 // Attendance
 
 /**
@@ -274,31 +294,26 @@
 
 /**
 * @swagger
-* /api/attendance/sync:
+* /api/attendance/update-attendance:
 *   post:
-*     summary: sync attendance data
+*     summary: Update student attendance type
 *     description:
 *     tags: [Attendance]
 *     produces:
 *       - application/json
 *     parameters:
 *       - name: token
-*         description: token
+*         description: user token
 *         in: formData
 *         required: true
 *         type: string
-*       - name: attend_id
-*         description: attend id
-*         in: formData
-*         required: true
-*         type: integer
-*       - name: teacher_id
-*         description: teacher id
+*       - name: attendance_id
+*         description: attendance id
 *         in: formData
 *         required: true
 *         type: integer
 *       - name: data
-*         description: data
+*         description: attendance detail
 *         in: formData
 *         required: true
 *         type: array
@@ -306,5 +321,6 @@
 *       200:
 *         description: json
 */
+
 
 //check-attendance-list attendant_id
