@@ -214,6 +214,26 @@
 
 /**
 * @swagger
+* /api/attendance/opening-for-student:
+*   post:
+*     summary: Get opening attendance
+*     description:
+*     tags: [Attendance]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: token
+*         in: formData
+*         required: true
+*         type: string
+*     responses:
+*       200:
+*         description: json
+*/
+
+/**
+* @swagger
 * /api/attendance/create:
 *   post:
 *     summary: request an attendance id from server

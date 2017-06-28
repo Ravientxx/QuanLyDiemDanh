@@ -678,11 +678,19 @@ router.post('/update-attendance', function(req, res, next){
 router.post('/opening-for-student', function(req, res, next) {
     var student_id = req.decoded.id;
     pool.getConnection(function(error, connection) {
+        if (error) {
+            var message = error.message + ' at get attendance data for student';
+            _global.sendError(res, message);
+            throw message;
+        }
+
         query = `SELECT class_has_course.id as class_has_course_id, attendance.id as attendance_id
-            FROM student_enroll_course, class_has_course, attendance
-            WHERE attendance.closed = 0 AND student_enroll_course.student_id = ? AND
-                student_enroll_course.class_has_course_id = class_has_course.id AND
-                class_has_course.class_id = attendance.class_id`;
+            FROM qldd.attendance, class_has_course, student_enroll_course as sec
+            WHERE attendance.closed = 0 AND
+            class_has_course.class_id = attendance.class_id 
+            AND class_has_course.course_id = attendance.course_id
+            AND sec.class_has_course_id = class_has_course.id
+            AND sec.student_id = ?`;
 
         connection.query(query, student_id, function(error, results, fields) {
             if (error) {

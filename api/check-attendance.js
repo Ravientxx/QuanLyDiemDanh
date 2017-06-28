@@ -37,9 +37,13 @@ router.post('/check-list', function(req, res, next) {
 router.post('/qr-code/:id', function(req, res, next) {
     var attendance_id = req.params['id'];
     if (attendance_id == null || attendance_id == 0) {
-        _global.sendError(res, null, "attendance_id is required");
-        throw "attendance_id is required";
+        attendance_id = req.body.attendance_id;
+        if (attendance_id == null || attendance_id == 0) {
+            _global.sendError(res, null, "attendance_id is required");
+            throw "attendance_id is required";
+        }
     }
+    
     var student_id = req.decoded.id;
     pool.getConnection(function(error, connection) {
         async.series([
