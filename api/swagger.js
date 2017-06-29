@@ -343,4 +343,43 @@
 */
 
 
-//check-attendance-list attendant_id
+/**
+* @swagger
+* tags:
+*   name: Feedback
+*   description: Feedback management
+*/
+
+/**
+* @swagger
+* /api/feedback/send:
+*   post:
+*     summary: Send feedback
+*     description:
+*     tags: [Feedback]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: user token
+*         in: formData
+*         required: true
+*         type: string
+*       - name: title
+*         description: title
+*         in: formData
+*         required: true
+*         type: string
+*       - name: content
+*         description: content
+*         in: formData
+*         required: true
+*         type: string
+*       - name: isAnonymous
+*         description: isAnonymous
+*         in: formData
+*         type: boolean
+*     responses:
+*       200:
+*         description: json
+*/
