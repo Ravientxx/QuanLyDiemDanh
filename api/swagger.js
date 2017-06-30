@@ -376,9 +376,29 @@
 *         required: true
 *         type: string
 *       - name: isAnonymous
-*         description: isAnonymous
+*         description: isAnonymous (only use for student)
 *         in: formData
 *         type: boolean
+*     responses:
+*       200:
+*         description: json
+*/
+
+/**
+* @swagger
+* /api/feedback/history:
+*   post:
+*     summary: Sent Feedback List
+*     description:
+*     tags: [Feedback]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: user token
+*         in: formData
+*         required: true
+*         type: string
 *     responses:
 *       200:
 *         description: json
