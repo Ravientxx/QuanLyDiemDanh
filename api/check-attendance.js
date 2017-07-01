@@ -49,7 +49,7 @@ router.post('/qr-code/:id', function(req, res, next) {
         async.series([
             //Check attendance id
             function(callback) {
-                connection.query(`SELECT * FROM attendance WHERE attendance_id = ?`,  attendance_id, function(error, results, fields) {
+                connection.query(`SELECT * FROM attendance WHERE id = ?`,  attendance_id, function(error, results, fields) {
                     if (error) {
                         callback(error.message + ' at check attendance_id');
                     } else {

@@ -664,7 +664,7 @@ router.post('/teaching', function(req, res, next){
             };
 
             connection.query(`SELECT courses.id, courses.code, courses.name, class_has_course.class_id as class, classes.name as class_name, 
-                class_has_course.id as chcid, class_has_course.total_stud as total_stud, class_has_course.schedules 
+                class_has_course.id as chcid, class_has_course.total_stud as total_stud, class_has_course.schedules as schedule
                                 FROM courses JOIN teacher_teach_course ON course_id = courses.id
                                     JOIN class_has_course on class_has_course.course_id = courses.id
                                     JOIN classes on class_has_course.class_id = classes.id
@@ -707,7 +707,7 @@ router.post('/studying', function(req, res, next) {
             };
 
             connection.query(`SELECT courses.id, courses.code, courses.name, class_has_course.class_id as class, classes.name as class_name, 
-                class_has_course.id as chcid, class_has_course.total_stud as total_stud 
+                class_has_course.id as chcid, class_has_course.total_stud as total_stud, class_has_course.schedules as schedule 
                                 FROM courses JOIN class_has_course ON class_has_course.course_id = courses.id
                                     JOIN classes ON class_has_course.class_id = classes.id
                                     JOIN student_enroll_course ON class_has_course.id = student_enroll_course.class_has_course_id
