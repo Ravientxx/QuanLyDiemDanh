@@ -3,22 +3,22 @@ import * as io from 'socket.io-client';
 import { Subject } from 'rxjs';
 @Injectable()
 export class CheckAttendanceSocketService {
-  private socket: SocketIOClient.Socket; // The client instance of socket.io
+  public  socket: SocketIOClient.Socket; // The client instance of socket.io
 
-   invokeCheckAttendanceUpdated = new Subject();
-   invokeCheckAttendanceCreated = new Subject();
-   invokeCheckAttendanceStopped = new Subject();
+   public invokeCheckAttendanceUpdated = new Subject();
+  public  invokeCheckAttendanceCreated = new Subject();
+   public invokeCheckAttendanceStopped = new Subject();
   // Constructor with an injection of ToastService
-  constructor() {
+  public constructor() {
     this.socket = io();
   }
 
   // Emit: Check Attendance updated event
-  emitEventOnCheckAttendanceUpdated(checkAttendanceUpdated){
+  public emitEventOnCheckAttendanceUpdated(checkAttendanceUpdated){
     this.socket.emit('checkAttendanceUpdated', checkAttendanceUpdated);
   }
   // Consume on Check Attendance updated 
-  consumeEventOnCheckAttendanceUpdated(){
+  public consumeEventOnCheckAttendanceUpdated(){
     var self = this;
     this.socket.on('checkAttendanceUpdated', function(event:any){
       self.invokeCheckAttendanceUpdated.next();
@@ -26,22 +26,22 @@ export class CheckAttendanceSocketService {
   }
 
   // Emit: Check Attendance created event
-  emitEventOnCheckAttendanceCreated(checkAttendanceCreated){
+  public emitEventOnCheckAttendanceCreated(checkAttendanceCreated){
     this.socket.emit('checkAttendanceCreated', checkAttendanceCreated);
   }
   // Consume on Check Attendance created 
-  consumeEventOnCheckAttendanceCreated(){
+  public consumeEventOnCheckAttendanceCreated(){
     var self = this;
     this.socket.on('checkAttendanceCreated', function(event:any){
       self.invokeCheckAttendanceCreated.next();
     });
   }
   // Emit: Check Attendance created event
-  emitEventOnCheckAttendanceStopped(checkAttendanceStopped){
+  public emitEventOnCheckAttendanceStopped(checkAttendanceStopped){
     this.socket.emit('checkAttendanceStopped', checkAttendanceStopped);
   }
   // Consume on Check Attendance created 
-  consumeEventOnCheckAttendanceStopped(){
+  public consumeEventOnCheckAttendanceStopped(){
     var self = this;
     this.socket.on('checkAttendanceStopped', function(event:any){
       self.invokeCheckAttendanceStopped.next(event);

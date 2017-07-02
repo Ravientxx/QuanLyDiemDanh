@@ -14,23 +14,23 @@ var insert_roles = [
 ];
 //[name, start_date, end_date, vacation_time]
 var insert_semesters = [
-    ['HK1 2015-2016', '2015-10-1 00:00:00', '2015-12-23 00:00:00', '12/24/2015 - 1/5/2016'],
-    ['HK2 2015-2016', '2016-1-15 00:00:00', '2016-4-28 00:00:00', '4/30/2016 - 5/2/2016'],
-    ['HK3 2015-2016', '2016-5-5 00:00:00', '2016-8-8 00:00:00', '8/16/2016 - 9/25/2016'],
-    ['HK1 2016-2017', '2016-10-2 00:00:00', '2016-12-25 00:00:00', '12/24/2016 - 1/6/2017'],
+    ['HK1 2015-2016', '2015-10-1 00:00:00', '2015-12-23 00:00:00', '24/12/2015 - 5/1/2016'],
+    ['HK2 2015-2016', '2016-1-15 00:00:00', '2016-4-28 00:00:00', '30/4/2016 - 2/5/2016'],
+    ['HK3 2015-2016', '2016-5-5 00:00:00', '2016-8-8 00:00:00', '16/8/2016 - 25/9/2016'],
+    ['HK1 2016-2017', '2016-10-2 00:00:00', '2016-12-25 00:00:00', '24/12/2016 - 6/1/2017'],
 ];
 //[name,code]
 var insert_programs = [
     ['Chất lượng cao', 'CLC'],
     ['Việt Pháp', 'VP'],
-    ['APCS', 'APCS'],
+    ['Chương trình tiên tiến', 'CTT'],
 ];
 //[code,email,program_id]
 var insert_classes = [
-    ['16CTT', '16apcs@student.hcmus.edu.vn', 3], //1
-    ['15CTT', '15apcs@student.hcmus.edu.vn', 3], //2
-    ['14CTT', '14apcs@student.hcmus.edu.vn', 3], //3
-    ['13CTT', '13apcs@student.hcmus.edu.vn', 3], //4
+    ['16CTT', '16ctt@student.hcmus.edu.vn', 3], //1
+    ['15CTT', '15ctt@student.hcmus.edu.vn', 3], //2
+    ['14CTT', '14ctt@student.hcmus.edu.vn', 3], //3
+    ['13CTT', '13ctt@student.hcmus.edu.vn', 3], //4
     ['16VP', '16vp@student.hcmus.edu.vn', 2], //5
     ['15VP', '15vp@student.hcmus.edu.vn', 2], //6
     ['14VP', '14vp@student.hcmus.edu.vn', 2], //7

@@ -7,9 +7,9 @@ declare var jQuery: any;
     templateUrl: './layout.component.html',
 })
 export class LayoutComponent implements AfterViewInit, AfterViewChecked {
-    constructor() {}
+    public constructor() {}
 
-    ngAfterViewInit() {
+    public ngAfterViewInit() {
         jQuery(document).ready(function() {
 
             console.log('jQuery ready');
@@ -99,16 +99,16 @@ export class LayoutComponent implements AfterViewInit, AfterViewChecked {
         });
     }
 
-    ngAfterViewChecked() {
-        // jQuery('#app_content').css('height', jQuery('#app_content_inner').outerHeight());
-        // jQuery('.left_col').css('height', jQuery('.left_col_content').outerHeight());
-        // var leftColHeight = jQuery('.left_col').outerHeight();
-        // var rightColHeight = jQuery('#app_content').outerHeight() + jQuery('.top_nav').outerHeight() + jQuery('#footer').outerHeight() + 10;
-        // if (leftColHeight < rightColHeight) {
-        //     jQuery('.left_col').css('height', rightColHeight);
-        // } else {
-        //     jQuery('#app_content').css('height', leftColHeight - jQuery('.top_nav').outerHeight() - jQuery('#footer').outerHeight() - 10);
-        // }
+    public ngAfterViewChecked() {
+        jQuery('.right_col').css('min-height', jQuery(window).height());
 
+        var bodyHeight = jQuery('body').outerHeight(),
+            footerHeight = jQuery('body').hasClass('footer_fixed') ? -10 : jQuery('footer').height(),
+            leftColHeight = jQuery('.left_col').eq(1).height() + jQuery('.sidebar-footer').height(),
+            contentHeight = bodyHeight < leftColHeight ? leftColHeight : bodyHeight;
+
+        // normalize content
+        contentHeight -= jQuery('.nav_menu').height() + footerHeight;
+        jQuery('.right_col').css('min-height', contentHeight);
     }
 }

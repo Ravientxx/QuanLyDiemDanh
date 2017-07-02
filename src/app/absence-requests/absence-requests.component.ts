@@ -8,7 +8,7 @@ declare var jQuery: any;
 })
 export class AbsenceRequestsComponent implements OnInit {
 
-    public constructor(private authService: AuthService, private appService: AppService) {
+    public constructor(public authService: AuthService, public appService: AppService) {
     }
 
     public ngOnInit(): void {

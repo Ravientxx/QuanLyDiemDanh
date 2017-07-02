@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Output, EventEmitter, Component, OnDestroy, OnInit } from '@angular/core';
 import { FileUploader } from "ng2-file-upload/ng2-file-upload";
-import { read, IWorkBook } from "ts-xlsx";
-import { IWorkSheet } from "xlsx";
+import * as XLSX from 'xlsx';
 import { Observable, Subject, Subscription } from "rxjs";
 
 const URL = 'https://foo.bar.com';
@@ -24,14 +23,14 @@ export interface ScheduleUploadResult {
 })
 export class ScheduleUploadComponent implements OnInit, OnDestroy {
     public uploader: FileUploader = new FileUploader({ url: URL });
-    private subscription: Subscription;
-    private filesSubject: Subject < File > ;
-    private _uploadedXls: Observable < { result: string, studytime: string, shift1: any, shift2: any, shift3: any, shift4: any, error: any } > ;
+    public  subscription: Subscription;
+    public  filesSubject: Subject < File > ;
+    public  _uploadedXls: Observable < { result: string, studytime: string, shift1: any, shift2: any, shift3: any, shift4: any, error: any } > ;
 
     @Output()
     public uploadedXls: EventEmitter < ScheduleUploadResult > = new EventEmitter();
 
-    constructor() {
+    public constructor() {
         this.filesSubject = new Subject();
         this._uploadedXls = this.filesSubject.asObservable()
             .switchMap((file: File) => {
@@ -47,10 +46,10 @@ export class ScheduleUploadComponent implements OnInit, OnDestroy {
                         };
                     })
                     .map((value: string) => {
-                        return read(value, { type: 'binary' });
-                    }).map((wb: IWorkBook) => {
+                        return XLSX.read(value, { type: 'binary' });
+                    }).map((wb: XLSX.WorkBook) => {
                         return wb.SheetNames.map((sheetName: string) => {
-                            let sheet: IWorkSheet = wb.Sheets[sheetName];
+                            let sheet: XLSX.WorkSheet = wb.Sheets[sheetName];
                             var temp = sheet.A2.v.split(",");
                             var study_time = sheet.A2.v;
                             var shift1: Array < any > = [];
@@ -117,11 +116,11 @@ export class ScheduleUploadComponent implements OnInit, OnDestroy {
                     .catch(e => Observable.of({ result: 'failure', error: e }));
             });
     }
-    ngOnInit() {
+    public ngOnInit() {
         this.subscription = this._uploadedXls.subscribe(this.uploadedXls);
     }
 
-    ngOnDestroy() {
+    public ngOnDestroy() {
         if (this.subscription) {
             this.subscription.unsubscribe();
         }

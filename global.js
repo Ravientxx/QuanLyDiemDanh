@@ -76,4 +76,27 @@ module.exports = {
         var last_name = name.substr(i + 1, name.length - 1);
         return last_name;
     },
+    getProgramCodeFromClassName: function(class_name){
+        var program_code = '';
+        for(var i = 0 ; i < class_name.length; i++){
+            if(isNaN(class_name[i])){
+                program_code += class_name[i];
+            }
+        }
+        return program_code;
+    },
+    removeExtraFromTeacherName: function(teacher_name){
+        var name = teacher_name;
+        //cắt học vị
+        var i = name.indexOf('. ');
+        if(i != -1){
+            name = name.substr(i+1, name.length - 1);
+        }
+        //cắt (+TA)
+        i = name.lastIndexOf('(');
+        if(i != -1){
+            name = name.substr(0,i-1);
+        }
+        return name;
+    }
 };

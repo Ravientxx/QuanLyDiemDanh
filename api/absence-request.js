@@ -68,6 +68,8 @@ router.put('/change-status', function(req, res, next) {
 router.post('/list', function(req, res, next) {
     var status = req.body.status ? req.body.status : 0;
     var search_text = req.body.search_text ? req.body.search_text : '';
+    var page = req.body.page != null ? req.body.page : _global.default_page;
+    var limit = req.body.limit != null ? req.body.limit : _global.detail_limit;
     pool.getConnection(function(error, connection) {
         connection.query(`SELECT absence_requests.*,students.stud_id as code, CONCAT(users.first_name,' ', users.last_name) as name 
             FROM absence_requests,students,users 
@@ -89,10 +91,19 @@ router.post('/list', function(req, res, next) {
                     }
                 }
             }
-            res.send({
-                result: 'success',
-                absence_requests: search_list
-            });
+            if (limit != -1) {
+                res.send({
+                    result: 'success',
+                    total_items: search_list.length,
+                    absence_requests: _global.filterListByPage(page, limit, search_list)
+                });
+            } else {
+                res.send({
+                    result: 'success',
+                    total_items: search_list.length,
+                    absence_requests: search_list
+                });
+            }
             connection.release();
         });
     });

@@ -5,23 +5,23 @@ import { AppService } from './app.service';
 import { LocalStorageService } from 'angular-2-local-storage';
 @Injectable()
 export class AuthGuardService implements CanActivate, CanActivateChild, CanLoad {
-    constructor(private appService: AppService, private authService: AuthService, private router: Router,private localStorage : LocalStorageService) {}
+    public constructor(public  appService: AppService, public  authService: AuthService, public  router: Router,public  localStorage : LocalStorageService) {}
 
-    canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+    public canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
         let url: string = state.url;
 
         return this.checkLogin(url);
     }
-    canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+    public canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
         return this.canActivate(route, state);
     }
-    canLoad(route: Route): boolean {
+    public canLoad(route: Route): boolean {
         let url = `/${route.path}`;
 
         return this.checkLogin(url);
     }
 
-    checkRole(url:string): boolean{
+    public checkRole(url:string): boolean{
         if(this.authService.current_user.role_id == this.appService.userType.teacher){
             switch (url) {
                 case "/courses":
@@ -36,7 +36,7 @@ export class AuthGuardService implements CanActivate, CanActivateChild, CanLoad 
         }
         return true;
     }
-    checkLogin(url: string): boolean {
+    public checkLogin(url: string): boolean {
         if (this.localStorage.get('isLoggedIn')) {
             this.authService.current_user = this.localStorage.get('current_user');
             this.authService.token = this.localStorage.get('token').toString();

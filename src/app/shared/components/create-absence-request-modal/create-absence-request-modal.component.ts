@@ -8,19 +8,19 @@ declare var jQuery: any;
   templateUrl: './create-absence-request-modal.component.html',
 })
 export class CreateAbsenceRequestModalComponent implements OnInit {
-	@Input() classes : Array<any>;
-	@Output() onConfirmed : EventEmitter<string> = new EventEmitter<string>();
+	@Input() public classes : Array<any>;
+	@Output() public onConfirmed : EventEmitter<string> = new EventEmitter<string>();
 
-    new_reason = "";
-    new_start_date;
-    new_end_date;
+    public new_reason = "";
+    public new_start_date;
+    public new_end_date;
 
     public apiResult: string;
     public apiResultMessage: string;
     public onOpenModal() {
         jQuery("#createAbsenceRequestModal").modal("show");
     }
-    onConfirmCreateRequest() {
+    public onConfirmCreateRequest() {
         this.new_start_date = jQuery('#from_to').data('daterangepicker').startDate;
         this.new_end_date = jQuery('#from_to').data('daterangepicker').endDate;
         this.absenceRequestService.createAbsenceRequests(this.new_reason, this.new_start_date, this.new_end_date).subscribe(result => {
@@ -32,10 +32,10 @@ export class CreateAbsenceRequestModalComponent implements OnInit {
                 jQuery("#createAbsenceRequestModal").modal("hide");
                 this.onConfirmed.emit('success');
             }
-        }, error => { console.log(error) });
+        }, error => { this.appService.showPNotify('failure', "Server Error! Can't create absence request", 'error'); });
     }
-	constructor(private absenceRequestService : AbsenceRequestService,private appService: AppService) { }
-	ngOnInit() {
+	public constructor(public  absenceRequestService : AbsenceRequestService,public  appService: AppService) { }
+	public ngOnInit() {
         jQuery('#from_to').daterangepicker(null, function(start, end, label) {
 
         });

@@ -44,13 +44,13 @@ router.post('/qr-code/:id', function(req, res, next) {
         async.series([
             //Check attendance id
             function(callback) {
-                connection.query(`SELECT * FROM attendance WHERE attendance_id = ?`,  attendance_id, function(error, results, fields) {
+                connection.query(`SELECT * FROM attendance WHERE id = ?`, attendance_id, function(error, results, fields) {
                     if (error) {
                         callback(error.message + ' at check attendance_id');
                     } else {
-                        if(results.length == 0){
+                        if (results.length == 0) {
                             callback('Invalid attendance id');
-                        }else{
+                        } else {
                             callback();
                         }
                     }
@@ -64,9 +64,9 @@ router.post('/qr-code/:id', function(req, res, next) {
                     if (error) {
                         callback(error.message + ' at check student_id');
                     } else {
-                        if(results.length == 0){
+                        if (results.length == 0) {
                             callback('Student did not enrolled in this Course');
-                        }else{
+                        } else {
                             callback();
                         }
                     }
@@ -84,8 +84,8 @@ router.post('/qr-code/:id', function(req, res, next) {
             },
         ], function(error) {
             if (error) {
-                _global.sendError(res,null, error);
-                throw error;
+                _global.sendError(res, null, error);
+                console.log(error);
             } else {
                 res.send({
                     result: 'success',
@@ -97,3 +97,4 @@ router.post('/qr-code/:id', function(req, res, next) {
 });
 
 module.exports = router;
+        

@@ -8,14 +8,14 @@ declare var jQuery: any;
 })
 export class StudentDetailComponent implements OnInit {
 
-    student_id: number;
+    public student_id: number;
 
-    public constructor(private route: ActivatedRoute, private router: Router, private studentService: StudentService,private authService: AuthService, private appService: AppService, private absenceRequestService: AbsenceRequestService) {
+    public constructor(public  route: ActivatedRoute, public  router: Router, public  studentService: StudentService,public  authService: AuthService, public  appService: AppService, public  absenceRequestService: AbsenceRequestService) {
 
     }
     @ViewChild(ResultMessageModalComponent)
-    private resultMessageModal: ResultMessageModalComponent;
-    isEditingStudent = false;
+    public  resultMessageModal: ResultMessageModalComponent;
+    public isEditingStudent = false;
     public student = {
         id: 0,
         first_name: '',
@@ -38,16 +38,16 @@ export class StudentDetailComponent implements OnInit {
             this.absenceRequestService.getRequestsByStudent(this.student_id,-1,'')
             .subscribe(result => {
                 this.absence_requests = result.absence_requests;
-            }, error => { console.log(error) });
-        }, error => { console.log(error) });
+            }, error => { this.appService.showPNotify('failure', "Server Error! Can't get absence requests by student", 'error'); });
+        }, error => { this.appService.showPNotify('failure', "Server Error! Can't student detail", 'error'); });
     }
     public onCourseClick(id: number) {
         this.router.navigate(['/courses/', id]);
     }
 
-    current_request_id = 0;
-    current_request_status = 0;
-    confirm_modal_title = '';
+    public current_request_id = 0;
+    public current_request_status = 0;
+    public confirm_modal_title = '';
     public onAcceptRequest(id: number) {
         jQuery('#confirmModal').modal("show");
         this.confirm_modal_title = 'Accept this request ?';
@@ -73,21 +73,21 @@ export class StudentDetailComponent implements OnInit {
                     .subscribe(result => {
                         this.absence_requests = result.absence_requests;
                         jQuery('#confirmModal').modal("hide");
-                    }, error => { console.log(error) });
-            }, error => { console.log(error) });
+                    }, error => { this.appService.showPNotify('failure', "Server Error! Can't get absence_requests by student", 'error'); });
+            }, error => { this.appService.showPNotify('failure', "Server Error! Can't change request status", 'error'); });
     }
-    editing_phone;
-    editing_mail;
-    editing_name;
-    editing_status;
-    onEditStudent() {
+    public editing_phone;
+    public editing_mail;
+    public editing_name;
+    public editing_status;
+    public onEditStudent() {
         this.editing_name = this.student.first_name + ' ' + this.student.last_name;
         this.editing_mail = this.student.email;
         this.editing_phone = this.student.phone;
         this.editing_status = this.student.status;
         this.isEditingStudent = true;
     }
-    onCancelEditStudent() {
+    public onCancelEditStudent() {
         this.isEditingStudent = false;
     }
     public apiResult: string;
@@ -105,6 +105,6 @@ export class StudentDetailComponent implements OnInit {
                 }
                 //this.resultMessageModal.onOpenModal();
                 this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
-            }, error => { console.log(error) });
+            }, error => { this.appService.showPNotify('failure', "Server Error! Can't update profile", 'error'); });
     }
 }

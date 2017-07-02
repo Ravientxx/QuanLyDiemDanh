@@ -42,13 +42,24 @@ router.post('/list', function(req, res, next) {
             if(sort != 'none'){
                 _global.sortListByKey(sort,search_list,'last_name');
             }
-            res.send({ 
-                result: 'success', 
-                total_items: search_list.length, 
-                page: page,
-                limit: limit,
-                teacher_list: _global.filterListByPage(page, limit, search_list) 
-            });
+            if(limit == -1){
+                res.send({ 
+                    result: 'success', 
+                    total_items: search_list.length, 
+                    page: page,
+                    limit: limit,
+                    teacher_list: search_list
+                });
+            }else{
+                res.send({ 
+                    result: 'success', 
+                    total_items: search_list.length, 
+                    page: page,
+                    limit: limit,
+                    teacher_list: _global.filterListByPage(page, limit, search_list) 
+                });
+            }
+            
 
             connection.release();
         });
@@ -268,12 +279,93 @@ router.put('/update', function(req, res, next) {
                         });
                         throw error;
                     } else {
-                        console.log('success updating teacher!---------------------------------------');
-                        res.send({ result: 'success', message: 'Teacher Updated Successfully' });
+                        console.log('success updating profile!---------------------------------------');
+                        res.send({ result: 'success', message: 'Profile Updated Successfully' });
                     }
                     connection.release();
                 });
     });
 });
 
+router.post('/import', function(req, res, next) {
+    if (req.body.teacher_list == undefined || req.body.teacher_list.length == 0) {
+        _global.sendError(res, null, "Teacher list is required");
+        return;
+    }
+    var teacher_list = req.body.teacher_list;
+    pool.getConnection(function(error, connection) {
+        if (error) {
+            _global.sendError(res, error.message);
+            throw error;
+        }
+        var class_id = 0;
+        async.series([
+            //Start transaction
+            function(callback) {
+                connection.beginTransaction(function(error) {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+            //Insert student into class
+            function(callback) {
+                async.each(teacher_list, function(teacher, callback) {
+                    connection.query(`SELECT id FROM users WHERE email = ? LIMIT 1`, teacher.email, function(error, results, fields) {
+                        if (error) {
+                            console.log(error.message + ' at check teacher exist');
+                            callback(error);
+                        } else {
+                            if (results.length == 0) {
+                                //new teacher to system
+                                var new_user = {
+                                    first_name: teacher.first_name,
+                                    last_name: teacher.last_name,
+                                    email: teacher.email,
+                                    phone: teacher.phone,
+                                    role_id: 2,
+                                    password: bcrypt.hashSync(teacher.email.split('@')[0], 10),
+                                };
+                                connection.query(`INSERT INTO users SET ?`, new_user, function(error, results, fields) {
+                                    if (error) {
+                                        callback(error);
+                                    } else {
+                                        callback();
+                                    }
+                                });
+                            } else {
+                                //old teacher => ignore
+                                callback();
+                            }
+                        }
+                    });
+                }, function(error) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            //Commit transaction
+            function(callback) {
+                connection.commit(function(error) {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+        ], function(error) {
+            if (error) {
+                _global.sendError(res, null, error.message);
+                connection.rollback(function() {
+                    console.log(error);
+                });
+                console.log(error);
+            } else {
+                console.log('success import teachers!---------------------------------------');
+                res.send({ result: 'success', message: 'Teachers imported successfully' });
+            }
+            connection.release();
+        });
+    });
+});
 module.exports = router;

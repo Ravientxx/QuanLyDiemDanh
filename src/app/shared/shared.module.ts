@@ -2,7 +2,7 @@ import { NgModule, ModuleWithProviders } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { TabsModule } from 'ngx-bootstrap/tabs';
+import { TabsModule,TooltipModule } from 'ngx-bootstrap';
 import { QRCodeModule } from 'angular2-qrcode';
 
 import { LocalStorageModule } from 'angular-2-local-storage';
@@ -23,6 +23,8 @@ import { ResultMessageModalComponent } from './components/result-message-modal/r
 export { ResultMessageModalComponent };
 import { ImportModalComponent } from './components/import-modal/import-modal.component';
 export { ImportModalComponent };
+import { ExportModalComponent } from './components/export-modal/export-modal.component';
+export { ExportModalComponent };
 import { CreateAbsenceRequestModalComponent } from './components/create-absence-request-modal/create-absence-request-modal.component';
 export { CreateAbsenceRequestModalComponent };
 import { SendFeedbackModalComponent } from './components/send-feedback-modal/send-feedback-modal.component';
@@ -71,7 +73,8 @@ export {CheckAttendanceService};
             prefix: 'qldd',
             storageType: 'localStorage'
         }),
-    FileUploadModule
+    FileUploadModule,
+    TooltipModule.forRoot()
   ],
   declarations: [
     FooterComponent,
@@ -83,7 +86,8 @@ export {CheckAttendanceService};
     ImportModalComponent,
     CreateAbsenceRequestModalComponent,
     SendFeedbackModalComponent,
-    QRCodeComponent
+    QRCodeComponent,
+    ExportModalComponent
   ],
   exports: [
     FooterComponent,
@@ -95,7 +99,8 @@ export {CheckAttendanceService};
     ImportModalComponent,
     CreateAbsenceRequestModalComponent,
     SendFeedbackModalComponent,
-    QRCodeComponent
+    QRCodeComponent,
+    ExportModalComponent
   ],  
   providers: [
     AppService,

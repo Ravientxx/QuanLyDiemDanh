@@ -9,6 +9,8 @@ var pool = mysql.createPool(_global.db);
 router.post('/list', function(req, res, next) {
     var role_id = req.body.role_id ? req.body.role_id : 0;
     var search_text = req.body.search_text ? req.body.search_text : '';
+    var page = req.body.page != null ? req.body.page : _global.default_page;
+    var limit = req.body.limit != null ? req.body.limit : _global.detail_limit;
     pool.getConnection(function(error, connection) {
         var query = `SELECT id, title, content, feedbacks.read, created_at , 
             (SELECT CONCAT(users.first_name,' ',users.last_name,'\r\n',users.email) FROM users WHERE users.id = feedbacks.from_id) as _from, 
@@ -44,7 +46,19 @@ router.post('/list', function(req, res, next) {
                     }
                 }
             }
-            res.send({ result: 'success', feedbacks: search_list});
+            if (limit != -1) {
+                res.send({
+                    result: 'success',
+                    total_items: search_list.length,
+                    feedbacks: _global.filterListByPage(page, limit, search_list)
+                });
+            } else {
+                res.send({
+                    result: 'success',
+                    total_items: search_list.length,
+                    feedbacks: search_list
+                });
+            }
             connection.release();
         });
     });

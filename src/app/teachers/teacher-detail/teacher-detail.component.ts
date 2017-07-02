@@ -6,7 +6,7 @@ import { TeacherService, ResultMessageModalComponent, AppService } from '../../s
     templateUrl: './teacher-detail.component.html'
 })
 export class TeacherDetailComponent implements OnInit {
-    teacher_id: number;
+    public teacher_id: number;
     public teaching_courses: Array < any > ;
     public teacher = {
         id: 0,
@@ -17,14 +17,14 @@ export class TeacherDetailComponent implements OnInit {
         email: '',
         phone: '',
     };
-    public constructor(private route: ActivatedRoute, private router: Router, private teacherService: TeacherService,private appService:AppService) {
+    public constructor(public  route: ActivatedRoute, public  router: Router, public  teacherService: TeacherService,public  appService:AppService) {
         this.route.params.subscribe(params => { this.teacher_id = params['id'] });
         this.teacherService.getTeacherDetail(this.teacher_id)
             .subscribe(result => {
                 this.teacher = result.teacher;
                 this.teaching_courses = result.teaching_courses;
                 this.editing_name = this.teacher.first_name + ' ' + this.teacher.last_name;
-            }, err => { console.log(err) });
+            }, err => { this.appService.showPNotify('failure', "Server Error! Can't teacher detail", 'error'); });
     }
     public ngOnInit(): void {
         
@@ -38,22 +38,22 @@ export class TeacherDetailComponent implements OnInit {
     public apiResult: string;
     public apiResultMessage: string;
     @ViewChild(ResultMessageModalComponent)
-    private resultMessageModal: ResultMessageModalComponent;
+    public  resultMessageModal: ResultMessageModalComponent;
 
-    isEditingTeacher = false;
-    editing_phone;
-    editing_mail;
-    editing_name;
-    onEditTeacher() {
+    public isEditingTeacher = false;
+    public editing_phone;
+    public editing_mail;
+    public editing_name;
+    public onEditTeacher() {
         this.editing_name = this.teacher.first_name + ' ' + this.teacher.last_name;
         this.editing_mail = this.teacher.email;
         this.editing_phone = this.teacher.phone;
         this.isEditingTeacher = true;
     }
-    onCancelEditTeacher() {
+    public onCancelEditTeacher() {
         this.isEditingTeacher = false;
     }
-    onSaveEditTeacher() {
+    public onSaveEditTeacher() {
         this.teacherService.updateTeacher(this.teacher_id, this.editing_name, this.editing_mail, this.editing_phone)
             .subscribe(result => {
                 this.apiResult = result.result;
@@ -65,6 +65,6 @@ export class TeacherDetailComponent implements OnInit {
                 }
                 //this.resultMessageModal.onOpenModal();
                 this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
-            }, error => { console.log(error) });
+            }, error => { this.appService.showPNotify('failure', "Server Error! Can't update teacher", 'error'); });
     }
 }

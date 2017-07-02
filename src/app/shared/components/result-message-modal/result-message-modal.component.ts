@@ -6,8 +6,8 @@ declare var jQuery: any;
   templateUrl: './result-message-modal.component.html',
 })
 export class ResultMessageModalComponent implements OnInit {
-	@Input() modal_message : string;
-	@Input() modal_title : string;
+	@Input() public modal_message : string;
+	@Input() public modal_title : string;
 
     public onOpenModal() {
         jQuery("#resultMessageModal").modal("show");
@@ -18,8 +18,8 @@ export class ResultMessageModalComponent implements OnInit {
     public onSaveModal() {
         jQuery("#resultMessageModal").modal("hide");
     }
-	constructor() { }
-	ngOnInit() {
+	public constructor() { }
+	public ngOnInit() {
 	}
 
 }

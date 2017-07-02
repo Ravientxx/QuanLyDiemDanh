@@ -8,7 +8,7 @@ declare var jQuery: any;
 })
 export class AbsenceRequestsStudentComponent implements OnInit {
 
-    public constructor(private router: Router, private absenceRequestService: AbsenceRequestService, private appService: AppService, private authService: AuthService) {}
+    public constructor(public router: Router, public absenceRequestService: AbsenceRequestService, public appService: AppService, public authService: AuthService) {}
 
     public ngOnInit(): void {
         this.getAbsenceRequests();
@@ -21,21 +21,21 @@ export class AbsenceRequestsStudentComponent implements OnInit {
 
     public apiResult: string;
     public apiResultMessage: string;
-    absence_requests = [];
-    selectedStatus;
-    absence_request_status = [];
-    search_text = '';
-    getAbsenceRequests() {
+    public absence_requests = [];
+    public selectedStatus;
+    public absence_request_status = [];
+    public search_text = '';
+    public getAbsenceRequests() {
         this.absenceRequestService.getRequestsByStudent(this.authService.current_user.id, this.selectedStatus, this.search_text).subscribe(result => {
             this.absence_requests = result.absence_requests;
-        }, error => { console.log(error) });
+        }, error => { this.appService.showPNotify('failure', "Server Error! Can't get absence requests", 'error');  });
     }
-    onChangeStatus() {
+    public onChangeStatus() {
         this.getAbsenceRequests();
     }
-    current_request_id = 0;
-    current_request_status = 0;
-    confirm_modal_title = '';
+    public current_request_id = 0;
+    public current_request_status = 0;
+    public confirm_modal_title = '';
     public onCancelRequest(id: number) {
         jQuery('#confirmModal').modal("show");
         this.confirm_modal_title = 'Cancel this request ?';
@@ -44,11 +44,11 @@ export class AbsenceRequestsStudentComponent implements OnInit {
 
 
     @ViewChild(CreateAbsenceRequestModalComponent)
-    private createAbsenceRequestModal: CreateAbsenceRequestModalComponent;
-    onCreateRequest() {
+    public createAbsenceRequestModal: CreateAbsenceRequestModalComponent;
+    public onCreateRequest() {
         this.createAbsenceRequestModal.onOpenModal();
     }
-    onRequestCreated(result:string){
+    public onRequestCreated(result:string){
         if(result == 'success'){
             this.getAbsenceRequests();
         }
@@ -63,9 +63,9 @@ export class AbsenceRequestsStudentComponent implements OnInit {
                     jQuery('#confirmModal').modal("hide");
                     this.getAbsenceRequests();
                 }
-            }, error => { console.log(error) });
+            }, error => { this.appService.showPNotify('failure', "Server Error! Can't cancel request", 'error');  });
     }
-    onSearchChange() {
+    public onSearchChange() {
         if (this.search_text.length > 3 || this.search_text.length == 0) {
             this.getAbsenceRequests();
         }

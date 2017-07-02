@@ -12,7 +12,7 @@
                         <ul class="nav nav-tabs" *ngIf="classes.length > 1">
                           <li *ngFor="let class of classes; let i = index" [ngClass]="{'active': i == current_class_id}" (click)="onChangeClass(i)"><a>{{class.class_name}}</a></li>
                         </ul>
-                        <table class="table table-bordered text-center">
+                        <table class="table table-bordered text-center" style="font-weight: bold">
                             <thead class="text-center">
                                 <tr>
                                     <th width="10%"> </th>

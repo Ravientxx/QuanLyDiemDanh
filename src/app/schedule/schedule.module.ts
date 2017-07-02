@@ -4,13 +4,14 @@ import { FormsModule }    from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 import { CollapseModule } from 'ngx-bootstrap';
 import { ScheduleComponent }    from './schedule.component';
-
+import { ScheduleStudentComponent }  from './schedule-student/schedule-student.component';
+import { ScheduleStaffComponent }    from './schedule-staff/schedule-staff.component';
 import { Ng2TableModule } from 'ng2-table/ng2-table';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
 import {FileUploadModule} from "ng2-file-upload";
 import { ScheduleUploadComponent } from './schedule-upload/schedule-upload.component';
-
+import { SharedModule } from '../shared/shared.module';
 const scheduleRoutes: Routes = [
   { path: '',  component: ScheduleComponent }
 ];
@@ -25,9 +26,12 @@ const scheduleRoutes: Routes = [
     PaginationModule.forRoot(),
     TabsModule,
     FileUploadModule,
+    SharedModule,
   ],
   declarations: [
     ScheduleComponent,
+    ScheduleStaffComponent,
+    ScheduleStudentComponent,
     ScheduleUploadComponent,
   ],
   providers: []

@@ -7,23 +7,23 @@ import { LocalStorageService } from 'angular-2-local-storage';
     templateUrl: './forgot-password.component.html',
 })
 export class ForgotPasswordComponent implements OnInit {
-    constructor(private route: ActivatedRoute, private appService: AppService, private authService: AuthService, private router: Router, private localStorage: LocalStorageService) {}
+    public constructor(public  route: ActivatedRoute, public  appService: AppService, public  authService: AuthService, public  router: Router, public  localStorage: LocalStorageService) {}
 
-    ngOnInit() {
+    public ngOnInit() {
         this.route.params.subscribe(params => { this.reset_token = params['token'] });
         if (this.reset_token) {
             this.authService.resetPasswordCheck(this.reset_token).subscribe(result => {
                 this.reset_password_check = result.result;
                 this.error_message = result.message;
-            }, error => { console.log(error) });
+            }, error => { this.appService.showPNotify('failure', "Server Error! Can't check reset password", 'error'); });
         }
     }
-    email: string = '';
-    reset_token: string;
-    reset_password_check;
-    password: string = '';
-    confirm_password: string = '';
-    resetPassword() {
+    public email: string = '';
+    public reset_token: string;
+    public reset_password_check;
+    public password: string = '';
+    public confirm_password: string = '';
+    public resetPassword() {
         this.error_message = '';
         this.authService.resetPassword(this.password, this.confirm_password, this.reset_token).subscribe(result => {
             if (result.result == 'success') {
@@ -34,21 +34,21 @@ export class ForgotPasswordComponent implements OnInit {
             } else {
                 this.error_message = result.message;
             }
-        }, error => { console.log(error) });
+        }, error => { this.appService.showPNotify('failure', "Server Error! Can't reset password", 'error'); });
     }
 
     public error_message: any;
-    success_message;
+    public success_message;
     public apiResult = 'failure';
-    forgotPassword() {
+    public forgotPassword() {
         this.authService.forgotPassword(this.email).subscribe(results => {
             this.apiResult = results.result;
             if (results.result == 'failure') {
                 this.error_message = results.message;
             }
-        }, error => { console.log(error) });
+        }, error => { this.appService.showPNotify('failure', "Server Error! Can't proceed forgot password", 'error'); });
     }
-    continue () {
+    public continue () {
         this.router.navigate(['/login']);
     }
 }

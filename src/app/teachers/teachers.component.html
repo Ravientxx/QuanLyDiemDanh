@@ -2,17 +2,17 @@
     <div class="x_panel">
         <div class="x_title">
             <h3>Teachers</h3>
+            <div class="pull-right navbar-btn">
+                <button type="button" class="btn btn-primary btn-round" data-toggle="modal" data-target="#addTeacherModal"> <i class="fa fa-plus"></i> Add </button>
+                <button type="button" class="btn btn-primary btn-round" (click)="onImportTeacher()"> <i class="fa fa-upload"></i> Import</button>
+                <button type="button" class="btn btn-primary btn-round" (click)="onExportTeacher()"> <i class="fa fa-download"></i> Export</button>
+            </div>
             <div class="clearfix"></div>
         </div>
         <div class="x_content">
             <div class="row">
                 <div class="col-xs-4">
                     <input placeholder="Search Teacher Name" class="form-control" [(ngModel)]="searchText" (ngModelChange)="onSearchChange()" />
-                </div>
-                <div class="col-xs-4">
-                    <button type="button" class="btn btn-primary btn-round" data-toggle="modal" data-target="#addTeacherModal"> <i class="fa fa-plus"></i> Add </button>
-                    <button type="button" class="btn btn-primary btn-round"> <i class="fa fa-upload" (click)="onImportTeacher()"></i> Import</button>
-                    <button type="button" class="btn btn-primary btn-round"> <i class="fa fa-download" (click)="onExportTeacher()"></i> Export</button>
                 </div>
             </div>
             <br>
@@ -24,23 +24,17 @@
                             <i *ngIf="sort_tag[sort_index] == 'asc'" class="fa fa-chevron-up"></i>
                             <i *ngIf="sort_tag[sort_index] == 'dsc'" class="fa fa-chevron-down"></i>
                         </th>
-                        <th>
-                            Current Courses
-                        </th>
-                        <th>
-                            Phone
-                        </th>
-                        <th>
-                            Email
-                        </th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Current Courses</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngFor="let teacher of teacher_list" (click)='onCellClick(teacher.id,teacher.email)'>
                         <td>{{teacher.first_name}} {{teacher.last_name}}</td>
-                        <td>{{teacher.current_courses}}</td>
                         <td>{{teacher.phone}}</td>
                         <td>{{teacher.email}}</td>
+                        <td>{{teacher.current_courses}}</td>
                     </tr>
                 </tbody>
             </table>
@@ -104,22 +98,5 @@
         </div>
     </div>
 </div>
-<result-message-modal [modal_title]="apiResult" [modal_message]="apiResultMessage"></result-message-modal>
-<div class="modal fade" id="progressModal" role="dialog">
-    <div class="vertical-alignment-helper">
-        <div class="modal-dialog modal-sm vertical-align-center">
-            <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-body">
-                    <div class="text-center">
-                        <h2>Loading</h2>
-                    </div>
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<import-modal [import_type]="appService.import_export_type.teacher" [title]="'Import Teacher'" (onClose)="onCloseImport($event)"></import-modal>
+<export-modal [export_type]="appService.import_export_type.teacher" [title]="'Export Teacher'" [search_data]="export_search_data"></export-modal>

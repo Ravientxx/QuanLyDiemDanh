@@ -24,18 +24,18 @@ router.post('/login', function(req, res, next) {
     pool.getConnection(function(error, connection) {
         if (error) {
             _global.sendError(res, error.message);
-            throw error;
+            return console.log(error);
         }
 
         connection.query(`SELECT * FROM users WHERE email = ? LIMIT 1`, email, function(error, rows, fields) {
             if (error) {
                 _global.sendError(res, error.message);
-                throw error;
+                return console.log(error);
             }
             //check email exist
             if (rows.length == 0) {
                 _global.sendError(res, null, "Email not found");
-                throw "Email is not existed";
+                return console.log("Email is not existed");
             }
             var password_hash = rows[0].password;
             if (bcrypt.compareSync(password, password_hash)) {
@@ -44,7 +44,7 @@ router.post('/login', function(req, res, next) {
                 connection.release();
             } else {
                 _global.sendError(res, null, "Wrong password");
-                throw "Wrong password";
+                return console.log("Wrong password");
             }
         });
     });
@@ -169,12 +169,12 @@ router.post('/reset-password', function(req, res, next) {
                 pool.getConnection(function(error, connection) {
                     if (error) {
                         _global.sendError(res, error.message);
-                        throw error;
+                        return console.log(error);
                     }
                     connection.query(`UPDATE users SET password = ? WHERE email = ?`, [bcrypt.hashSync(password, 10),email], function(error, rows, fields) {
                         if (error) {
                             _global.sendError(res, error.message);
-                            throw error;
+                            return console.log(error);
                         }
                         res.send({ result: 'success'});
                         connection.release();

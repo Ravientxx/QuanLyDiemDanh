@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit,ViewChild } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { CourseService, AppService } from '../shared/shared.module';
+import { CourseService, AppService,ImportModalComponent,ExportModalComponent } from '../shared/shared.module';
 
 @Component({
     selector: 'app-courses',
@@ -18,7 +18,6 @@ export class CoursesComponent implements OnInit {
     public semesters: Array < any > = [];
     public programs: Array < any > = [];
     public classes: Array < any > = [];
-    public currentSemester: any = {};
 
     public current_courses: Array < any > = [];
     public selectedSemester: any;
@@ -32,29 +31,17 @@ export class CoursesComponent implements OnInit {
     public totalItems: number = 0;
     public itemsPerPage: number = 10;
 
-    public previous_courses: Array < any > = [];
-    public previous_selectedSemester: any;
-    public previous_selectedProgram: any;
-    public previous_filteredClasses: Array < any > ;
-    public previous_selectedClasses: any;
-    public previous_searchText: string;
-    public previous_pageNumber: number = 1;
-    public previous_limit: number = 15;
-    public previous_currentPage: number = 1;
-    public previous_totalItems: number = 0;
-    public previous_itemsPerPage: number = 10;
-
     public newCourseName :string = ""; newCourseCode :string = ""; newCourseLecturer:string = "" ; newCourseTA:string = "";
     
 
-    constructor(private appService: AppService, private courseService: CourseService, private router: Router) {}
-    public getCurrentList() {
-        this.courseService.getCurrentCourseLists(this.searchText, this.pageNumber, this.itemsPerPage, this.sort_tag[this.sort_index], this.selectedProgram, this.selectedClasses)
+    public constructor(public appService: AppService, public courseService: CourseService, public router: Router) {}
+    public getCourseList() {
+        this.courseService.getCourseLists(this.selectedProgram, this.selectedClasses,this.selectedSemester,this.searchText, this.sort_tag[this.sort_index], this.pageNumber, this.itemsPerPage)
             .subscribe(result => {
                 this.current_courses = result.courses;
                 this.totalItems = result.total_items;
                 this.apiCallResult = result.result;
-            }, error => { console.log(error) });
+            }, error => { this.appService.showPNotify('failure', "Server Error! Can't get course list", 'error');  });
     }
 
     public onChangeProgram() {
@@ -65,47 +52,22 @@ export class CoursesComponent implements OnInit {
             }
         }
         this.selectedClasses = this.filteredClasses[0].id;
-        this.getCurrentList();
+        this.getCourseList();
     }
 
     public onPageChanged(event: any) {
         this.pageNumber = event.page;
-        this.getCurrentList();
+        this.getCourseList();
     }
-
-    public getPreviousList() {
-        this.courseService.getPreviousCourseLists(this.previous_searchText, this.previous_pageNumber, this.previous_itemsPerPage, this.sort_tag[this.sort_index], this.previous_selectedProgram, this.previous_selectedClasses)
-            .subscribe(result => {
-                this.previous_courses = result.courses;
-                this.previous_totalItems = result.total_items;
-                this.apiCallResult = result.result;
-            }, error => { console.log(error) });
-    }
-
-    public previous_onChangeProgram() {
-        this.previous_filteredClasses = [{ id: 0, name: 'All Classes' }];
-        for (var i = 0; i < this.classes.length; i++) {
-            if (this.classes[i].program_id == this.previous_selectedProgram) {
-                this.previous_filteredClasses.push(this.classes[i]);
-            }
-        }
-        this.previous_selectedClasses = this.previous_filteredClasses[0].id;
-        this.getPreviousList();
-    }
-
-    public previous_onPageChanged(event: any) {
-        this.previous_pageNumber = event.page;
-        this.getPreviousList();
-    }
-    ngOnInit() {
+    public ngOnInit() {
         this.appService.getSemesterProgramClass().subscribe(results => {
             this.semesters = results.semesters;
-            this.currentSemester = this.semesters[this.semesters.length - 1];
+            this.selectedSemester = this.semesters[this.semesters.length - 1].id;
             this.classes = results.classes;
             this.programs = results.programs;
-            this.selectedProgram = this.programs[this.programs.length - 1].id;
+            this.selectedProgram = this.programs[0].id;
             this.onChangeProgram();
-        }, error => { console.log(error) });
+        }, error => { this.appService.showPNotify('failure', "Server Error! Can't get semester_program_class", 'error'); });
     }
 
     public onCellClick(id: any) {
@@ -114,20 +76,25 @@ export class CoursesComponent implements OnInit {
     public onAddCourse() {
         this.router.navigate(['/courses/add']);
     }
-
-
-    public collapsed(event: any): void {
-    }
-
-    public expanded(event: any): void {
-        console.log(event);
-        if(this.previous_courses.length == 0){
-            this.previous_selectedProgram = this.programs[this.programs.length - 1].id;
-            this.previous_onChangeProgram();
-        }
-    }
     
-    onImportCourse(){
-        
+    @ViewChild(ImportModalComponent)
+    public  importModal: ImportModalComponent;
+    public onImportCourse(){
+        this.importModal.onOpenModal();
+    }
+    public onCloseImport(event : any){
+        this.getCourseList();
+    }
+
+    @ViewChild(ExportModalComponent)
+    public  exportModal: ExportModalComponent;
+    public export_search_data : any = {};
+    public onExportCourse(){
+        this.export_search_data = {};
+        this.export_search_data['program_id'] = this.selectedProgram;
+        this.export_search_data['class_id'] = this.selectedClasses;
+        this.export_search_data['semester_id'] = this.selectedSemester;
+        this.export_search_data['search_text'] = this.searchText;
+        this.exportModal.onOpenModal();
     }
 }

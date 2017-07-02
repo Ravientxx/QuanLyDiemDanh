@@ -34,7 +34,7 @@ router.get('/detail/:id', function(req, res, next) {
                         TAs.push(rows[i]);
                     }
                 }
-                connection.query(`SELECT class_id, classes.name as class_name, classes.email as class_email,class_has_course.course_id ,schedules 
+                connection.query(`SELECT class_id, classes.name as class_name, classes.email as class_email,class_has_course.course_id ,schedules , total_stud
                     FROM classes,class_has_course 
                     WHERE course_id = ? AND classes.id = class_has_course.class_id `, id, function(error, rows, fields) {
                     if (error) {
@@ -49,7 +49,7 @@ router.get('/detail/:id', function(req, res, next) {
         });
     });
 });
-router.post('/list/current', function(req, res, next) {
+router.post('/list', function(req, res, next) {
     var searchText = req.body.searchText;
     var page = req.body.page != null ? req.body.page : _global.default_page;
     var limit = req.body.limit != null ? req.body.limit : _global.detail_limit;
@@ -57,7 +57,7 @@ router.post('/list/current', function(req, res, next) {
 
     var program_id = req.body.program_id != null ? req.body.program_id : 1;
     var class_id = req.body.class_id != null ? req.body.class_id : 0;
-
+    var semester_id = req.body.semester_id != null ? req.body.semester_id : 0;
     pool.getConnection(function(error, connection) {
         if (error) {
             _global.sendError(res, error.message);
@@ -85,118 +85,44 @@ router.post('/list/current', function(req, res, next) {
             if (sort != 'none') {
                 _global.sortListByKey(sort, search_list, 'last_name');
             }
-            res.send({
-                result: 'success',
-                total_items: search_list.length,
-                courses: _global.filterListByPage(page, limit, search_list)
-            });
-
-            connection.release();
-        };
-        if (class_id == 0) {
-            connection.query(`SELECT courses.id,courses.code,courses.name,attendance_count,total_stud, 
-                                (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
-                                FROM teacher_teach_course,users 
-                                WHERE users.id = teacher_teach_course.teacher_id AND 
-                                    courses.id = teacher_teach_course.course_id AND 
-                                    teacher_teach_course.teacher_role = 0) as lecturers 
-                        FROM courses, class_has_course
-                        WHERE class_has_course.course_id = courses.id AND 
-                            courses.program_id = ? AND
-                            courses.semester_id = (SELECT MAX(ID) FROM semesters)
-                        GROUP BY courses.code
-                        ORDER BY courses.id`,
-                program_id, return_function);
-        } else {
-            connection.query(`SELECT courses.id,courses.code,courses.name,attendance_count,total_stud, 
-                                (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
-                                FROM teacher_teach_course,users 
-                                WHERE users.id = teacher_teach_course.teacher_id AND 
-                                    courses.id = teacher_teach_course.course_id AND 
-                                    teacher_teach_course.teacher_role = 0) as lecturers 
-                        FROM courses, class_has_course
-                        WHERE class_has_course.course_id = courses.id AND 
-                            courses.program_id = ? AND 
-                            class_has_course.class_id = ? AND
-                            courses.semester_id = (SELECT MAX(ID) FROM semesters)
-                        GROUP BY courses.code
-                        ORDER BY courses.id`, [program_id, class_id], return_function);
-        }
-    });
-});
-router.post('/list/previous', function(req, res, next) {
-    var searchText = req.body.searchText;
-    var page = req.body.page != null ? req.body.page : _global.default_page;
-    var limit = req.body.limit != null ? req.body.limit : _global.detail_limit;
-    var sort = req.body.sort != null ? req.body.sort : 'none';
-
-    var program_id = req.body.program_id != null ? req.body.program_id : 1;
-    var class_id = req.body.class_id != null ? req.body.class_id : 0;
-
-    pool.getConnection(function(error, connection) {
-        if (error) {
-            _global.sendError(res, error.message);
-            throw error;
-        }
-        var return_function = function(error, rows, fields) {
-            if (error) {
-                _global.sendError(res, error.message);
-                throw error;
-            }
-
-            course_list = rows;
-            var search_list = [];
-            if (searchText == null) {
-                search_list = course_list;
+            if (limit != -1) {
+                res.send({
+                    result: 'success',
+                    total_items: search_list.length,
+                    courses: _global.filterListByPage(page, limit, search_list)
+                });
             } else {
-                for (var i = 0; i < course_list.length; i++) {
-                    if (course_list[i].code.toLowerCase().indexOf(searchText.toLowerCase()) != -1 ||
-                        course_list[i].name.toLowerCase().indexOf(searchText.toLowerCase()) != -1 ||
-                        course_list[i].lecturers.toLowerCase().indexOf(searchText.toLowerCase()) != -1) {
-                        search_list.push(course_list[i]);
-                    }
-                }
+                res.send({
+                    result: 'success',
+                    total_items: search_list.length,
+                    courses: search_list
+                });
             }
-            if (sort != 'none') {
-                _global.sortListByKey(sort, search_list, 'last_name');
-            }
-            res.send({
-                result: 'success',
-                total_items: search_list.length,
-                courses: _global.filterListByPage(page, limit, search_list)
-            });
 
             connection.release();
         };
-        if (class_id == 0) {
-            connection.query(`SELECT courses.id,courses.code,courses.name,attendance_count,total_stud, 
+        var query = `SELECT courses.id,courses.code,courses.name,attendance_count,total_stud, courses.note,courses.office_hour,
                                 (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
                                 FROM teacher_teach_course,users 
                                 WHERE users.id = teacher_teach_course.teacher_id AND 
                                     courses.id = teacher_teach_course.course_id AND 
-                                    teacher_teach_course.teacher_role = 0) as lecturers 
-                        FROM courses, class_has_course
-                        WHERE class_has_course.course_id = courses.id AND 
-                            courses.program_id = ? AND
-                            courses.semester_id <> (SELECT MAX(ID) FROM semesters)
-                        GROUP BY courses.code
-                        ORDER BY courses.id`,
-                program_id, return_function);
-        } else {
-            connection.query(`SELECT courses.id,courses.code,courses.name,attendance_count,total_stud, 
+                                    teacher_teach_course.teacher_role = 0) as lecturers,
                                 (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
                                 FROM teacher_teach_course,users 
                                 WHERE users.id = teacher_teach_course.teacher_id AND 
                                     courses.id = teacher_teach_course.course_id AND 
-                                    teacher_teach_course.teacher_role = 0) as lecturers 
+                                    teacher_teach_course.teacher_role = 1) as TAs 
                         FROM courses, class_has_course
                         WHERE class_has_course.course_id = courses.id AND 
-                            courses.program_id = ? AND 
-                            class_has_course.class_id = ? AND
-                            courses.semester_id <> (SELECT MAX(ID) FROM semesters)
-                        GROUP BY courses.code
-                        ORDER BY courses.id`, [program_id, class_id], return_function);
+                            courses.program_id = ?`;
+        if (class_id != 0) {
+            query += ' AND class_has_course.class_id = ' + class_id;
         }
+        if (semester_id != 0) {
+            query += ' AND courses.semester_id = ' + semester_id;
+        }
+        query += ' GROUP BY courses.code ORDER BY courses.id';
+        connection.query(query, program_id, return_function);
     });
 });
 router.post('/add', function(req, res, next) {
@@ -376,11 +302,47 @@ router.post('/add', function(req, res, next) {
                                                             console.log(error.message + ' at get student_id from datbase (file)');
                                                             callback(error);
                                                         } else {
-                                                            var temp = [];
-                                                            temp.push(class_has_course_id);
-                                                            temp.push(results[0].id);
-                                                            new_student_enroll_course.push(temp);
-                                                            callback();
+                                                            if (results.length == 0) {
+                                                                //new student to system
+                                                                var new_user = {
+                                                                    first_name: _global.getFirstName(student.name),
+                                                                    last_name: _global.getLastName(student.name),
+                                                                    email: student.stud_id + '@student.hcmus.edu.vn',
+                                                                    phone: student.phone,
+                                                                    role_id: 1,
+                                                                    password: bcrypt.hashSync(student.code, 10),
+                                                                };
+                                                                connection.query(`INSERT INTO users SET ?`, new_user, function(error, results, fields) {
+                                                                    if (error) {
+                                                                        callback(error);
+                                                                    } else {
+                                                                        var student_id = results.insertId;
+                                                                        var new_student = {
+                                                                            id: student_id,
+                                                                            stud_id: student.stud_id,
+                                                                            class_id: _class.classId,
+                                                                        }
+                                                                        connection.query(`INSERT INTO students SET ?`, new_student, function(error, results, fields) {
+                                                                            if (error) {
+                                                                                callback(error);
+                                                                            } else {
+                                                                                var temp = [];
+                                                                                temp.push(class_has_course_id);
+                                                                                temp.push(student_id);
+                                                                                new_student_enroll_course.push(temp);
+                                                                                callback();
+                                                                            }
+                                                                        });
+                                                                    }
+                                                                });
+                                                            } else {
+                                                                //old student
+                                                                var temp = [];
+                                                                temp.push(class_has_course_id);
+                                                                temp.push(results[0].id);
+                                                                new_student_enroll_course.push(temp);
+                                                                callback();
+                                                            }
                                                         }
                                                     });
                                                 }, function(error) {
@@ -621,13 +583,388 @@ router.post('/list/teaching', function(req, res, next) {
                         class_has_course.course_id = courses.id AND
                         class_has_course.class_id = classes.id AND
                         courses.semester_id = (SELECT MAX(ID) FROM semesters)`;
-        if(class_id != 0){
+        if (class_id != 0) {
             query += ' AND class_has_course.class_id = ' + class_id;
         }
-        if(program_id != 0){
+        if (program_id != 0) {
             query += ' AND courses.program_id = ' + program_id;
         }
-        connection.query(query,program_id, return_function);
+        connection.query(query, program_id, return_function);
     });
+});
+router.post('/import', function(req, res, next) {
+    if (req.body.class_name == undefined || req.body.class_name == '') {
+        _global.sendError(res, null, "Class name is required");
+        return;
+    }
+    if (req.body.course_list == undefined || req.body.course_list.length == 0) {
+        _global.sendError(res, null, "Course list is required");
+        return;
+    }
+    var class_name = req.body.class_name;
+    var course_list = req.body.course_list;
+    pool.getConnection(function(error, connection) {
+        if (error) {
+            _global.sendError(res, error.message);
+            throw error;
+        }
+        var class_id = 0;
+        var program_id = 0;
+        var new_course_id = 0;
+        var semester_id = 0;
+        var program_code = _global.getProgramCodeFromClassName(class_name);
+        async.series([
+            //Start transaction
+            function(callback) {
+                connection.beginTransaction(function(error) {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+            //Get semester id
+            function(callback) {
+                connection.query(`SELECT MAX(id) as id FROM semesters`, function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        semester_id = results[0].id;
+                        callback();
+                    }
+                });
+            },
+            //Get program id
+            function(callback) {
+                connection.query(`SELECT id FROM programs WHERE UPPER(code) = UPPER(?) LIMIT 1`, program_code, function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        if (results.length == 0) {
+                            //program not found
+                            callback('Program not found');
+                        } else {
+                            program_id = results[0].id;
+                            callback();
+                        }
+                    }
+                });
+            },
+            //Get class id
+            function(callback) {
+                connection.query(`SELECT id FROM classes WHERE UPPER(name) = UPPER(?) LIMIT 1`, class_name, function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        if (results.length == 0) {
+                            //new class => insert
+                            var email = class_name.toLowerCase() + '@student.hcmus.edu.vn';
+                            var new_class = {
+                                name: class_name,
+                                email: email,
+                                program_id: program_id
+                            }
+                            connection.query(`INSERT INTO classes SET ?`, new_class, function(error, results, fields) {
+                                if (error) {
+                                    callback(error);
+                                } else {
+                                    class_id = results.insertId;
+                                    callback();
+                                }
+                            });
+                        } else {
+                            class_id = results[0].id;
+                            callback();
+                        }
+                    }
+                });
+            },
+            //Insert course
+            function(callback) {
+                async.each(course_list, function(course, callback) {
+                    var new_course = {
+                        code: course.code,
+                        name: course.name,
+                        semester_id: semester_id,
+                        program_id: program_id,
+                        office_hour: course.office_hour,
+                        note: course.note,
+                    };
+                    console.log(new_course);
+                    async.series([
+                        //insert courses
+                        function(callback) {
+                            connection.query(`INSERT INTO courses SET ?`, new_course, function(error, results, fields) {
+                                if (error) {
+                                    callback(error);
+                                } else {
+                                    new_course_id = results.insertId;
+                                    callback();
+                                }
+                            });
+                        },
+                        //insert class_has_course
+                        function(callback) {
+                            var new_class_has_course = {
+                                class_id: class_id,
+                                course_id: new_course_id,
+                            }
+                            connection.query(`INSERT INTO class_has_course SET ?`, new_class_has_course, function(error, results, fields) {
+                                if (error) {
+                                    callback(error);
+                                } else {
+                                    callback();
+                                }
+                            });
+                        },
+                        //insert teacher_teach_course
+                        function(callback) {
+                            var teacher_list = [];
+                            for (var i = 0; i < course.lecturers.length; i++) {
+                                if(course.lecturers[i] == undefined) continue;
+                                var name = _global.removeExtraFromTeacherName(course.lecturers[i]);
+                                teacher_list.push({
+                                    first_name: _global.getFirstName(name),
+                                    last_name: _global.getLastName(name),
+                                    role: 0
+                                });
+                            }
+                            if(course.TAs != undefined){
+                                for (var i = 0; i < course.TAs.length; i++) {
+                                    if(course.TAs[i] == undefined) continue;
+                                    var name = _global.removeExtraFromTeacherName(course.TAs[i]);
+                                    teacher_list.push({
+                                        first_name: _global.getFirstName(name),
+                                        last_name: _global.getLastName(name),
+                                        role: 1
+                                    });
+                                }
+                            }
+                            console.log(teacher_list);
+                            async.each(teacher_list, function(teacher, callback) {
+                                connection.query(`SELECT users.id FROM users,teachers WHERE users.id = teachers.id AND first_name = ? AND last_name = ? LIMIT 1`, [teacher.first_name, teacher.last_name], function(error, results, fields) {
+                                    if (error) {
+                                        callback(error);
+                                    } else {
+                                        if (results.length == 0) {
+                                            callback('Teacher' + teacher.first_name + ' ' + teacher.last_name + ' not found');
+                                        } else {
+                                            var new_teacher_teach_course = {
+                                                teacher_id : results[0].id,
+                                                teacher_role : teacher.role,
+                                                course_id : new_course_id
+                                            }
+                                            connection.query(`INSERT INTO teacher_teach_course SET ?`, new_teacher_teach_course, function(error, results, fields) {
+                                                if (error) {
+                                                    callback(error);
+                                                } else {
+                                                    callback();
+                                                }
+                                            });
+                                        }
+                                    }
+                                });
+                            }, function(error) {
+                                if (error) {
+                                    callback(error);
+                                } else {
+                                    callback();
+                                }
+                            });
+                        },
+                    ], function(error) {
+                        if (error) {
+                            callback(error);
+                        } else {
+                            callback();
+                        }
+                    });
+                }, function(error) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            //Commit transaction
+            function(callback) {
+                connection.commit(function(error) {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+        ], function(error) {
+            if (error) {
+                _global.sendError(res, error.message, error);
+                connection.rollback(function() {
+                    console.log(error);
+                });
+                console.log(error);
+            } else {
+                console.log('success import courses!---------------------------------------');
+                res.send({ result: 'success', message: 'Courses imported successfully' });
+            }
+            connection.release();
+        });
+    });
+});
+router.post('/export', function(req, res, next) {
+    if (req.body.classes_id == undefined || req.body.classes_id.length == 0) {
+        _global.sendError(res, null, "Classes id is required");
+        return;
+    }
+    var classes_id = req.body.classes_id;
+    var course_lists = [];
+    pool.getConnection(function(error, connection) {
+        if (error) {
+            _global.sendError(res, error.message);
+            throw error;
+        }
+        async.series([
+            //Start transaction
+            function(callback) {
+                connection.beginTransaction(function(error) {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+            //get student from each class
+            function(callback) {
+                async.each(classes_id, function(class_id, callback) {
+                    connection.query(`SELECT courses.id,courses.code,courses.name,attendance_count,total_stud, courses.note,courses.office_hour,classes.name as class_name,
+                                (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
+                                FROM teacher_teach_course,users 
+                                WHERE users.id = teacher_teach_course.teacher_id AND 
+                                    courses.id = teacher_teach_course.course_id AND 
+                                    teacher_teach_course.teacher_role = 0) as lecturers,
+                                (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
+                                FROM teacher_teach_course,users 
+                                WHERE users.id = teacher_teach_course.teacher_id AND 
+                                    courses.id = teacher_teach_course.course_id AND 
+                                    teacher_teach_course.teacher_role = 1) as TAs 
+                            FROM courses, class_has_course,classes
+                            WHERE class_has_course.course_id = courses.id AND class_has_course.class_id = ?  AND classes.id = class_has_course.class_id
+                            GROUP BY courses.code ORDER BY courses.id`, class_id, function(error, results, fields) {
+                        if (error) {
+                            console.log(error.message + ' at get course by class');
+                            callback(error);
+                        } else {
+                            course_lists.push(results);
+                            callback();
+                        }
+                    });
+                }, function(error) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            //Commit transaction
+            function(callback) {
+                connection.commit(function(error) {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+        ], function(error) {
+            if (error) {
+                _global.sendError(res, null, error.message);
+                connection.rollback(function() {
+                    console.log(error);
+                });
+                console.log(error);
+            } else {
+                console.log('success export courses!---------------------------------------');
+                res.send({ result: 'success', message: 'Courses exported successfully', course_lists: course_lists });
+            }
+            connection.release();
+        });
+    });
+});
+router.post('/teaching', function(req, res, next){
+    var teacher_id = req.decoded.id;
+
+    if(teacher_id){
+        pool.getConnection(function(error, connection) {
+            if (error) {
+                _global.sendError(res, error.message);
+                throw error;
+            }
+
+            var return_function = function(error, rows, fields) {
+                if (error) {
+                    _global.sendError(res, error.message);
+                    throw error;
+                }
+
+                res.send({
+                    result: 'success',
+                    total_items: rows.length,
+                    courses: rows
+                });
+
+                connection.release();
+            };
+
+            connection.query(`SELECT courses.id, courses.code, courses.name, class_has_course.class_id as class, classes.name as class_name, 
+                class_has_course.id as chcid, class_has_course.total_stud as total_stud, class_has_course.schedules as schedule
+                                FROM courses JOIN teacher_teach_course ON course_id = courses.id
+                                    JOIN class_has_course on class_has_course.course_id = courses.id
+                                    JOIN classes on class_has_course.class_id = classes.id
+                                WHERE teacher_id = ? AND
+                                    courses.semester_id = (SELECT MAX(ID) FROM semesters)`,
+                [teacher_id], return_function);
+        });
+    }
+    else {
+        return res.status(401).send({
+            result: 'failure',
+            message: 'teacher_id is required'
+        });
+    }
+});
+
+router.post('/studying', function(req, res, next) {
+    var student_id = req.decoded.id;
+
+    if (student_id){
+        pool.getConnection(function(error, connection) {
+            if (error) {
+                _global.sendError(res, error.message);
+                throw error;
+            }
+
+            var return_function = function(error, rows, fields) {
+                if (error) {
+                    _global.sendError(res, error.message);
+                    throw error;
+                }
+
+                res.send({
+                    result: 'success',
+                    total_items: rows.length,
+                    courses: rows
+                });
+
+                connection.release();
+            };
+
+            connection.query(`SELECT courses.id, courses.code, courses.name, class_has_course.class_id as class, classes.name as class_name, 
+                class_has_course.id as chcid, class_has_course.total_stud as total_stud, class_has_course.schedules as schedule 
+                                FROM courses JOIN class_has_course ON class_has_course.course_id = courses.id
+                                    JOIN classes ON class_has_course.class_id = classes.id
+                                    JOIN student_enroll_course ON class_has_course.id = student_enroll_course.class_has_course_id
+                                WHERE student_id = ? AND
+                                    courses.semester_id = (SELECT MAX(ID) FROM semesters)`,
+                [student_id], return_function);
+        });
+    }
+    else {
+        return res.status(401).send({
+            result: 'failure',
+            message: 'student_id is required'
+        });
+    }
 });
 module.exports = router;

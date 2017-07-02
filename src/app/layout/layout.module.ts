@@ -4,6 +4,7 @@ import { HttpModule } from '@angular/http';
 import { RouterModule, Routes } from '@angular/router';
 
 import { LayoutComponent } from './layout.component';
+import { ChangePasswordComponent } from '../change-password/change-password.component';
 
 import { SharedModule } from '../shared/shared.module';
 import { DashboardModule } from '../dashboard/dashboard.module';
@@ -29,11 +30,13 @@ const ROUTES = [{
         { path: 'feedbacks', loadChildren: 'app/feedback/feedback.module#FeedbackModule' },
         { path: 'settings', loadChildren: 'app/settings/setting.module#SettingModule' },
         { path: 'check-attendance', loadChildren: 'app/check-attendance/check-attendance.module#CheckAttendanceModule' },
+        { path: 'change-password', component: ChangePasswordComponent },
     ]
 }, ];
 @NgModule({
     declarations: [
         LayoutComponent,
+        ChangePasswordComponent
     ],
     imports: [
         FormsModule,
