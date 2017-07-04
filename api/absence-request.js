@@ -37,6 +37,7 @@ router.post('/by-student', function(req, res, next) {
             }
             res.send({
                 result: 'success',
+                total_items: search_list.length,
                 absence_requests: search_list
             });
             connection.release();
@@ -99,6 +100,7 @@ router.post('/list', function(req, res, next) {
         });
     });
 });
+
 router.post('/create', function(req, res, next) {
     if (req.body.reason == undefined || req.body.reason == '') {
         _global.sendError(res, null, "Reason is required");
@@ -138,6 +140,7 @@ router.post('/create', function(req, res, next) {
         });
     });
 });
+
 router.post('/cancel', function(req, res, next) {
     if (req.body.id == undefined || req.body.id == '') {
         _global.sendError(res, null, "Request id is required");

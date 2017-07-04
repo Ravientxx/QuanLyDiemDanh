@@ -403,3 +403,35 @@
 *       200:
 *         description: json
 */
+
+/**
+* @swagger
+* tags:
+*   name: AbsenceRequest
+*   description: AbsenceRequest management
+*/
+
+/**
+* @swagger
+* /api/absence-request/by-student:
+*   post:
+*     summary: Send feedback
+*     description:
+*     tags: [AbsenceRequest]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: user token
+*         in: formData
+*         required: true
+*         type: string
+*       - name: id
+*         description: student id
+*         in: formData
+*         required: true
+*         type: integer
+*     responses:
+*       200:
+*         description: json
+*/
