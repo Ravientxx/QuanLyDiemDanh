@@ -37,6 +37,7 @@ router.post('/by-student', function(req, res, next) {
             }
             res.send({
                 result: 'success',
+                total_items: search_list.length,
                 absence_requests: search_list
             });
             connection.release();

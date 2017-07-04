@@ -76,18 +76,7 @@ router.post('/forgot-password', function(req, res, next) {
                     console.log("Email is not existed");
                     return;
                 }
-                let transporter = nodemailer.createTransport({
-                    host: 'smtp.office365.com', // Office 365 server
-                    port: 587, // secure SMTP
-                    secure: false, // false for TLS - as a boolean not string - but the default is false so just remove this completely
-                    auth: {
-                        user: '1353019@student.hcmus.edu.vn',
-                        pass: 'Nghia150771'
-                    },
-                    tls: {
-                        ciphers: 'SSLv3'
-                    }
-                });
+                let transporter = nodemailer.createTransport(_global.email_setting);
                 var token = jwt.sign({ email: email }, _global.jwt_secret_key, { expiresIn: _global.jwt_reset_password_expire_time });
                 var link = _global.host + '/forgot-password;token=' + token;
                 let mailOptions = {

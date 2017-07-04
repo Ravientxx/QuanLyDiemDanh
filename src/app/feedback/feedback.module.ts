@@ -7,8 +7,6 @@ import { CollapseModule } from 'ngx-bootstrap';
 
 import { FeedbackComponent } from './feedback.component';
 import { FeedbackStaffComponent } from './feedback-staff/feedback-staff.component';
-
-import { Ng2TableModule } from 'ng2-table/ng2-table';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
 import { SharedModule } from '../shared/shared.module';
@@ -23,7 +21,6 @@ const feedbackRoutes: Routes = [
     FormsModule,
     RouterModule.forChild(feedbackRoutes),
     CollapseModule.forRoot(),
-    Ng2TableModule,
     PaginationModule.forRoot(),
     TabsModule,
     SharedModule

@@ -1404,7 +1404,7 @@ legend {
     background: #fff
 }
 .profile_left{
-    border-right: 1px solid #333;
+    border-right: 1px solid #e6e9ed;
 }
 
 .pagination.pagination-split li {
@@ -4976,8 +4976,9 @@ th {
 }
 /*Make modal vertical center*/
 table td {
-    white-space:pre !important;
-    word-wrap: break-word;
+    white-space:pre-line !important;
+    word-wrap: break-word !important;
+    word-break: break-all !important;
     vertical-align:middle !important;
 }
 

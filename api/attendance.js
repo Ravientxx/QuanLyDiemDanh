@@ -694,7 +694,7 @@ router.post('/list-by-student/', function(req, res, next) {
     }
     var student_id = req.body.student_id;
     pool.getConnection(function(error, connection) {
-        connection.query(`SELECT courses.code, courses.name , courses.id , courses.attendance_count, class_has_course.class_id 
+        connection.query(`SELECT courses.code, courses.name , courses.id , class_has_course.attendance_count, class_has_course.class_id 
                 FROM users,student_enroll_course,class_has_course ,courses 
                 WHERE users.id = ? AND users.id = student_enroll_course.student_id AND student_enroll_course.class_has_course_id = class_has_course.id 
                     AND class_has_course.course_id = courses.id AND courses.semester_id = (SELECT MAX(id) FROM semesters)`, student_id, function(error, rows, fields) {

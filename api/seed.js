@@ -1130,6 +1130,28 @@ var insert_feeback = [
     [63, null, 'Ổ điện hỏng', 'Ổ điện thứ 3 từ trên xuống của dãy giữa phòng I44 bị hỏng, cô hãy fix giúp tụi em', 1],
     [1, null, 'Lớp 13CLC hư', 'Lớp 13CLC nói chuyện quá nhiều trong giờ học, dẫn đến khó dạy.', 2]
 ];
+//[title, class_has_course_id, closed, created_by]
+var insert_quiz = [
+    ['Angular', 20, 1, 1],//1
+    ['Window', 20, 1, 1],//2
+    ['HTML/CSS', 24, 1, 1],//3
+    ['Javascript', 24, 1, 1],//4
+];
+//[quiz_id, text]
+var insert_quiz_question = [
+    [1, `Service trong Angular hoạt động thế nào?`],//1
+    [1, `Routing thực hiện thế nào?`],//2
+    [2, `Win32 và Win64 khác nhau gì?`],//3
+    [2, `Window ra mắt lần đầu khi nào ?`],//4
+];
+//[quiz_question_id, text,answered_by]
+var insert_quiz_answer = [
+    [1, `Service 1`,114],//1
+    [1, `Service 2`,115],//2
+    [2, `Win 1`,114],//3
+    [2, `Window 2`,115],//4
+];
+
 router.get('/', function(req, res, next) {
     pool.getConnection(function(error, connection) {
         async.series([
@@ -1259,6 +1281,33 @@ router.get('/', function(req, res, next) {
             },
             function(callback) {
                 connection.query('INSERT INTO feedbacks (from_id, to_id, title, content, type) VALUES ?', [insert_feeback], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query('INSERT INTO quiz (title, class_has_course_id, closed, created_by) VALUES ?', [insert_quiz], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query('INSERT INTO quiz_questions (quiz_id, text) VALUES ?', [insert_quiz_question], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query('INSERT INTO quiz_answers (quiz_question_id, text,answered_by) VALUES ?', [insert_quiz_answer], function(error, results, fields) {
                     if (error) {
                         callback(error);
                     } else {

@@ -58,6 +58,8 @@ import {CheckAttendanceSocketService} from './services/check-attendance-socket.s
 export {CheckAttendanceSocketService};
 import {CheckAttendanceService} from './services/check-attendance.service';
 export {CheckAttendanceService};
+import {QuizService} from './services/quiz.service';
+export {QuizService};
 /**
  * Do not specify providers for modules that might be imported by a lazy loaded module.
  */
@@ -116,7 +118,8 @@ export {CheckAttendanceService};
     SemesterService,
     FeedbackService,
     CheckAttendanceService,
-    CheckAttendanceSocketService
+    CheckAttendanceSocketService,
+    QuizService
   ]
 })
 export class SharedModule {}

@@ -1,0 +1,39 @@
+<div class="col-md-12 col-sm-12 col-xs-12">
+    <div class="x_panel">
+        <div class="x_title">
+            <h3>Quiz Results</h3>
+            <div class="pull-right navbar-btn">
+                <select class="form-control" [(ngModel)]="selected_course_id" (ngModelChange)="onChangeCourse()">
+                    <option *ngFor="let course of courses" [value]="course.id">{{course.name}}</option>
+                </select>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <accordion>
+                <ng-container *ngFor="let quiz of quiz_list">
+                    <accordion-group #group [isOpen]="quiz.isColapsed">
+                        <div accordion-heading>
+                            {{quiz.title}}
+                            <i class="pull-right float-xs-right fa" [ngClass]="{'fa-chevron-down': group?.isOpen, 'fa-chevron-right': !group?.isOpen}"></i>
+                        </div>
+                        <ng-container *ngFor="let question of quiz.questions">
+                            <h4>{{question.text}}</h4>
+                            <div style="overflow:auto; max-height:300px;">
+                                <table class="table table-striped">
+                                    <tbody>
+                                        <tr *ngFor="let answer of question.answers">
+                                            <td>{{answer.text}}</td>
+                                            <td width="30%">{{answer.student_name}} - {{answer.student_code}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <hr/>
+                        </ng-container>
+                    </accordion-group>
+                </ng-container>
+            </accordion>
+        </div>
+    </div>
+</div>

@@ -7,7 +7,6 @@ import { AbsenceRequestsComponent } from './absence-requests.component';
 import { AbsenceRequestsStaffComponent } from './absence-requests-staff/absence-requests-staff.component';
 import { AbsenceRequestsStudentComponent } from './absence-requests-student/absence-requests-student.component';
 import { CollapseModule , DatepickerModule, TabsModule, PaginationModule} from 'ngx-bootstrap';
-import { Ng2TableModule } from 'ng2-table/ng2-table';
 import { SharedModule } from '../shared/shared.module';
 
 const AbsenceRequestsRoutes: Routes = [
@@ -20,7 +19,6 @@ const AbsenceRequestsRoutes: Routes = [
     FormsModule,
     RouterModule.forChild(AbsenceRequestsRoutes),
     CollapseModule.forRoot(),
-    Ng2TableModule,
     PaginationModule.forRoot(),
     TabsModule,
     DatepickerModule,

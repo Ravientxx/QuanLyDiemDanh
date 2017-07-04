@@ -13,16 +13,16 @@ export class CheckAttendanceStudentComponent implements OnInit {
         public authService: AuthService, public attendanceService: AttendanceService, public localStorage: LocalStorageService, public appService: AppService, public router: Router) {
         checkAttendanceSocketService.consumeEventOnCheckAttendanceUpdated();
         checkAttendanceSocketService.invokeCheckAttendanceUpdated.subscribe(result=>{
-            this.getOpeningAttendance();
-        });
-        checkAttendanceSocketService.consumeEventOnCheckAttendanceCreated();
-        checkAttendanceSocketService.invokeCheckAttendanceCreated.subscribe(result=>{
-            this.getOpeningAttendance();
+            if(this.delegate_detail['course_id'] == result['course_id'] && this.delegate_detail['class_id'] == result['class_id']){
+                this.getOpeningAttendance();
+            }
         });
         checkAttendanceSocketService.consumeEventOnCheckAttendanceStopped();
         checkAttendanceSocketService.invokeCheckAttendanceStopped.subscribe(result=>{
-            this.stopped_modal_message = "Session is " + result;
-            jQuery('#sessionStoppedModal').modal({backdrop: 'static', keyboard: false}) ;
+            if(this.delegate_detail['course_id'] == result['course_id'] && this.delegate_detail['class_id'] == result['class_id']){
+                this.stopped_modal_message = "Session is " + result['message'];
+                jQuery('#sessionStoppedModal').modal({backdrop: 'static', keyboard: false}) ;
+            }
         });
     }
 
@@ -50,49 +50,6 @@ export class CheckAttendanceStudentComponent implements OnInit {
     }
     public ngOnInit() {
         jQuery('#enterDelegateCodeModal').modal({ backdrop: 'static', keyboard: false });
-        // this.attendanceService.getOpeningAttendanceCourse(this.authService.current_user.id)
-        //     .subscribe(result => {
-        //         this.opening_attendances = result.opening_attendances;
-        //         this.selected_course_id = this.localStorage.get('check_attendance_course_id');
-        //         this.selected_class_id = this.localStorage.get('check_attendance_class_id');
-        //         this.localStorage.remove('check_attendance_course_id', 'check_attendance_class_id');
-
-        //         if (this.opening_attendances.length == 0) {
-        //             if(this.selected_course_id && this.selected_class_id){
-        //                 this.createAttendance();
-        //             }else{
-        //                 this.router.navigate(['/dashboard']);
-        //                 this.appService.showPNotify('info', "There are no opening attendance! Select one first", 'info');
-        //             }
-        //         } else {
-        //             if (!this.selected_course_id) {
-        //                 //show first opening
-        //                 this.selected_attendance_id = this.opening_attendances[0].id;
-        //                 this.selected_attendance = this.opening_attendances[0];
-        //                 this.getCheckAttendanceList();
-        //             } else {
-        //                 //check if new or not
-        //                 var i;
-        //                 for (i = 0; i < this.opening_attendances.length; i++) {
-        //                     if (this.opening_attendances[i].course_id == this.selected_course_id && this.opening_attendances[i].class_id == this.selected_class_id) {
-        //                         this.selected_attendance = this.opening_attendances[i];
-        //                         this.selected_attendance_id = this.opening_attendances[i].id;
-        //                         break;
-        //                     }
-        //                 }
-        //                 if (i == this.opening_attendances.length) {
-        //                     //new
-        //                     this.createAttendance();
-        //                 }
-        //                 else{
-        //                     this.getCheckAttendanceList();
-        //                 }
-        //             }
-        //             setTimeout(()=>{
-        //                 //
-        //             },1000);
-        //         }
-        //     }, error => { this.appService.showPNotify('failure', "Server Error! Can't get opening attendances", 'error'); });
     }
     public cancelCheckDelegateCode(){
         jQuery("#enterDelegateCodeModal").modal("hide");
@@ -138,7 +95,7 @@ export class CheckAttendanceStudentComponent implements OnInit {
         }
         this.checkAttendanceService.checkList(this.check_attendance_list[student_index].attendance_details[attendance_detail_index].attendance_id, this.check_attendance_list[student_index].id, type).subscribe(result => {
             this.check_attendance_list[student_index].attendance_details[attendance_detail_index].attendance_type = type;
-            this.checkAttendanceSocketService.emitEventOnCheckAttendanceUpdated(null);
+            this.checkAttendanceSocketService.emitEventOnCheckAttendanceUpdated({course_id: this.delegate_detail['course_id'], class_id:  this.delegate_detail['class_id']});
         }, error => { this.appService.showPNotify('failure', "Server Error! Can't check_list", 'error'); });
     }
 }

@@ -3,16 +3,12 @@ import { CommonModule }   from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 
-import { StudentsComponent }    from './students.component';
-import { StudentDetailComponent } from './student-detail/student-detail.component';
-import { PaginationModule } from 'ngx-bootstrap/pagination';
-import { TabsModule } from 'ngx-bootstrap/tabs';
-import {FileUploadModule} from "ng2-file-upload";
+import { QuizTeacherComponent }    from './quiz-teacher.component';
+import { TabsModule,AccordionModule ,PaginationModule } from 'ngx-bootstrap';
 
 import { SharedModule } from '../shared/shared.module';
 const studentsRoutes: Routes = [
-  { path: '',  component: StudentsComponent },
-  { path: ':id', component: StudentDetailComponent }
+  { path: '',  component: QuizTeacherComponent },
 ];
 
 @NgModule({
@@ -21,14 +17,13 @@ const studentsRoutes: Routes = [
     FormsModule,
     RouterModule.forChild(studentsRoutes),
     PaginationModule.forRoot(),
+    AccordionModule.forRoot(),
     TabsModule.forRoot(),
-    FileUploadModule,
     SharedModule
   ],
   declarations: [
-    StudentsComponent,
-    StudentDetailComponent
+    QuizTeacherComponent
   ],
   providers: []
 })
-export class StudentsModule {}
+export class QuizModule {}

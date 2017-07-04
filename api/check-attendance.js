@@ -74,7 +74,7 @@ router.post('/qr-code/:id', function(req, res, next) {
             },
             //Update attendance detail
             function(callback) {
-                connection.query(`UPDATE attendance_detail SET attendance_type = 1, attendance_time = ? WHERE attendance_id = ? AND student_id = ?`, [new Date(), attendance_id, student_id], function(error, results, fields) {
+                connection.query(`UPDATE attendance_detail SET attendance_type = 2, attendance_time = ? WHERE attendance_id = ? AND student_id = ?`, [new Date(), attendance_id, student_id], function(error, results, fields) {
                     if (error) {
                         callback(error.message + ' at update attendance_detail');
                     } else {

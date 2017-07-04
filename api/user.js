@@ -228,9 +228,9 @@ router.post('/change-password', function(req, res, next) {
             if (bcrypt.compareSync(current_password, password_hash)) {
                 var params = [bcrypt.hashSync(new_password, 10), user_id];
                 //update password
-                connection.query('UPDATE user SET password = ? WHERE id = ? LIMIT 1', params, function(error, results, fields) {
+                connection.query('UPDATE users SET password = ? WHERE id = ? LIMIT 1', params, function(error, results, fields) {
                     if (error) {
-                        _global.sendError(res.error.message);
+                        _global.sendError(res, error.message);
                         return connection.rollback(function() {
                             throw error;
                         });
