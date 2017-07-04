@@ -5,6 +5,7 @@ var _global = require('../global.js');
 var mysql = require('mysql');
 var pool = mysql.createPool(_global.db);
 var jwt = require('jsonwebtoken');
+var async = require("async");
 
 router.use(function(req, res, next) {
     // check header or url parameters or post parameters for token
@@ -68,6 +69,191 @@ router.get('/semesters-programs-classes', function(req, res, next) {
                 if (error) throw error;
             });
             if (error) throw error;
+        });
+    });
+});
+router.post('/semester/create', function(req, res, next) {
+    if (req.body.name == undefined || req.body.name == '') {
+        _global.sendError(res, null, "Name is required");
+        return;
+    }
+    if (req.body.start_date == undefined || req.body.start_date == 0) {
+        _global.sendError(res, null, "Start date is required");
+        return;
+    }
+    if (req.body.end_date == undefined || req.body.end_date == 0) {
+        _global.sendError(res, null, "End date is required");
+        return;
+    }
+    var semester = {
+        name: req.body.name,
+        start_date: req.body.start_date,
+        end_date : req.body.end_date,
+        vacation_time : req.body.vacation_time,
+    };
+    pool.getConnection(function(error, connection) {
+        if (error) {
+            _global.sendError(res, error.message);
+            throw error;
+        }
+        connection.query(`SELECT * FROM semesters WHERE name = ?`,semester.name,function(error, rows, fields) {
+            if (error) {
+                _global.sendError(res, error.message);
+                throw error;
+            }
+            if(rows.length > 0){
+                _global.sendError(res, null, "Semester's existed");
+                throw error;
+            }else{
+                connection.query(`INSERT INTO semesters SET ?`,semester,function(error, rows, fields) {
+                    if (error) {
+                        _global.sendError(res, error.message);
+                        throw error;
+                    }
+                    res.send({ result: 'success', message: 'Semester added successfully'});
+                    connection.release();
+                });
+            }
+        });
+    });
+});
+//Chưa có add file student
+router.post('/class/create', function(req, res, next) {
+    if (req.body.name == undefined || req.body.name == '') {
+        _global.sendError(res, null, "Name is required");
+        return;
+    }
+    if (req.body.email == undefined || req.body.email == 0) {
+        _global.sendError(res, null, "Email is required");
+        return;
+    }
+    if (req.body.email.indexOf('@') == -1) {
+        _global.sendError(res, null, "Invalid Email");
+        return;
+    }
+    var _class = {
+        name: req.body.name,
+        email: req.body.email,
+        program_id : req.body.program_id
+    };
+    var student_list = req.body.student_list;
+    pool.getConnection(function(error, connection) {
+        if (error) {
+            _global.sendError(res, error.message);
+            throw error;
+        }
+        connection.query(`SELECT * FROM classes WHERE name = ?`,_class.name,function(error, rows, fields) {
+            if (error) {
+                _global.sendError(res, error.message);
+                throw error;
+            }
+            if(rows.length > 0){
+                _global.sendError(res, null, "Class's existed");
+                throw error;
+            }else{
+                connection.query(`INSERT INTO classes SET ?`,_class,function(error, rows, fields) {
+                    if (error) {
+                        _global.sendError(res, error.message);
+                        throw error;
+                    }
+                    var class_id = rows.insertId;
+                    if(student_list == undefined || student_list == []){
+                        res.send({ result: 'success', message: 'Class added successfully'});
+                        connection.release();
+                    }else{
+                        async.each(student_list, function(student, callback) {
+                            connection.query(`SELECT id FROM students WHERE stud_id = ? LIMIT 1`, student.stud_id, function(error, results, fields) {
+                                if (error) {
+                                    console.log(error.message + ' at get student_id from datbase (file)');
+                                    callback(error);
+                                } else {
+                                    if(results.length == 0){
+                                        //new student to system
+                                        var new_user = {
+                                            first_name: _global.getFirstName(student.name),
+                                            last_name: _global.getLastName(student.name),
+                                            email: student.stud_id + '@student.hcmus.edu.vn',
+                                            phone: student.phone,
+                                            role_id: 1,
+                                            password: bcrypt.hashSync(student.stud_id.toString(), 10),
+                                        };
+                                        connection.query(`INSERT INTO users SET ?`, new_user, function(error, results, fields) {
+                                            if (error) {
+                                                callback(error);
+                                            } else {
+                                                var student_id = results.insertId;
+                                                var new_student = {
+                                                    id: student_id,
+                                                    stud_id: student.stud_id,
+                                                    class_id: class_id,
+                                                }
+                                                connection.query(`INSERT INTO students SET ?`, new_student, function(error, results, fields) {
+                                                    if (error) {
+                                                        callback(error);
+                                                    } else {
+                                                        callback();
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }else{
+                                        //old student => ignore
+                                        callback();
+                                    }
+                                }
+                            });
+                        }, function(error) {
+                            if (error) {
+                                _global.sendError(res, error.message,'Error at add student to class from file');
+                                throw error;
+                            }
+                            else {
+                                res.send({ result: 'success', message: 'Class added successfully'});
+                                connection.release();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    });
+});
+router.post('/program/create', function(req, res, next) {
+    if (req.body.name == undefined || req.body.name == '') {
+        _global.sendError(res, null, "Name is required");
+        return;
+    }
+    if (req.body.code == undefined || req.body.start_date == 0) {
+        _global.sendError(res, null, "Code is required");
+        return;
+    }
+    var program = {
+        name: req.body.name,
+        code: req.body.code
+    };
+    pool.getConnection(function(error, connection) {
+        if (error) {
+            _global.sendError(res, error.message);
+            throw error;
+        }
+        connection.query(`SELECT * FROM programs WHERE code = ? OR name = ?`,[program.code,program.name],function(error, rows, fields) {
+            if (error) {
+                _global.sendError(res, error.message);
+                throw error;
+            }
+            if(rows.length > 0){
+                _global.sendError(res, null, "Program's existed");
+                throw error;
+            }else{
+                connection.query(`INSERT INTO programs SET ?`,program,function(error, rows, fields) {
+                    if (error) {
+                        _global.sendError(res, error.message);
+                        throw error;
+                    }
+                    res.send({ result: 'success', message: 'Program added successfully'});
+                    connection.release();
+                });
+            }
         });
     });
 });

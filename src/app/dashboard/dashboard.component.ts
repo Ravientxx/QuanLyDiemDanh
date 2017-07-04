@@ -12,8 +12,8 @@ export class DashboardComponent implements OnInit {
 
 	public role: object = null;
 
-	constructor(private appService: AppService,private authService: AuthService) {
+	public constructor(public  appService: AppService,public  authService: AuthService) {
 	}
 
-	ngOnInit() {}
+	public ngOnInit() {}
 }

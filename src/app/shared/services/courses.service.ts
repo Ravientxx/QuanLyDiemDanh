@@ -7,10 +7,10 @@ import { Router } from '@angular/router';
 @Injectable()
 export class CourseService {
     // Resolve HTTP using the constructor
-    constructor(private http: Http, private appConfig: AppConfig,private authService: AuthService,private router :Router) {}
+    constructor(public  http: Http, public  appConfig: AppConfig,public  authService: AuthService,public  router :Router) {}
 
-    private getCourseDetailsUrl = this.appConfig.apiHost + '/course/detail';
-    getCourseDetail(id: number): Observable < { result: string, course: any , lecturers: Array < any > , TAs: Array < any > , class_has_course: Array < any > , message:string} > {
+    public  getCourseDetailsUrl = this.appConfig.apiHost + '/course/detail';
+    public getCourseDetail(id: number): Observable < { result: string, course: any , lecturers: Array < any > , TAs: Array < any > , class_has_course: Array < any > , message:string} > {
         let authToken = this.authService.token;
         let headers = new Headers();
         headers.append('x-access-token', `${authToken}`);
@@ -27,8 +27,8 @@ export class CourseService {
             });
     }
 
-    private getCurrentCourseListsUrl = this.appConfig.apiHost + '/course/list/current';
-    getCurrentCourseLists(searchText: string = null, page: number = 1, limit: number = 10, sort: string = 'none', program_id: number = 1, class_id: number = 0): Observable < { result: string, total_items: number, courses: Array < any >, message:string } > {
+    public  getCourseListsUrl = this.appConfig.apiHost + '/course/list';
+    public getCourseLists(program_id: number, class_id: number,semester_id:number,searchText: string = null, sort: string = 'none', page: number = 1, limit: number = -1): Observable < { result: string, total_items: number, courses: Array < any >, message:string } > {
         var params = {
             'searchText': searchText,
             'page': page,
@@ -36,12 +36,13 @@ export class CourseService {
             'sort': sort,
             'program_id': program_id,
             'class_id': class_id,
+            'semester_id': semester_id
         };
         let authToken = this.authService.token;
         let headers = new Headers();
         headers.append('x-access-token', `${authToken}`);
         let options = new RequestOptions({ headers: headers });
-        return this.http.post(this.getCurrentCourseListsUrl, params, options)
+        return this.http.post(this.getCourseListsUrl, params, options)
             // ...and calling .json() on the response to return data
             .map((res: Response) => res.json())
             //...errors if any
@@ -52,33 +53,8 @@ export class CourseService {
                 return Observable.throw(error || 'Server error');
             });
     }
-    private getPreviousCourseListsUrl = this.appConfig.apiHost + '/course/list/previous';
-    getPreviousCourseLists(searchText: string = null, page: number = 1, limit: number = 10, sort: string = 'none', program_id: number = 1, class_id: number = 0): Observable < { result: string, total_items: number, courses: Array < any >, message:string } > {
-        var params = {
-            'searchText': searchText,
-            'page': page,
-            'limit': limit,
-            'sort': sort,
-            'program_id': program_id,
-            'class_id': class_id,
-        };
-        let authToken = this.authService.token;
-        let headers = new Headers();
-        headers.append('x-access-token', `${authToken}`);
-        let options = new RequestOptions({ headers: headers });
-        return this.http.post(this.getPreviousCourseListsUrl, params, options)
-            // ...and calling .json() on the response to return data
-            .map((res: Response) => res.json())
-            //...errors if any
-            .catch((error: any) => {
-                if(error.status == 401){
-                    this.authService.tokenExpired(this.router.url);
-                }
-                return Observable.throw(error || 'Server error');
-            });
-    }
-    private addCourseUrl = this.appConfig.apiHost + '/course/add';
-    addCourse(code: string, name: string, lecturers: Array < any > , TAs: Array < any > , office_hour: string, note: string,
+    public  addCourseUrl = this.appConfig.apiHost + '/course/add';
+    public addCourse(code: string, name: string, lecturers: Array < any > , TAs: Array < any > , office_hour: string, note: string,
         program_id: number, classes: Array < any > ): Observable < { result: string, message: string } > {
         var params = {
             code: code,
@@ -105,8 +81,8 @@ export class CourseService {
                 return Observable.throw(error || 'Server error');
             });
     }
-    private editCourseUrl = this.appConfig.apiHost + '/course/edit';
-    editCourse(id:number ,code: string, name: string, lecturers: Array < any > , TAs: Array < any > , office_hour: string, note: string): Observable < { result: string, message: string } > {
+    public  editCourseUrl = this.appConfig.apiHost + '/course/edit';
+    public editCourse(id:number ,code: string, name: string, lecturers: Array < any > , TAs: Array < any > , office_hour: string, note: string): Observable < { result: string, message: string } > {
         var params = {
             id: id,
             code: code,
@@ -131,8 +107,8 @@ export class CourseService {
                 return Observable.throw(error || 'Server error');
             });
     }
-    private getTeachingCoursesUrl = this.appConfig.apiHost + '/course/list/teaching';
-    getTeachingCourses(teacher_id: number,searchText: string = null, program_id: number = 1, class_id: number = 0): Observable < { result: string, courses: Array < any >, message:string } > {
+    public  getTeachingCoursesUrl = this.appConfig.apiHost + '/course/list/teaching';
+    public getTeachingCourses(teacher_id: number,searchText: string = null, program_id: number = 1, class_id: number = 0): Observable < { result: string, courses: Array < any >, message:string } > {
         var params = {
             'teacher_id': teacher_id,
             'searchText': searchText,
@@ -144,6 +120,47 @@ export class CourseService {
         headers.append('x-access-token', `${authToken}`);
         let options = new RequestOptions({ headers: headers });
         return this.http.post(this.getTeachingCoursesUrl, params, options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => {
+                if(error.status == 401){
+                    this.authService.tokenExpired(this.router.url);
+                }
+                return Observable.throw(error || 'Server error');
+            });
+    }
+    public importCourseUrl = this.appConfig.apiHost + '/course/import';
+    public importCourse(class_name:string,course_list:Array<any>): Observable < { result: string, message: string } > {
+        var params = {
+            'class_name': class_name,
+            'course_list': course_list,
+        };
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.importCourseUrl, params, options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => {
+                if(error.status == 401){
+                    this.authService.tokenExpired(this.router.url);
+                }
+                return Observable.throw(error || 'Server error');
+            });
+    }
+    public exportCourseUrl = this.appConfig.apiHost + '/course/export';
+    public exportCourse(classes_id:Array<any>): Observable < { result: string,course_lists:Array<any>, message: string } > {
+        var params = {
+            'classes_id': classes_id,
+        };
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.exportCourseUrl, params, options)
             // ...and calling .json() on the response to return data
             .map((res: Response) => res.json())
             //...errors if any

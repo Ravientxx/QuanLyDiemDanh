@@ -7,9 +7,9 @@ import { Router } from '@angular/router';
 @Injectable()
 export class AttendanceService {
     // Resolve HTTP using the constructor
-    constructor(private http: Http,private appConfig: AppConfig, private authService: AuthService,private router:Router) {}
-    private getAttendanceListByCourseUrl = this.appConfig.apiHost + '/attendance/list-by-course';
-    getAttendanceListByCourse(course_id: number, classes_id: Array<number>): Observable < { result: string, attendance_lists: Array<any>, message:string} > {
+    constructor(public  http: Http,public  appConfig: AppConfig, public  authService: AuthService,public  router:Router) {}
+    public  getAttendanceListByCourseUrl = this.appConfig.apiHost + '/attendance/list-by-course';
+    public getAttendanceListByCourse(course_id: number, classes_id: Array<number>): Observable < { result: string, attendance_lists: Array<any>, message:string} > {
         var params = {
             'course_id': course_id,
             'classes_id' : classes_id
@@ -29,8 +29,8 @@ export class AttendanceService {
                 return Observable.throw(error || 'Server error');
             });
     }
-    private checkAddToCourseUrl = this.appConfig.apiHost + '/attendance/check-add-to-course';
-    checkAddToCourse(course_id: number,student_code: string,student_name: string): Observable < { result: string, message:string} > {
+    public  checkAddToCourseUrl = this.appConfig.apiHost + '/attendance/check-add-to-course';
+    public checkAddToCourse(course_id: number,student_code: string,student_name: string): Observable < { result: string, message:string} > {
         var params = {
             'course_id': course_id,
             'student_code' : student_code,
@@ -51,8 +51,8 @@ export class AttendanceService {
                 return Observable.throw(error || 'Server error');
             });
     }
-    private updateAttendanceListByCourseUrl = this.appConfig.apiHost + '/attendance/update-list-by-course';
-    updateAttendanceListByCourse(course_id: number,classes_id: Array<number>,attendance_lists: Array<any>): Observable < { result: string, message:string} > {
+    public  updateAttendanceListByCourseUrl = this.appConfig.apiHost + '/attendance/update-list-by-course';
+    public updateAttendanceListByCourse(course_id: number,classes_id: Array<number>,attendance_lists: Array<any>): Observable < { result: string, message:string} > {
         var params = {
             'course_id': course_id,
             'classes_id': classes_id,
@@ -74,8 +74,8 @@ export class AttendanceService {
             });
     }
 
-    private getOpeningAttendanceUrl = this.appConfig.apiHost + '/attendance/opening-by-teacher';
-    getOpeningAttendanceCourse(teacher_id: number): Observable < { result: string, opening_attendances: Array<any>, message:string} > {
+    public  getOpeningAttendanceUrl = this.appConfig.apiHost + '/attendance/opening-by-teacher';
+    public getOpeningAttendanceCourse(teacher_id: number): Observable < { result: string, opening_attendances: Array<any>, message:string} > {
         var params = {
             'teacher_id': teacher_id
         };
@@ -95,8 +95,8 @@ export class AttendanceService {
             });
     }
 
-    private createAttendanceUrl = this.appConfig.apiHost + '/attendance/create';
-    createAttendance(course_id:number,classes_id:number,teacher_id:number): Observable < { result: string, message:string} > {
+    public  createAttendanceUrl = this.appConfig.apiHost + '/attendance/create';
+    public createAttendance(course_id:number,classes_id:number,teacher_id:number): Observable < { result: string, message:string} > {
         var params = {
             'course_id': course_id,
             'class_id': classes_id,
@@ -117,8 +117,8 @@ export class AttendanceService {
                 return Observable.throw(error || 'Server error');
             });
     }
-    private cancelAttendanceUrl = this.appConfig.apiHost + '/attendance/delete';
-    cancelAttendance(attendance_id:number): Observable < { result: string, message:string} > {
+    public  cancelAttendanceUrl = this.appConfig.apiHost + '/attendance/delete';
+    public cancelAttendance(attendance_id:number): Observable < { result: string, message:string} > {
         var params = {
             'attendance_id': attendance_id,
         };
@@ -137,8 +137,8 @@ export class AttendanceService {
                 return Observable.throw(error || 'Server error');
             });
     }
-    private closeAttendanceUrl = this.appConfig.apiHost + '/attendance/close';
-    closeAttendance(attendance_id:number): Observable < { result: string, message:string} > {
+    public  closeAttendanceUrl = this.appConfig.apiHost + '/attendance/close';
+    public closeAttendance(attendance_id:number): Observable < { result: string, message:string} > {
         var params = {
             'attendance_id': attendance_id,
         };
@@ -158,8 +158,8 @@ export class AttendanceService {
             });
     }
 
-    private getCheckAttendanceListUrl = this.appConfig.apiHost + '/attendance/check-attendance-list';
-    getCheckAttendanceList(course_id: number, class_id: number): Observable < { result: string, check_attendance_list: Array<any>, message:string} > {
+    public  getCheckAttendanceListUrl = this.appConfig.apiHost + '/attendance/check-attendance-list';
+    public getCheckAttendanceList(course_id: number, class_id: number): Observable < { result: string, check_attendance_list: Array<any>, message:string} > {
         var params = {
             'course_id': course_id,
             'class_id' : class_id
@@ -180,4 +180,24 @@ export class AttendanceService {
             });
     }
     
+    public  getAttendanceListByStudentUrl = this.appConfig.apiHost + '/attendance/list-by-student';
+    public getAttendanceListByStudent(student_id: number): Observable < { result: string, attendance_list_by_student: Array<any>, message:string} > {
+        var params = {
+            'student_id': student_id
+        };
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.getAttendanceListByStudentUrl,params,options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => {
+                if(error.status == 401){
+                    this.authService.tokenExpired(this.router.url);
+                }
+                return Observable.throw(error || 'Server error');
+            });
+    }
 }

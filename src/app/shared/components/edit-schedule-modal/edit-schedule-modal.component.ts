@@ -6,17 +6,17 @@ declare var jQuery: any;
   templateUrl: './edit-schedule-modal.component.html',
 })
 export class EditScheduleModalComponent implements OnInit {
-	@Input() modal_id : string;
-	@Input() modal_title : string;
-    @Input() view_only: boolean = false;
-	@Input() classes : Array<any>;
-	@Output() onSave : EventEmitter<Array<string>> = new EventEmitter<Array<string>>();
+	@Input() public modal_id : string;
+	@Input() public modal_title : string;
+    @Input() public view_only: boolean = false;
+	@Input() public classes : Array<any>;
+	@Output() public onSave : EventEmitter<Array<string>> = new EventEmitter<Array<string>>();
 
-	editingCellIndex: number = -1;
-    temp_room: string = '';
-    temp_type: string = '';
-    scheduleOutput: Array<string> = [];
-    sessions = [];
+	public editingCellIndex: number = -1;
+    public temp_room: string = '';
+    public temp_type: string = '';
+    public scheduleOutput: Array<string> = [];
+    public sessions = [];
     public initSessions() {
         this.sessions = [];
         for(var i = 0 ; i < this.classes.length; i++){
@@ -49,7 +49,7 @@ export class EditScheduleModalComponent implements OnInit {
 		    this.sessions.push(temp_sessions);
         }
     }
-    current_class_id = 0;
+    public current_class_id = 0;
     public onChangeClass(index : any){
     	this.current_class_id = index;
     }
@@ -113,8 +113,8 @@ export class EditScheduleModalComponent implements OnInit {
         this.sessions[this.current_class_id][this.editingCellIndex].type = this.temp_type;
         this.editingCellIndex = -1;
     }
-	constructor() { }
-	ngOnInit() {
+	public constructor() { }
+	public ngOnInit() {
         this.initSessions();
 	}
 

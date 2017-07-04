@@ -9,11 +9,11 @@ declare let jQuery: any;
 export class CourseDetailStaffComponent implements OnInit {
     public schedules = [];
 
-    course_id: any;
-    course: Array < any > = [];
-    lecturers: Array < any > = [];
-    TAs: Array < any > = [];
-    class_has_course: Array < any > = [{
+    public course_id: any;
+    public course: Array < any > = [];
+    public lecturers: Array < any > = [];
+    public TAs: Array < any > = [];
+    public class_has_course: Array < any > = [{
         classId: 0,
         class_name: '',
         schedule: '',
@@ -21,14 +21,14 @@ export class CourseDetailStaffComponent implements OnInit {
         addStudentFromFile: '',
         studentListFromFile: [],
     }];
-    attendance_lists: Array < any > = [];
-    attendance_list: Array < any > = [];
+    public attendance_lists: Array < any > = [];
+    public attendance_list: Array < any > = [];
     public apiResult: string;
     public apiResultMessage: string;
     @ViewChild(ResultMessageModalComponent)
-    private resultMessageModal: ResultMessageModalComponent;
+    public  resultMessageModal: ResultMessageModalComponent;
 
-    public constructor(private route: ActivatedRoute, private router: Router,private appService: AppService, private courseService: CourseService, private attendanceSerivce: AttendanceService, private scheduleService: ScheduleService) {}
+    public constructor(public  route: ActivatedRoute, public  router: Router,public  appService: AppService, public  courseService: CourseService, public  attendanceSerivce: AttendanceService, public  scheduleService: ScheduleService) {}
 
     public getAttendanceList() {
         var classes_id : Array<number> = [];
@@ -61,7 +61,7 @@ export class CourseDetailStaffComponent implements OnInit {
 
     //Schedule
     @ViewChild(EditScheduleModalComponent)
-    private editScheduleModal: EditScheduleModalComponent;
+    public  editScheduleModal: EditScheduleModalComponent;
 
     public scheduleModal = {
         id: 'scheduleModal',
@@ -83,14 +83,14 @@ export class CourseDetailStaffComponent implements OnInit {
         this.editScheduleModal.onOpenModal();
     }
 
-    isEdittingAttendance = false;
-    temp_attendance_lists: Array < any > = [];
-    selected_class_index = 0;
-    onChangeClass(i){
+    public isEdittingAttendance = false;
+    public temp_attendance_lists: Array < any > = [];
+    public selected_class_index = 0;
+    public onChangeClass(i){
         this.selected_class_index = i;
         this.attendance_list = this.attendance_lists[i];
     }
-    cloneAttendanceList(isTempDes: boolean) {
+    public cloneAttendanceList(isTempDes: boolean) {
         if (isTempDes) {
             this.temp_attendance_lists = [];
             for(var k = 0 ; k < this.attendance_lists.length; k++){
@@ -107,6 +107,7 @@ export class CourseDetailStaffComponent implements OnInit {
                             attendance_id: this.attendance_lists[k][i].attendance_details[j].attendance_id,
                             attendance_type: this.attendance_lists[k][i].attendance_details[j].attendance_type,
                             attendance_time: this.attendance_lists[k][i].attendance_details[j].attendance_time,
+                            created_at: this.attendance_lists[k][i].attendance_details[j].created_at,
                         };
                         attendance.attendance_details.push(attendance_detail);
                     }
@@ -130,6 +131,7 @@ export class CourseDetailStaffComponent implements OnInit {
                             attendance_id: this.temp_attendance_lists[k][i].attendance_details[j].attendance_id,
                             attendance_type: this.temp_attendance_lists[k][i].attendance_details[j].attendance_type,
                             attendance_time: this.temp_attendance_lists[k][i].attendance_details[j].attendance_time,
+                            created_at: this.attendance_lists[k][i].attendance_details[j].created_at,
                         };
                         attendance.attendance_details.push(attendance_detail);
                     }
@@ -139,14 +141,14 @@ export class CourseDetailStaffComponent implements OnInit {
             }
         }
     }
-    onEditAttendance() {
+    public onEditAttendance() {
         this.isEdittingAttendance = true;
         this.cloneAttendanceList(true);
     }
-    onCancelEditAttendance() {
+    public onCancelEditAttendance() {
         this.isEdittingAttendance = false;
     }
-    onSaveEditAttendance() {
+    public onSaveEditAttendance() {
         var classes_id : Array<number> = [];
         for(var i = 0 ; i < this.class_has_course.length; i++){
             classes_id.push(this.class_has_course[i].class_id);
@@ -166,7 +168,7 @@ export class CourseDetailStaffComponent implements OnInit {
             this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
         },error=>{this.appService.showPNotify('failure',"Server Error! Can't get save attendance",'error');});
     }
-    onAttendanceCheckClick(attendance_index: number, attendance_detail_index: number) {
+    public onAttendanceCheckClick(attendance_index: number, attendance_detail_index: number) {
         if (this.temp_attendance_lists[this.selected_class_index][attendance_index].attendance_details[attendance_detail_index].attendance_type) {
             this.temp_attendance_lists[this.selected_class_index][attendance_index].attendance_details[attendance_detail_index].attendance_type = 0;
         } else {
@@ -175,9 +177,9 @@ export class CourseDetailStaffComponent implements OnInit {
         }
     }
 
-    new_code: string = '';
-    new_name: string = '';
-    onAddToAttendanceList() {
+    public new_code: string = '';
+    public new_name: string = '';
+    public onAddToAttendanceList() {
         this.attendanceSerivce.checkAddToCourse(this.course_id,this.new_code,this.new_name).subscribe(results=>{
             if(results.result == 'success'){
                 var attendance = {
@@ -191,6 +193,7 @@ export class CourseDetailStaffComponent implements OnInit {
                         attendance_id: this.attendance_lists[this.selected_class_index][0].attendance_details[j].attendance_id,
                         attendance_type: 0,
                         attendance_time: new Date(),
+                        created_at: this.attendance_lists[this.selected_class_index][0].attendance_details[j].created_at,
                     };
                     attendance.attendance_details.push(attendance_detail);
                 }
@@ -205,12 +208,12 @@ export class CourseDetailStaffComponent implements OnInit {
             }
         },error => {this.appService.showPNotify('failure',"Server Error! Can't check student",'error');});
     }
-    deleting_attendance_index = 0;
-    onRemoveAttendanceClick(index : number){
+    public deleting_attendance_index = 0;
+    public onRemoveAttendanceClick(index : number){
         jQuery('#confirmRemoveModal').modal('show');
         this.deleting_attendance_index = index;
     }
-    confirmRemoveAttendance(){
+    public confirmRemoveAttendance(){
         for(var i = this.deleting_attendance_index; i < this.temp_attendance_lists[this.selected_class_index].length-1; i++){
             this.temp_attendance_lists[this.selected_class_index][i].id = this.temp_attendance_lists[this.selected_class_index][i+1].id;
             this.temp_attendance_lists[this.selected_class_index][i].code = this.temp_attendance_lists[this.selected_class_index][i+1].code;
@@ -219,6 +222,7 @@ export class CourseDetailStaffComponent implements OnInit {
                 this.temp_attendance_lists[this.selected_class_index][i].attendance_details[j].attendance_id =  this.temp_attendance_lists[this.selected_class_index][i+1].attendance_details[j].attendance_id;
                 this.temp_attendance_lists[this.selected_class_index][i].attendance_details[j].attendance_type =  this.temp_attendance_lists[this.selected_class_index][i+1].attendance_details[j].attendance_type;
                 this.temp_attendance_lists[this.selected_class_index][i].attendance_details[j].attendance_time =  this.temp_attendance_lists[this.selected_class_index][i+1].attendance_details[j].attendance_time;
+                this.temp_attendance_lists[this.selected_class_index][i].attendance_details[j].created_at =  this.temp_attendance_lists[this.selected_class_index][i+1].attendance_details[j].created_at;
             }
         }
         this.temp_attendance_lists[this.selected_class_index].pop();

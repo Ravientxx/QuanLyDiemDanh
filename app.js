@@ -6,6 +6,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var cors = require('cors');
 var swaggerJSDoc = require('swagger-jsdoc');
+var compression = require('compression');
 var app = express();
 
 // swagger definition
@@ -36,6 +37,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors()); //normal CORS
 app.use(express.static(path.join(__dirname, 'swagger')));
+app.use(compression());
 
 app.get('/api/swagger.json', function(req, res) {
   res.setHeader('Content-Type', 'application/json');

@@ -7,11 +7,11 @@ import { Router } from '@angular/router';
 })
 export class TopNavigationComponent implements OnInit {
 
-  constructor(private router:Router,private authService : AuthService) { }
+  public constructor(public  router:Router,public  authService : AuthService) { }
 
-  ngOnInit() {
+  public ngOnInit() {
   }
-  logout(){
+  public logout(){
   	this.authService.logout();
   	this.router.navigate(['/login']);
   }

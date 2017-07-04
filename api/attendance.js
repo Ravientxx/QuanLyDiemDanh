@@ -6,7 +6,9 @@ var connection = mysql.createConnection(_global.db);
 var pool = mysql.createPool(_global.db);
 var bcrypt = require('bcrypt');
 var async = require("async");
+var randomstring = require("randomstring");
 
+var delegate_list = [];
 
 router.post('/list-by-course', function(req, res, next) {
     if (req.body.course_id == null) {
@@ -39,7 +41,9 @@ router.post('/list-by-course', function(req, res, next) {
                         name: student.name,
                         attendance_details: []
                     };
-                    connection.query(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type FROM attendance, attendance_detail WHERE attendance.closed = 1 AND attendance.id = attendance_detail.attendance_id AND  course_id = ? AND student_id = ?`, [course_id, student.id], function(error, results, fields) {
+                    connection.query(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type, created_at 
+                        FROM attendance, attendance_detail 
+                        WHERE attendance.closed = 1 AND attendance.id = attendance_detail.attendance_id AND  course_id = ? AND student_id = ?`, [course_id, student.id], function(error, results, fields) {
                         if (error) {
                             console.log(error.message + ' at get attendance_details');
                             callback(error);
@@ -48,7 +52,8 @@ router.post('/list-by-course', function(req, res, next) {
                                 attendance.attendance_details.push({
                                     attendance_id: results[i].attendance_id,
                                     attendance_time: results[i].attendance_time,
-                                    attendance_type: results[i].attendance_type
+                                    attendance_type: results[i].attendance_type,
+                                    created_at: results[i].created_at
                                 });
                             }
                             attendance_list.push(attendance);
@@ -488,13 +493,26 @@ router.post('/delete', function(req, res, next) {
     }
     var attendance_id = req.body.attendance_id;
     pool.getConnection(function(error, connection) {
-        connection.query(`DELETE FROM attendance WHERE id = ? LIMIT 1`, attendance_id, function(error, results, fields) {
+        connection.query(`SELECT course_id , class_id FROM attendance WHERE id = ?`, attendance_id, function(error, results, fields) {
             if (error) {
-                _global.sendError(res, null, 'error at delete attendances');
-                throw (error.message + ' at delete attendances');
+                _global.sendError(res, null, 'error at get attendances info');
+                throw (error.message + ' at get attendances info');
             } else {
-                res.send({ result: 'success' });
-                connection.release();
+                for (var i = 0; i < delegate_list.length; i++) {
+                    if (delegate_list[i]['course_id'] == results[0].course_id && delegate_list[i]['class_id'] == results[0].class_id) {
+                        delegate_list.splice(i, 1);
+                        break;
+                    }
+                }
+                connection.query(`DELETE FROM attendance WHERE id = ?`, attendance_id, function(error, results, fields) {
+                    if (error) {
+                        _global.sendError(res, null, 'error at delete attendances');
+                        throw (error.message + ' at delete attendances');
+                    } else {
+                        res.send({ result: 'success' });
+                        connection.release();
+                    }
+                });
             }
         });
     });
@@ -507,13 +525,26 @@ router.post('/close', function(req, res, next) {
     }
     var attendance_id = req.body.attendance_id;
     pool.getConnection(function(error, connection) {
-        connection.query(`UPDATE attendance SET closed = 1 WHERE id = ? LIMIT 1`, attendance_id, function(error, results, fields) {
+        connection.query(`SELECT course_id , class_id FROM attendance WHERE id = ?`, attendance_id, function(error, results, fields) {
             if (error) {
-                _global.sendError(res, null, 'error at close attendances');
-                throw (error.message + ' at close attendances');
+                _global.sendError(res, null, 'error at get attendances info');
+                throw (error.message + ' at get attendances info');
             } else {
-                res.send({ result: 'success' });
-                connection.release();
+                for (var i = 0; i < delegate_list.length; i++) {
+                    if (delegate_list[i]['course_id'] == results[0].course_id && delegate_list[i]['class_id'] == results[0].class_id) {
+                        delegate_list.splice(i, 1);
+                        break;
+                    }
+                }
+                connection.query(`UPDATE attendance SET closed = 1 WHERE id = ?`, attendance_id, function(error, results, fields) {
+                    if (error) {
+                        _global.sendError(res, null, 'error at close attendances');
+                        throw (error.message + ' at close attendances');
+                    } else {
+                        res.send({ result: 'success' });
+                        connection.release();
+                    }
+                });
             }
         });
     });
@@ -675,6 +706,155 @@ router.post('/update-attendance', function(req, res, next){
     });
 });
 
+router.post('/list-by-student/', function(req, res, next) {
+    if (req.body.student_id == null) {
+        _global.sendError(res, null, "student_id is required");
+        throw "student_id is required";
+    }
+    var student_id = req.body.student_id;
+    pool.getConnection(function(error, connection) {
+        connection.query(`SELECT courses.code, courses.name , courses.id , courses.attendance_count, class_has_course.class_id 
+                FROM users,student_enroll_course,class_has_course ,courses 
+                WHERE users.id = ? AND users.id = student_enroll_course.student_id AND student_enroll_course.class_has_course_id = class_has_course.id 
+                    AND class_has_course.course_id = courses.id AND courses.semester_id = (SELECT MAX(id) FROM semesters)`, student_id, function(error, rows, fields) {
+            if (error) {
+                var message = error.message + ' at get enrolling courses by student';
+                _global.sendError(res, message);
+                throw message;
+            }
+            var course_list = rows;
+            var attendance_list_by_student = [];
+            async.each(course_list, function(course, callback) {
+                var attendance = {
+                    id: course.id,
+                    code: course.code,
+                    name: course.name,
+                    class_id: course.class_id,
+                    attendance_count: course.attendance_count,
+                    attendance_details: []
+                };
+                connection.query(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type ,created_at
+                    FROM attendance, attendance_detail 
+                    WHERE attendance.closed = 1 AND attendance.id = attendance_detail.attendance_id AND course_id = ? AND class_id = ? AND student_id = ? `, [course.id, course.class_id, student_id], function(error, results, fields) {
+                    if (error) {
+                        console.log(error.message + ' at get attendance_details by student');
+                        callback(error);
+                    } else {
+                        for (var i = 0; i < results.length; i++) {
+                            attendance.attendance_details.push({
+                                attendance_id: results[i].attendance_id,
+                                attendance_time: results[i].attendance_time,
+                                attendance_type: results[i].attendance_type,
+                                created_at: results[i].created_at
+                            });
+                        }
+                        attendance_list_by_student.push(attendance);
+                        callback();
+                    }
+                });
+            }, function(error) {
+                if (error) {
+                    _global.sendError(res, error.message);
+                    throw error;
+                } else {
+                    console.log('loaded attendance_list_by_student');
+                    res.send({
+                        result: 'success',
+                        attendance_list_by_student: attendance_list_by_student
+                    });
+                }
+            });
+        });
+    });
+});
+
+router.post('/generate-delegate-code', function(req, res, next) {
+    if (req.body.course_id == null || req.body.course_id == 0) {
+        _global.sendError(res, null, "Course_id is required");
+        throw "Course_id is required";
+    }
+    if (req.body.class_id == null || req.body.class_id == 0) {
+        _global.sendError(res, null, "Class id is required");
+        throw "Class id is required";
+    }
+    var course_id = req.body.course_id;
+    var class_id = req.body.class_id;
+    pool.getConnection(function(error, connection) {
+        //check attendance is opening or not ?
+        connection.query(`SELECT * FROM attendance WHERE course_id = ? AND class_id = ? AND closed = 0`, [course_id, class_id], function(error, results, fields) {
+            if (error) {
+                _global.sendError(res, null, 'error at check  attendance opening or not');
+                return console.log(error.message + ' at check  attendance opening or not');
+            } else {
+                if (results.length == 0) {
+                    _global.sendError(res, null, 'This course doesnt have any opening attendance');
+                    console.log('This course doesnt have any opening attendance');
+                } else {
+                    var code = randomstring.generate({
+                        length: 7,
+                        capitalization: 'uppercase'
+                    });
+                    for (var i = 0; i < delegate_list.length; i++) {
+                        if (delegate_list[i]['course_id'] == course_id && delegate_list[i]['class_id'] == class_id) {
+                            delegate_list[i]['code'] = code;
+                            delegate_list[i]['in_use'] = false;
+                            res.send({
+                                result: 'success',
+                                code: code
+                            });
+                            connection.release();
+                            return;
+                        }
+                    }
+                    delegate_list.push({
+                        code: code,
+                        course_id: course_id,
+                        class_id: class_id,
+                        in_use: false,
+                        created_by: req.decoded.id,
+                    });
+                    res.send({
+                        result: 'success',
+                        code: code
+                    });
+                }
+                connection.release();
+            }
+        });
+    });
+});
+
+router.post('/check-delegate-code', function(req, res, next) {
+    if (req.body.code == null || req.body.code == '') {
+        _global.sendError(res, null, "Delegate code is required");
+        throw "Delegate code is required";
+    }
+    var code = req.body.code;
+    for (var i = 0; i < delegate_list.length; i++) {
+        if (delegate_list[i]['code'] == code) {
+            // if (delegate_list[i]['in_use'] == true) {
+            //     _global.sendError(res, null, 'This code is being used!');
+            //     console.log('This code is being used!');
+            //     return;
+            // } else {
+            //     delegate_list[i]['in_use'] = true;
+            //     res.send({
+            //         result: 'success',
+            //         delegate_detail: delegate_list[i]
+            //     });
+            //     return;
+            // }
+            res.send({
+                result: 'success',
+                delegate_detail: delegate_list[i]
+            });
+            return;
+        }
+    }
+    _global.sendError(res, null, 'Invalid code! It might have been expired or the attendance is already closed');
+    console.log('Invalid code! It might have been expired or the attendance is already closed');
+});
+
 router.post('/opening-for-student', function(req, res, next) {
     var student_id = req.decoded.id;
     pool.getConnection(function(error, connection) {
@@ -707,6 +887,5 @@ router.post('/opening-for-student', function(req, res, next) {
         });
     });
 });
-
 
 module.exports = router;

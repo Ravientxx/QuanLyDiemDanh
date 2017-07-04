@@ -8,7 +8,7 @@ declare var jQuery: any;
 })
 export class AbsenceRequestsStaffComponent implements OnInit {
 
-    public constructor(private router: Router, private absenceRequestService: AbsenceRequestService, private appService: AppService) {
+    public constructor(public router: Router, public absenceRequestService: AbsenceRequestService, public appService: AppService) {
     }
 
     public ngOnInit(): void {
@@ -19,22 +19,27 @@ export class AbsenceRequestsStaffComponent implements OnInit {
 
         this.selectedStatus = this.appService.absence_request_status.new.id;
     }
-
-    absence_requests = [];
-    selectedStatus;
-    absence_request_status = [];
-    search_text = '';
-    getAbsenceRequests(){
+    public pageNumber: number = 1;
+    public limit: number = 15;
+    public currentPage: number = 1;
+    public totalItems: number = 0;
+    public itemsPerPage: number = 10;
+    public absence_requests = [];
+    public selectedStatus;
+    public absence_request_status = [];
+    public search_text = '';
+    public getAbsenceRequests(){
         this.absenceRequestService.getAbsenceRequests(this.selectedStatus,this.search_text).subscribe(result=>{
             this.absence_requests = result.absence_requests;
-        },error=>{console.log(error)});
+            this.totalItems = result.total_items;
+        },error=>{this.appService.showPNotify('failure', "Server Error! Can't get absence_requests", 'error'); });
     }
-    onChangeStatus(){
+    public onChangeStatus(){
         this.getAbsenceRequests();
     }
-    current_request_id = 0;
-    current_request_status = 0;
-    confirm_modal_title = '';
+    public current_request_id = 0;
+    public current_request_status = 0;
+    public confirm_modal_title = '';
     public onAcceptRequest(id: number) {
         jQuery('#confirmModal').modal("show");
         this.confirm_modal_title = 'Accept this request ?';
@@ -60,12 +65,16 @@ export class AbsenceRequestsStaffComponent implements OnInit {
                     .subscribe(result => {
                         this.absence_requests = result.absence_requests;
                         jQuery('#confirmModal').modal("hide");
-                    }, error => { console.log(error) });
-            }, error => { console.log(error) });
+                    }, error => { this.appService.showPNotify('failure', "Server Error! Can't get requests", 'error');  });
+            }, error => { this.appService.showPNotify('failure', "Server Error! Can't change request status", 'error'); });
     }
-    onSearchChange(){
+    public onSearchChange(){
         if(this.search_text.length > 3 || this.search_text.length == 0){
             this.getAbsenceRequests();
         }
+    }
+    public onPageChanged(event: any) {
+        this.pageNumber = event.page;
+        this.getAbsenceRequests();
     }
 }

@@ -1,13 +1,12 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { StudentService, AppService,ResultMessageModalComponent,ImportModalComponent } from '../shared/shared.module';
+import { StudentService, AppService,ImportModalComponent,ExportModalComponent } from '../shared/shared.module';
 declare var jQuery: any;
 @Component({
     selector: 'app-students',
     templateUrl: './students.component.html'
 })
 export class StudentsComponent implements OnInit {
-
     public apiResult: string;
     public apiResultMessage: any;
     public sort = 'none'; // ['none', 'asc', 'dsc'];
@@ -17,6 +16,7 @@ export class StudentsComponent implements OnInit {
     public programs: Array < any > = [];
     public classes: Array < any > = [];
 
+    public selected_status = this.appService.student_status.active.id;
     public student_list: Array < any > = [];
     public selectedSemester: any;
     public selectedProgram: any;
@@ -29,33 +29,35 @@ export class StudentsComponent implements OnInit {
     public totalItems: number = 0;
     public itemsPerPage: number = 10;
 
-    newFirstName: string = "";
-    newLastName: string = "";
-    newPhone: string = "";
-    newEmail: string = "";
-    newCode: string = "";
-    newClass: number = 0;
-    newProgram: number = 0;
-    newNote: string = '';
-    constructor(private appService: AppService, private studentService: StudentService, private router: Router) {}
+    public newFirstName: string = "";
+    public newLastName: string = "";
+    public newPhone: string = "";
+    public newEmail: string = "";
+    public newCode: string = "";
+    public newClass: number = 0;
+    public newProgram: number = 0;
+    public newNote: string = '';
+    public constructor(public  appService: AppService, public  studentService: StudentService, public  router: Router) {}
 
-    ngOnInit() {
+    public ngOnInit() {
+        this.getSemesterProgramClass();
+    }
+    public getSemesterProgramClass(){
         this.appService.getSemesterProgramClass().subscribe(results => {
             this.semesters = results.semesters;
             this.selectedSemester = this.semesters[this.semesters.length - 1].id;
             this.classes = results.classes;
             this.programs = this.new_programs = results.programs;
-            this.selectedProgram = this.programs[this.programs.length - 1].id;
+            this.selectedProgram = this.programs[0].id;
             this.onChangeProgram();
-        }, error => { console.log(error) });
+        }, error => { this.appService.showPNotify('failure', "Server Error! Can't semester class program", 'error'); });   
     }
-
     public getCurrentList() {
-        this.studentService.getListStudents(this.searchText, this.pageNumber, this.itemsPerPage, this.sort, this.sort_tag, this.selectedProgram, this.selectedClasses)
+        this.studentService.getListStudents(this.selectedProgram, this.selectedClasses,this.selected_status,this.searchText, this.pageNumber, this.itemsPerPage)
             .subscribe(result => {
                 this.student_list = result.student_list;
                 this.totalItems = result.total_items;
-            }, error => { console.log(error) });
+            }, error => { this.appService.showPNotify('failure', "Server Error! Can't student list", 'error'); });
     }
 
     public onChangeProgram() {
@@ -75,11 +77,14 @@ export class StudentsComponent implements OnInit {
     }
 
     public onCellClick(id: any) {
-        console.log(id);
         this.router.navigate(['/students/', id]);
+    }
+    onChangeStudentCode(){
+        this.newEmail = this.newCode + "@student.hcmus.edu.vn";
     }
     public onOpenAddStudent() {
         this.newProgram = this.new_programs[this.new_programs.length - 1].id;
+        this.newEmail = "@student.hcmus.edu.vn";
         this.onChangeNewProgram();
         jQuery("#addStudentModal").modal("show");
     }
@@ -88,10 +93,7 @@ export class StudentsComponent implements OnInit {
         this.newClass = this.newProgram = 0;
         jQuery("#addStudentModal").modal("hide");
     }
-    @ViewChild(ResultMessageModalComponent)
-    private resultMessageModal: ResultMessageModalComponent;
     public onAddStudent() {
-        //jQuery("#progressModal").modal("show");
         this.studentService.addStudent(this.newProgram, this.newClass, this.newCode, this.newFirstName, this.newLastName, this.newEmail, this.newPhone, this.newNote)
             .subscribe(list => {
                 this.apiResult = list.result;
@@ -101,10 +103,8 @@ export class StudentsComponent implements OnInit {
                     this.newClass = this.newProgram = 0;
                     this.getCurrentList();
                 }
-                //jQuery("#progressModal").modal("hide");
-                //this.resultMessageModal.onOpenModal();
                 this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
-            }, err => { console.log(err) });
+            }, err => { this.appService.showPNotify('failure', "Server Error! Can't add student", 'error'); });
     }
     public new_programs = [];
     public new_classes = [];
@@ -119,11 +119,23 @@ export class StudentsComponent implements OnInit {
     }
 
     @ViewChild(ImportModalComponent)
-    private importModal: ImportModalComponent;
-    onImportStudent(){
+    public  importModal: ImportModalComponent;
+    public onImportStudent(){
         this.importModal.onOpenModal();
     }
-    onExportStudent(){
+    public onCloseImport(event : any){
+        this.getSemesterProgramClass();
+    }
 
+    @ViewChild(ExportModalComponent)
+    public  exportModal: ExportModalComponent;
+    public export_search_data : any = {};
+    public onExportStudent(){
+        this.export_search_data = {};
+        this.export_search_data['search_text'] = this.searchText;
+        this.export_search_data['program_id'] = this.selectedProgram;
+        this.export_search_data['class_id'] = this.selectedClasses;
+        this.export_search_data['status'] = this.selected_status;
+        this.exportModal.onOpenModal();
     }
 }

@@ -10,13 +10,15 @@ import { AppConfig } from '../config';
 @Injectable()
 export class FeedbackService {
     // Resolve HTTP using the constructor
-    constructor(private http: Http,private appService: AppService,private appConfig:AppConfig, private authService: AuthService,private router:Router) {}
+    public constructor(public  http: Http,public  appService: AppService,public  appConfig:AppConfig, public  authService: AuthService,public  router:Router) {}
 
-    private getFeedbacksUrl = this.appConfig.apiHost + '/feedback/list';
-    getFeedbacks(search_text:string, role_id: number): Observable < { result: string, feedbacks: Array<any>, message:string} > {
+    public  getFeedbacksUrl = this.appConfig.apiHost + '/feedback/list';
+    public getFeedbacks(search_text:string, role_id: number, page: number = 1, limit: number = -1): Observable < { result: string,total_items: number, feedbacks: Array<any>, message:string} > {
         var params = {
             'search_text': search_text,
-            'role_id' : role_id
+            'role_id' : role_id,
+            'page': page,
+            'limit': limit,
         };
         let authToken = this.authService.token;
         let headers = new Headers();
@@ -33,8 +35,8 @@ export class FeedbackService {
                 return Observable.throw(error || 'Server error');
             });
     }
-    private readFeedbacksUrl = this.appConfig.apiHost + '/feedback/read';
-    readFeedbacks(feedback_id: number): Observable < { result: string, message:string} > {
+    public  readFeedbacksUrl = this.appConfig.apiHost + '/feedback/read';
+    public readFeedbacks(feedback_id: number): Observable < { result: string, message:string} > {
         var params = {
             'feedback_id' : feedback_id
         };
@@ -53,8 +55,8 @@ export class FeedbackService {
                 return Observable.throw(error || 'Server error');
             });
     }
-    private sendFeedbacksUrl = this.appConfig.apiHost + '/feedback/send';
-    sendFeedbacks(title: string, content:string, isAnonymous: boolean): Observable < { result: string, message:string} > {
+    public  sendFeedbacksUrl = this.appConfig.apiHost + '/feedback/send';
+    public sendFeedbacks(title: string, content:string, isAnonymous: boolean): Observable < { result: string, message:string} > {
         var params = {
             'title' : title,
             'content' :content,

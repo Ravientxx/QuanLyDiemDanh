@@ -7,10 +7,10 @@ import { Router } from '@angular/router';
 @Injectable()
 export class SemesterService {
     // Resolve HTTP using the constructor
-    constructor(private http: Http, private appConfig: AppConfig,private authService: AuthService,private router :Router) {}
+    public constructor(public  http: Http, public  appConfig: AppConfig,public  authService: AuthService,public  router :Router) {}
 
-    private getSemesterUrl = this.appConfig.apiHost + '/semester';
-    getSemester(id: number): Observable < { result: string, semester : any , message:string} > {
+    public  getSemesterUrl = this.appConfig.apiHost + '/semester';
+    public getSemester(id: number): Observable < { result: string, semester : any , message:string} > {
         let authToken = this.authService.token;
         let headers = new Headers();
         headers.append('x-access-token', `${authToken}`);

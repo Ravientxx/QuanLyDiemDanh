@@ -45,6 +45,15 @@
                         </tr>
                     </tbody>
                 </table>
+                <pagination [boundaryLinks]="true" [totalItems]="totalItems" [itemsPerPage]="itemsPerPage" [(ngModel)]="currentPage" (pageChanged)="onPageChanged($event)" class="pull-right no_margin"></pagination>
+                <div class="form-group">
+                    <select [(ngModel)]="itemsPerPage" (ngModelChange)="getAbsenceRequests()">
+                        <option>10</option>
+                        <option>30</option>
+                        <option>50</option>
+                    </select>
+                    <span>Items/page</span>
+                </div>
             </div>
         </div>
 </div>

@@ -8,19 +8,20 @@ declare var jQuery:any;
 })
 export class FeedbackStaffComponent implements OnInit {
     
-    constructor(private appService: AppService,private feebackService: FeedbackService) {
+    public constructor(public  appService: AppService,public  feebackService: FeedbackService) {
 
     }
-    getFeedbacks(){
-        this.feebackService.getFeedbacks(this.search_text,this.selected_role).subscribe(result=>{
+    public getFeedbacks(){
+        this.feebackService.getFeedbacks(this.search_text,this.selected_role,this.pageNumber, this.itemsPerPage).subscribe(result=>{
             this.feedbacks = result.feedbacks;
-        },error=>{console.log(error)});
+            this.totalItems = result.total_items;
+        },error=>{this.appService.showPNotify('failure', "Server Error! Can't get feedbacks", 'error');});
     }
-    ngOnInit() {
+    public ngOnInit() {
         this.getFeedbacks();
     }
-    feedbacks =[];
-    roles = [
+    public feedbacks =[];
+    public roles = [
         {
             id: 0,
             name: 'All'
@@ -39,24 +40,33 @@ export class FeedbackStaffComponent implements OnInit {
         },
     ];
 
-    search_text = '';
-    selected_role = 0;
-    selected_feedback;
-    feedback_title = '';
-    feedback_content = '';
-    onChangeRole(){
+    public search_text = '';
+    public selected_role = 0;
+    public selected_feedback;
+    public feedback_title = '';
+    public feedback_content = '';
+    public pageNumber: number = 1;
+    public limit: number = 15;
+    public currentPage: number = 1;
+    public totalItems: number = 0;
+    public itemsPerPage: number = 10;
+     public onPageChanged(event: any) {
+        this.pageNumber = event.page;
         this.getFeedbacks();
     }
-    onClickFeedback(index){
+    public onChangeRole(){
+        this.getFeedbacks();
+    }
+    public onClickFeedback(index){
         this.selected_feedback = index;
         this.feedback_content = this.feedbacks[index].content;
         this.feedback_title = this.feedbacks[index].title;
         this.feebackService.readFeedbacks(this.feedbacks[index].id).subscribe(result=>{
             this.getFeedbacks();
             jQuery('#feedbackDetailModal').modal('show');
-        },error=>{console.log(error)});
+        },error=>{this.appService.showPNotify('failure', "Server Error! Can't read feedbacks", 'error');});
     }
-    onSearchChange(){
+    public onSearchChange(){
         if(this.search_text.length > 3 || this.search_text.length == 0){
             this.getFeedbacks();
         }

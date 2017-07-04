@@ -9,7 +9,7 @@ declare let jQuery: any;
 export class CourseDetailComponent implements OnInit {
    
 
-    public constructor(private route: ActivatedRoute, private router: Router,private appService: AppService, private authService: AuthService) {}
+    public constructor(public  route: ActivatedRoute, public  router: Router,public  appService: AppService, public  authService: AuthService) {}
 
     
     public ngOnInit(): void {

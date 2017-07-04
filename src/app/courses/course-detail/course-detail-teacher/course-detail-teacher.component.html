@@ -1,7 +1,7 @@
 <div class="col-md-12">
         <div class="x_panel">
             <div class="x_title">
-                <h3 class="course_title">{{course.code}} - {{course.name}} ({{course.semester_name}})</h3>
+                <h3 class="course_title">{{course['code']}} - {{course['name']}} ({{course['semester_name']}})</h3>
                 <div class="pull-right">
                     <button type="button" class="btn btn-success btn-round navbar-btn" (click)="onOpenSchedule()"> <i class="fa fa-calendar"></i> Schedule</button>
                 </div>
@@ -20,35 +20,32 @@
                             <h4>Total Students :</h4>
                         </div>
                         <div class="col-xs-2">
-                            <h4>{{course.total_stud}}</h4>
+                            <h4 *ngFor="let class_course of class_has_course">{{class_course.total_stud}} ({{class_course.class_name}})</h4>
                         </div>
                     </div>
                     <div class="row">
-                        <div *ngIf="course.office_hour" class="col-xs-2" style="text-align: right">
+                        <div *ngIf="course['office_hour']" class="col-xs-2" style="text-align: right">
                             <h4>Office hour :</h4>
                         </div>
-                        <div *ngIf="course.office_hour" class="col-xs-2">
-                            <h4>{{course.office_hour}}</h4>
+                        <div *ngIf="course['office_hour']" class="col-xs-2">
+                            <h4>{{course['office_hour']}}</h4>
                         </div>
-                        <div *ngIf="course.note" class="col-xs-2" style="text-align: right">
+                        <div *ngIf="course['note']" class="col-xs-2" style="text-align: right">
                             <h4>Note :</h4>
                         </div>
-                        <div *ngIf="course.note" class="col-xs-6">
-                            <h4>{{course.note}}</h4>
+                        <div *ngIf="course['note']" class="col-xs-6">
+                            <h4>{{course['note']}}</h4>
                         </div>
                     </div>
                 </div>
                 <br>
                 <div>
-                    <div class="pull-right">
-                        <button type="button" class="btn btn-primary btn-round" (click)="onCheckAttendance()"> <i class="fa fa-check-square-o"></i> Check Attendance</button>
-                    </div>
                     <ul class="nav nav-tabs" *ngIf="class_has_course.length > 1">
                           <li *ngFor="let class of class_has_course; let i = index" [ngClass]="{'active': i == selected_class_index}" (click)="onChangeClass(i)"><a>{{class.class_name}}</a></li>
                     </ul>
                 </div>
-                <div *ngIf="!isEdittingAttendance">
-                    <table class="table table-bordered text-center table-hover">
+                <div>
+                    <table class="table table-bordered text-center">
                         <thead>
                             <tr>
                                 <th colspan="3"></th>
@@ -103,22 +100,3 @@
         </div>
 </div>
 <edit-schedule-modal [modal_id]="scheduleModal.id" [modal_title]="scheduleModal.title" [classes]="class_has_course"  [view_only]="true"></edit-schedule-modal>
-<result-message-modal [modal_title]="apiResult" [modal_message]="apiResultMessage"></result-message-modal>
-<div class="modal fade" id="progressModal" role="dialog">
-    <div class="vertical-alignment-helper">
-        <div class="modal-dialog modal-sm vertical-align-center">
-            <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-body">
-                    <div class="text-center">
-                        <h2>Loading</h2>
-                    </div>
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>

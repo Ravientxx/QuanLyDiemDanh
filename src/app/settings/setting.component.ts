@@ -7,8 +7,8 @@ import { Router, ActivatedRoute, Params } from '@angular/router';
 })
 export class SettingComponent implements OnInit {
 
-    constructor(private scheduleService: ScheduleService, private appService: AppService, private router: Router, private semesterService: SemesterService) {}
+    public constructor(public  scheduleService: ScheduleService, public  appService: AppService, public  router: Router, public  semesterService: SemesterService) {}
 
-    ngOnInit() {
+    public ngOnInit() {
     }
 }

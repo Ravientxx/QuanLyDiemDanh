@@ -1,151 +1,71 @@
 <div class="col-md-12 col-sm-12 col-xs-12">
-        <div class="x_panel">
-            <div class="x_title">
-                <h3>Current Courses ({{this.currentSemester.name}})</h3>
-                <div class="clearfix"></div>
+    <div class="x_panel">
+        <div class="x_title">
+            <h3>Courses</h3>
+            <div class="navbar-btn pull-right">
+                <button type="button" class="btn btn-primary btn-round" (click)="onAddCourse()"> <i class="fa fa-plus"></i> Add</button>
+                <button type="button" class="btn btn-primary btn-round" (click)="onImportCourse()"> <i class="fa fa-upload"></i> Import</button>
+                <button type="button" class="btn btn-primary btn-round" (click)="onExportCourse()"> <i class="fa fa-download"></i> Export</button>
             </div>
-            <div class="x_content">
-                <div class="row">
-                    <div class="form-group col-md-4 col-xs-12">
-                        <input placeholder="Search Course Name" class="form-control" [(ngModel)]="searchText" (ngModelChange)="getCurrentList()" />
-                    </div>
-                    <div class="form-group col-md-4 col-xs-12">
-                        <div class="col-xs-6">
-                            <select class="form-control" [(ngModel)]="selectedProgram" (ngModelChange)="onChangeProgram()">
-                                <option *ngFor="let program of programs" [value]="program.id">{{program.name}}</option>
-                            </select>
-                        </div>
-                        <div class="col-xs-6">
-                            <select class="form-control" [(ngModel)]="selectedClasses" (ngModelChange)="getCurrentList()">
-                                <option *ngFor="let class of filteredClasses" [value]="class.id">{{class.name}}</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group col-md-4 col-xs-12">
-                        <button type="button" class="btn btn-primary btn-round" (click)="onAddCourse()"> <i class="fa fa-plus"></i> Add</button>
-                        <button type="button" class="btn btn-primary btn-round" (click)="onImportCourse()"> <i class="fa fa-upload"></i> Import</button>
-                        <button type="button" class="btn btn-primary btn-round"> <i class="fa fa-download"></i> Export</button>
-                    </div>
-                </div>
-                <br>
-                <table class="table table-bordered text-center table-hover">
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Name</th>
-                            <th>Lecturer</th>
-                            <th>Total students</th>
-                            <th>Total attendances</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let course of current_courses" (click)='onCellClick(course.id)'>
-                            <td>{{course.code}}</td>
-                            <td>{{course.name}}</td>
-                            <td>{{course.lecturers}}</td>
-                            <td>{{course.total_stud}}</td>
-                            <td>{{course.attendance_count}}</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <pagination [boundaryLinks]="true" [totalItems]="totalItems" [itemsPerPage]="itemsPerPage" [(ngModel)]="currentPage" (pageChanged)="onPageChanged($event)" class="pull-right no_margin"></pagination>
-                <div class="form-group">
-                    <select [(ngModel)]="itemsPerPage" (ngModelChange)="getCurrentList()">
-                        <option>10</option>
-                        <option>30</option>
-                        <option>50</option>
-                    </select>
-                    <span>Items/page</span>
-                </div>
-            </div>
+            <div class="clearfix"></div>
         </div>
-    </div>
-    <div class="col-md-12 col-sm-12 col-xs-12">
-        <div class="x_panel">
-            <div class="x_title">
-                <h2>Previous Courses</h2>
-                <ul class="nav navbar-right panel_toolbox">
-                    <li>
-                        <h4 (click)="isCollapsed = !isCollapsed">
-                            <button *ngIf="isCollapsed" class="btn btn-primary btn-round"><i class="fa fa-chevron-down"></i> Expand</button>
-                            <button *ngIf="!isCollapsed" class="btn btn-primary btn-round"><i class="fa fa-chevron-up"></i> Collapse</button>
-                        </h4>
-                    </li>
-                </ul>
-                <div class="clearfix"></div>
-            </div>
-            <div class="x_content" (collapsed)="collapsed($event)" (expanded)="expanded($event)" [collapse]="isCollapsed">
-                <div class="row">
-                    <div class="col-xs-4">
-                        <input placeholder="Search Course Name" class="form-control" [(ngModel)]="previous_searchText" (ngModelChange)="getPreviousList()" />
-                    </div>
-                    <div class="col-xs-4">
-                        <div class="col-xs-6">
-                            <select class="form-control" [(ngModel)]="previous_selectedProgram" (ngModelChange)="previous_onChangeProgram()">
-                                <option *ngFor="let program of programs" [value]="program.id">{{program.name}}</option>
-                            </select>
-                        </div>
-                        <div class="col-xs-6">
-                            <select class="form-control" [(ngModel)]="previous_selectedClasses" (ngModelChange)="getPreviousList()">
-                                <option *ngFor="let class of previous_filteredClasses" [value]="class.id">{{class.name}}</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-xs-4">
-                        <button type="button" class="btn btn-primary btn-round"> <i class="fa fa-download"></i> Export</button>
-                    </div>
+        <div class="x_content">
+            <div class="row">
+                <div class="form-group col-md-4 col-xs-12">
+                    <input placeholder="Search Course Name" class="form-control" [(ngModel)]="searchText" (ngModelChange)="getCourseList()" />
                 </div>
-                <br>
-                <table class="table table-bordered text-center table-hover">
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Name</th>
-                            <th>Lecturer</th>
-                            <th>Total students</th>
-                            <th>Total attendances</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let course of previous_courses" (click)='onCellClick(course.id)'>
-                            <td>{{course.code}}</td>
-                            <td>{{course.name}}</td>
-                            <td>{{course.lecturers}}</td>
-                            <td>{{course.total_stud}}</td>
-                            <td>{{course.attendance_count}}</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <pagination [boundaryLinks]="true" [totalItems]="previous_totalItems" [itemsPerPage]="previous_itemsPerPage" [(ngModel)]="previous_currentPage" (pageChanged)="previous_onPageChanged($event)" class="pull-right no_margin"></pagination>
-                <div class="form-group">
-                    <select [(ngModel)]="itemsPerPage" (ngModelChange)="getCurrentList()">
-                        <option>10</option>
-                        <option>30</option>
-                        <option>50</option>
-                    </select>
-                    <span>Items/page</span>
+                <div class="form-group col-md-8 col-xs-12">
+                    <div class="col-xs-4">
+                        <select class="form-control" [(ngModel)]="selectedProgram" (ngModelChange)="onChangeProgram()">
+                            <option *ngFor="let program of programs" [value]="program.id">{{program.name}}</option>
+                        </select>
+                    </div>
+                    <div class="col-xs-4">
+                        <select class="form-control" [(ngModel)]="selectedClasses" (ngModelChange)="getCourseList()">
+                            <option *ngFor="let class of filteredClasses" [value]="class.id">{{class.name}}</option>
+                        </select>
+                    </div>
+                    <div class="col-xs-4">
+                        <select class="form-control" [(ngModel)]="selectedSemester" (ngModelChange)="getCourseList()">
+                            <option *ngFor="let semester of semesters" [value]="semester.id">{{semester.name}}</option>
+                        </select>
+                    </div>
                 </div>
             </div>
-        </div>
-</div>
-<div class="modal fade" id="progressModal" role="dialog">
-    <div class="vertical-alignment-helper">
-        <div class="modal-dialog modal-sm vertical-align-center">
-            <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-body">
-                    <div class="text-center">
-                        <h2>Loading</h2>
-                    </div>
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%">
-                        </div>
-                    </div>
-                </div>
+            <br>
+            <table class="table table-bordered text-center table-hover">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Lecturer</th>
+                        <th>TA</th>
+                        <th>Total students</th>
+                        <th>Total attendances</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let course of current_courses" (click)='onCellClick(course.id)'>
+                        <td>{{course.code}}</td>
+                        <td>{{course.name}}</td>
+                        <td>{{course.lecturers}}</td>
+                        <td>{{course.TAs}}</td>
+                        <td>{{course.total_stud}}</td>
+                        <td>{{course.attendance_count}}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <pagination [boundaryLinks]="true" [totalItems]="totalItems" [itemsPerPage]="itemsPerPage" [(ngModel)]="currentPage" (pageChanged)="onPageChanged($event)" class="pull-right no_margin"></pagination>
+            <div class="form-group">
+                <select [(ngModel)]="itemsPerPage" (ngModelChange)="getCourseList()">
+                    <option>10</option>
+                    <option>30</option>
+                    <option>50</option>
+                </select>
+                <span>Items/page</span>
             </div>
         </div>
     </div>
 </div>
-<!-- <staff-courses-list *ngIf="userType == role.staff"></staff-courses-list> -->
-<!-- <student-home-page *ngIf="userType == role.student"></student-home-page> -->
-<!-- <teacher-home-page *ngIf="userType == role.teacher"></teacher-home-page> -->
+<import-modal [import_type]="appService.import_export_type.course" [title]="'Import Course'" [note]="'*Class of the courses is based on file name, e.g. 16CLC.xlsx. Imported courses will belong to the lastest semester.'" (onClose)="onCloseImport($event)"></import-modal>
+<export-modal [export_type]="appService.import_export_type.course" [title]="'Export Course'" [search_data]="export_search_data"></export-modal>

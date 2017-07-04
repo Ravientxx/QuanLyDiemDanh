@@ -9,29 +9,29 @@ declare let jQuery: any;
     templateUrl: './edit-course.component.html'
 })
 export class EditCourseComponent implements OnInit {
-    @Input() type: string;
-    course_id: any;
-    course = {
+    @Input() public type: string;
+    public course_id: any;
+    public course = {
         code : '',
         name: '',
         note: '',
         office_hour: ''
     };
-    lecturers: Array < any > = [];
-    TAs: Array < any > = [];
+    public lecturers: Array < any > = [];
+    public TAs: Array < any > = [];
     public apiResult: string;
     public apiResultMessage: string;
     @ViewChild(ResultMessageModalComponent)
-    private resultMessageModal: ResultMessageModalComponent;
+    public resultMessageModal: ResultMessageModalComponent;
 
-    public constructor(private route: ActivatedRoute,private router: Router, private appService: AppService, private courseService: CourseService, private teacherService: TeacherService) {
+    public constructor(public route: ActivatedRoute,public router: Router, public appService: AppService, public courseService: CourseService, public teacherService: TeacherService) {
 
     }
     public ngOnInit(): void {
         this.teacherService.getListTeachers(this.searchText, 1, 9999)
             .subscribe(result => {
                 this.teachers = result.teacher_list;
-            }, error => { console.log(error) });
+            }, error => { this.appService.showPNotify('failure', "Server Error! Can't get teacher list", 'error');  });
         this.route.params.subscribe(params => {this.course_id = params['id'] });
         this.courseService.getCourseDetail(this.course_id).subscribe(result => {
             this.course = result.course;
@@ -52,7 +52,7 @@ export class EditCourseComponent implements OnInit {
                 }
             }
             this.filtered_teachers = this.teachers.slice();
-        }, error => { console.log(error) });
+        }, error => { this.appService.showPNotify('failure', "Server Error! Can't get course detail", 'error');  });
     }
 
     public searchText: string = '';
@@ -66,7 +66,7 @@ export class EditCourseComponent implements OnInit {
     }
 
     public onSaveCourse(isContinue: boolean = false) {
-        jQuery("#progressModal").modal("show");
+        //jQuery("#progressModal").modal("show");
         this.courseService.editCourse(this.course_id,this.course.code, this.course.name, this.lecturers, this.TAs, this.course.office_hour, this.course.note)
             .subscribe(result => {
                 this.apiResult = result.result;
@@ -79,15 +79,12 @@ export class EditCourseComponent implements OnInit {
                             this.router.navigate(['/courses/']);
                         }, 3000);
                 }
-                jQuery("#progressModal").modal("hide");
-                //this.resultMessageModal.onOpenModal();
+                //jQuery("#progressModal").modal("hide");
                 this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
             }, error => {
                 this.apiResult = 'failure;'
                 this.apiResultMessage = 'Server Error';
-                console.log(error);
-                jQuery("#progressModal").modal("hide");
-                //this.resultMessageModal.onOpenModal();
+                //jQuery("#progressModal").modal("hide");
                 this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
             });
     }

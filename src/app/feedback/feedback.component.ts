@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { AppService, FeedbackService } from '../shared/shared.module';
+import { AppService, FeedbackService,AuthService } from '../shared/shared.module';
 declare var jQuery:any;
 @Component({
     selector: 'app-feedback',
@@ -8,9 +8,9 @@ declare var jQuery:any;
 })
 export class FeedbackComponent implements OnInit {
     
-    constructor(private appService: AppService,private feebackService: FeedbackService) {
+    public constructor(public  appService: AppService,public  feebackService: FeedbackService,public  authService: AuthService) {
 
     }
-    ngOnInit() {
+    public ngOnInit() {
     }
 }

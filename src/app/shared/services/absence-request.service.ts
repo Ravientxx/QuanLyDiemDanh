@@ -8,10 +8,10 @@ import {AppConfig} from '../config';
 @Injectable()
 export class AbsenceRequestService {
     // Resolve HTTP using the constructor
-    constructor(private http: Http, private appConfig: AppConfig,private authService: AuthService,private router : Router) {}
+    public constructor(public  http: Http, public  appConfig: AppConfig,public  authService: AuthService,public  router : Router) {}
         // private instance variable to hold base url
-    private getRequestsByStudentUrl = this.appConfig.apiHost + '/absence-request/by-student';
-    getRequestsByStudent(id : number,status: number ,search_text: string): Observable < { result: string, absence_requests: Array < any >, message:string} > {
+    public  getRequestsByStudentUrl = this.appConfig.apiHost + '/absence-request/by-student';
+    public getRequestsByStudent(id : number,status: number ,search_text: string): Observable < { result: string, absence_requests: Array < any >, message:string} > {
         var params = {
             'id': id,
             'status': status,
@@ -32,8 +32,8 @@ export class AbsenceRequestService {
                 return Observable.throw(error || 'Server error');
             });
     }
-    private changeRequestStatusUrl = this.appConfig.apiHost + '/absence-request/change-status';
-    changeRequestStatus(id : number,status : number): Observable < { result: string, message: string } > {
+    public  changeRequestStatusUrl = this.appConfig.apiHost + '/absence-request/change-status';
+    public changeRequestStatus(id : number,status : number): Observable < { result: string, message: string } > {
         var params = {
             'id': id,
             'status': status
@@ -54,11 +54,13 @@ export class AbsenceRequestService {
             });
     }
 
-    private getAbsenceRequestsUrl = this.appConfig.apiHost + '/absence-request/list';
-    getAbsenceRequests(status:number,search_text:string): Observable < { result: string, absence_requests: Array < any >, message:string} > {
+    public  getAbsenceRequestsUrl = this.appConfig.apiHost + '/absence-request/list';
+    public getAbsenceRequests(status:number,search_text:string, page: number = 1, limit: number = -1): Observable < { result: string, total_items: number,absence_requests: Array < any >, message:string} > {
         var params = {
             'status': status,
-            'search_text': search_text
+            'search_text': search_text,
+            'page': page,
+            'limit': limit,
         };
         let authToken = this.authService.token;
         let headers = new Headers();
@@ -76,8 +78,8 @@ export class AbsenceRequestService {
             });
     }
 
-    private createAbsenceRequestsUrl = this.appConfig.apiHost + '/absence-request/create';
-    createAbsenceRequests(reason:string,start_date:any,end_date:any): Observable < { result: string, message:string} > {
+    public  createAbsenceRequestsUrl = this.appConfig.apiHost + '/absence-request/create';
+    public createAbsenceRequests(reason:string,start_date:any,end_date:any): Observable < { result: string, message:string} > {
         var params = {
             'reason': reason,
             'start_date': start_date,
@@ -99,8 +101,8 @@ export class AbsenceRequestService {
             });
     }
 
-    private cancelAbsenceRequestsUrl = this.appConfig.apiHost + '/absence-request/cancel';
-    cancelAbsenceRequests(id:number): Observable < { result: string, message:string} > {
+    public  cancelAbsenceRequestsUrl = this.appConfig.apiHost + '/absence-request/cancel';
+    public cancelAbsenceRequests(id:number): Observable < { result: string, message:string} > {
         var params = {
             'id': id,
         };

@@ -2,8 +2,6 @@ import { Component, OnInit, Input,ViewChild } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 import { CourseService, TeacherService, AppService, ExcelService, EditScheduleModalComponent, ResultMessageModalComponent } from '../../shared/shared.module';
 import { FileUploader } from "ng2-file-upload/ng2-file-upload";
-import { read, IWorkBook } from "ts-xlsx";
-import { IWorkSheet } from "xlsx";
 declare var jQuery: any;
 
 
@@ -13,13 +11,14 @@ declare var jQuery: any;
 })
 export class AddCourseComponent implements OnInit {
 
-    public constructor( private router: Router, private excelService: ExcelService, private appService: AppService, private courseService: CourseService, private teacherService: TeacherService) {
+    public constructor( public router: Router, public excelService: ExcelService, public appService: AppService,
+        public courseService: CourseService, public teacherService: TeacherService) {
 
     }
     public apiResult: string;
     public apiResultMessage: string;
     @ViewChild(ResultMessageModalComponent)
-    private resultMessageModal: ResultMessageModalComponent;
+    public resultMessageModal: ResultMessageModalComponent;
 
     public onChangeProgram() {
         this.filteredClasses = [{ id: 0, name: 'Choose class' }];
@@ -37,13 +36,13 @@ export class AddCourseComponent implements OnInit {
             .subscribe(result => {
                 this.teachers = result.teacher_list;
                 this.filtered_teachers = this.teachers.slice();
-            }, error => { console.log(error) });
+            }, error => { this.appService.showPNotify('failure', "Server Error! Can't teacher list", 'error'); });
         this.appService.getSemesterProgramClass().subscribe(results => {
             this.classes = results.classes;
             this.programs = results.programs;
             this.selectedProgram = this.programs[0].id;
             this.onChangeProgram();
-        }, error => { console.log(error) });
+        }, error => { this.appService.showPNotify('failure', "Server Error! Can't get semester_program_class", 'error'); });
     }
 
     public searchText: string = '';
@@ -55,16 +54,16 @@ export class AddCourseComponent implements OnInit {
     public temp_TAs: Array < any > = [];
 
     public code = '';
-    name = '';
-    note = '';
-    office_hour = '';
+    public name = '';
+    public note = '';
+    public office_hour = '';
 
     public onCancelAddCourse() {
         this.router.navigate(['/courses/']);
     }
 
-    isContinue = false;
-    addCourse(){
+    public isContinue = false;
+    public addCourse(){
         this.courseService.addCourse(this.code, this.name, this.selected_lecturers, this.selected_TAs, this.office_hour, this.note,
                 this.selectedProgram, this.selectedClasses)
             .subscribe(result => {
@@ -102,7 +101,7 @@ export class AddCourseComponent implements OnInit {
             }
         }
         else{
-            this.excelService.readStudentEnrollCourseFile(this.selectedClasses[index].addStudentFromFile).subscribe(result => {
+            this.excelService.readStudentListFile(this.selectedClasses[index].addStudentFromFile).subscribe(result => {
                 this.apiResult = result[0].result;
                 if (this.apiResult == 'failure') {
                     this.apiResultMessage = result[0].message;
@@ -129,7 +128,6 @@ export class AddCourseComponent implements OnInit {
     }
 
     public searchList() {
-        console.log('searchText');
         this.filtered_teachers = [];
         for (var i = 0; i < this.teachers.length; i++) {
             if (this.teachers[i].first_name.toLowerCase().indexOf(this.searchText.toLowerCase()) >= 0 || this.teachers[i].last_name.toLowerCase().indexOf(this.searchText.toLowerCase()) >= 0) {
@@ -239,14 +237,14 @@ export class AddCourseComponent implements OnInit {
         addStudentFromFile: '',
         studentListFromFile: [],
     }];
-    tempValue = [];
-    onSelectFile(index: number, file: any) {
+    public tempValue = [];
+    public onSelectFile(index: number, file: any) {
         this.selectedClasses[index].addStudentFromFile = file;
     }
-    onRemoveFile(index: number) {
+    public onRemoveFile(index: number) {
         this.selectedClasses[index].addStudentFromFile = '';
     }
-    onAddClass() {
+    public onAddClass() {
         this.selectedClasses.push({
             classId: 0,
             class_name: '',
@@ -256,7 +254,7 @@ export class AddCourseComponent implements OnInit {
             studentListFromFile: [],
         });
     }
-    onRemoveClass(index: number) {
+    public onRemoveClass(index: number) {
         //remove class
         for (var i = index; i < this.selectedClasses.length - 1; i++) {
             this.selectedClasses[i].classId = this.selectedClasses[i + 1].classId;
@@ -270,7 +268,7 @@ export class AddCourseComponent implements OnInit {
 
     //Schedule
     @ViewChild(EditScheduleModalComponent)
-    private editScheduleModal: EditScheduleModalComponent;
+    public editScheduleModal: EditScheduleModalComponent;
 
     public scheduleModal ={
         id : 'chooseScheduleModal',

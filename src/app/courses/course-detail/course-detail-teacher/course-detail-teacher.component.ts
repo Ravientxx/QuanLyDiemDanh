@@ -9,11 +9,11 @@ declare let jQuery: any;
 export class CourseDetailTeacherComponent implements OnInit {
     public schedules = [];
 
-    course_id: any;
-    course: Array < any > = [];
-    lecturers: Array < any > = [];
-    TAs: Array < any > = [];
-    class_has_course: Array < any > = [{
+    public course_id: any;
+    public course: Array < any > = [];
+    public lecturers: Array < any > = [];
+    public TAs: Array < any > = [];
+    public class_has_course: Array < any > = [{
         classId: 0,
         class_name: '',
         schedule: '',
@@ -21,14 +21,14 @@ export class CourseDetailTeacherComponent implements OnInit {
         addStudentFromFile: '',
         studentListFromFile: [],
     }];
-    attendance_lists: Array < any > = [];
-    attendance_list: Array < any > = [];
+    public attendance_lists: Array < any > = [];
+    public attendance_list: Array < any > = [];
     public apiResult;
     public apiResultMessage: string;
     @ViewChild(ResultMessageModalComponent)
-    private resultMessageModal: ResultMessageModalComponent;
+    public  resultMessageModal: ResultMessageModalComponent;
 
-    public constructor(private route: ActivatedRoute, private router: Router,private appService: AppService, private courseService: CourseService, private attendanceSerivce: AttendanceService, private scheduleService: ScheduleService) {}
+    public constructor(public  route: ActivatedRoute, public  router: Router,public  appService: AppService, public  courseService: CourseService, public  attendanceSerivce: AttendanceService, public  scheduleService: ScheduleService) {}
 
     public getAttendanceList() {
         var classes_id : Array<number> = [];
@@ -39,8 +39,7 @@ export class CourseDetailTeacherComponent implements OnInit {
             this.apiResult = result.result;
             this.attendance_lists = result.attendance_lists;
             this.attendance_list = this.attendance_lists[0];
-            this.cloneAttendanceList(true);
-        }, error => { console.log(error) });
+        }, error => { this.appService.showPNotify('failure', "Server Error! Can't get attendance_lists by course", 'error');  });
     }
     public ngOnInit(): void {
         this.route.params.subscribe(params => { this.course_id = params['id'] });
@@ -57,12 +56,12 @@ export class CourseDetailTeacherComponent implements OnInit {
             this.class_has_course = result.class_has_course;
             //get list student
             this.getAttendanceList();
-        }, error => { console.log(error); });
+        }, error => { this.appService.showPNotify('failure', "Server Error! Can't course detail", 'error');  });
     }
 
     //Schedule
     @ViewChild(EditScheduleModalComponent)
-    private editScheduleModal: EditScheduleModalComponent;
+    public  editScheduleModal: EditScheduleModalComponent;
 
     public scheduleModal = {
         id: 'scheduleModal',
@@ -71,63 +70,10 @@ export class CourseDetailTeacherComponent implements OnInit {
     public onOpenSchedule() {
         this.editScheduleModal.onOpenModal();
     }
-
-    temp_attendance_lists: Array < any > = [];
-    selected_class_index = 0;
-    onChangeClass(i){
+    public selected_class_index = 0;
+    public onChangeClass(i){
         this.selected_class_index = i;
         this.attendance_list = this.attendance_lists[i];
-    }
-    cloneAttendanceList(isTempDes: boolean) {
-        if (isTempDes) {
-            this.temp_attendance_lists = [];
-            for(var k = 0 ; k < this.attendance_lists.length; k++){
-                var temp_attendance_list = [];
-                for (var i = 0; i < this.attendance_lists[k].length; i++) {
-                    var attendance = {
-                        id: this.attendance_lists[k][i].id,
-                        code: this.attendance_lists[k][i].code,
-                        name: this.attendance_lists[k][i].name,
-                        attendance_details: []
-                    };
-                    for (var j = 0; j < this.attendance_lists[k][i].attendance_details.length; j++) {
-                        var attendance_detail = {
-                            attendance_id: this.attendance_lists[k][i].attendance_details[j].attendance_id,
-                            attendance_type: this.attendance_lists[k][i].attendance_details[j].attendance_type,
-                            attendance_time: this.attendance_lists[k][i].attendance_details[j].attendance_time,
-                        };
-                        attendance.attendance_details.push(attendance_detail);
-                    }
-                    temp_attendance_list.push(attendance);
-                }
-                this.temp_attendance_lists.push(temp_attendance_list);
-            }
-        } else {
-            this.attendance_lists = [];
-            for (var k = 0; k < this.temp_attendance_lists.length; k++) {
-                var attendance_list = [];
-                for (var i = 0; i < this.temp_attendance_lists[k].length; i++) {
-                    var attendance = {
-                        id: this.temp_attendance_lists[k][i].id,
-                        code: this.temp_attendance_lists[k][i].code,
-                        name: this.temp_attendance_lists[k][i].name,
-                        attendance_details: []
-                    };
-                    for (var j = 0; j < this.temp_attendance_lists[k][i].attendance_details.length; j++) {
-                        var attendance_detail = {
-                            attendance_id: this.temp_attendance_lists[k][i].attendance_details[j].attendance_id,
-                            attendance_type: this.temp_attendance_lists[k][i].attendance_details[j].attendance_type,
-                            attendance_time: this.temp_attendance_lists[k][i].attendance_details[j].attendance_time,
-                        };
-                        attendance.attendance_details.push(attendance_detail);
-                    }
-                    attendance_list.push(attendance);
-                }
-                this.attendance_lists.push(attendance_list);
-            }
-        }
-    }
-    onCheckAttendance() {
-        
+
     }
 }

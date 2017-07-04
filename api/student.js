@@ -15,7 +15,7 @@ router.post('/list', function(req, res, next) {
 
     var program_id = req.body.program_id != null ? req.body.program_id : 1;
     var class_id = req.body.class_id != null ? req.body.class_id : 0;
-
+    var status = req.body.status != null ? req.body.status : 0;
     pool.getConnection(function(error, connection) {
         if (error) {
             _global.sendError(res, error.message);
@@ -42,23 +42,31 @@ router.post('/list', function(req, res, next) {
             if (sort != 'none') {
                 _global.sortListByKey(sort, search_list, 'last_name');
             }
-            res.send({
-                result: 'success',
-                total_items: search_list.length,
-                student_list: _global.filterListByPage(page, limit, search_list)
-            });
+            if(limit == -1){
+                //all
+                res.send({
+                    result: 'success',
+                    total_items: search_list.length,
+                    student_list: search_list
+                });
+            }else{
+                res.send({
+                    result: 'success',
+                    total_items: search_list.length,
+                    student_list: _global.filterListByPage(page, limit, search_list)
+                });
+            }
 
             connection.release();
         };
         if (class_id == 0) {
             connection.query(`SELECT users.id, students.stud_id as code, CONCAT(users.first_name,' ',users.last_name) as name, users.phone, students.status, students.current_courses as enroll_course, classes.name as class_name
                                 FROM users,students,classes
-                                WHERE users.id = students.id AND classes.id = students.class_id AND classes.program_id = ?`,
-                program_id, return_function);
+                                WHERE users.id = students.id AND classes.id = students.class_id AND classes.program_id = ? AND students.status = ?`, [program_id, status], return_function);
         } else {
             connection.query(`SELECT users.id, students.stud_id as code, CONCAT(users.first_name,' ',users.last_name) as name, users.phone, students.status, students.current_courses as enroll_course, classes.name as class_name
                                 FROM users,students,classes
-                                WHERE users.id = students.id AND classes.id = students.class_id AND classes.id = ? AND classes.program_id = ?`, [class_id, program_id], return_function);
+                                WHERE users.id = students.id AND classes.id = students.class_id AND classes.id = ? AND classes.program_id = ? AND students.status = ?`, [class_id, program_id, status], return_function);
         }
     });
 });
@@ -253,55 +261,258 @@ router.put('/update', function(req, res, next) {
         }
 
         async.series([
-                    //Start transaction
-                    function(callback) {
-                        connection.beginTransaction(function(error) {
-                            if (error) callback(error);
-                            else callback();
-                        });
-                    },
-                    //update Student table
-                    function(callback) {
-                        connection.query(`UPDATE students SET status = ? WHERE id = ?`, [new_status,user_id], function(error, results, fields) {
-                            if (error) {
-                                console.log(error.message + "at Update student's status");
-                                callback(error);
-                            } else {
-                                callback();
-                            }
-                        });
-                    },
-                    //update user table
-                    function(callback) {
-                        connection.query(`UPDATE users SET first_name = ?, last_name = ?, email = ?, phone = ? WHERE id = ?`, [new_first_name,new_last_name,new_email,new_phone, user_id], function(error, results, fields) {
-                            if (error) {
-                                console.log(error.message + ' at Update Users info');
-                                callback(error);
-                            } else {
-                                callback();
-                            }
-                        });
-                    },
-                    //Commit transaction
-                    function(callback) {
-                        connection.commit(function(error) {
-                            if (error) callback(error);
-                            else callback();
-                        });
-                    },
-                ], function(error) {
-                    if (error) {
-                        _global.sendError(res, error.message);
-                        connection.rollback(function() {
-                            throw error;
-                        });
-                        throw error;
-                    } else {
-                        console.log('success updating student!---------------------------------------');
-                        res.send({ result: 'success', message: 'Student Updated Successfully' });
-                    }
-                    connection.release();
+            //Start transaction
+            function(callback) {
+                connection.beginTransaction(function(error) {
+                    if (error) callback(error);
+                    else callback();
                 });
+            },
+            //update Student table
+            function(callback) {
+                connection.query(`UPDATE students SET status = ? WHERE id = ?`, [new_status, user_id], function(error, results, fields) {
+                    if (error) {
+                        console.log(error.message + "at Update student's status");
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            //update user table
+            function(callback) {
+                connection.query(`UPDATE users SET first_name = ?, last_name = ?, email = ?, phone = ? WHERE id = ?`, [new_first_name, new_last_name, new_email, new_phone, user_id], function(error, results, fields) {
+                    if (error) {
+                        console.log(error.message + ' at Update Users info');
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            //Commit transaction
+            function(callback) {
+                connection.commit(function(error) {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+        ], function(error) {
+            if (error) {
+                _global.sendError(res, error.message);
+                connection.rollback(function() {
+                    throw error;
+                });
+                throw error;
+            } else {
+                console.log('success updating student!---------------------------------------');
+                res.send({ result: 'success', message: 'Student Updated Successfully' });
+            }
+            connection.release();
+        });
+    });
+});
+router.post('/import', function(req, res, next) {
+    if (req.body.class_name == undefined || req.body.class_name == '') {
+        _global.sendError(res, null, "Class name is required");
+        return;
+    }
+    if (req.body.student_list == undefined || req.body.student_list.length == 0) {
+        _global.sendError(res, null, "Student list is required");
+        return;
+    }
+    var class_name = req.body.class_name;
+    var student_list = req.body.student_list;
+    pool.getConnection(function(error, connection) {
+        if (error) {
+            _global.sendError(res, error.message);
+            throw error;
+        }
+        var class_id = 0;
+        async.series([
+            //Start transaction
+            function(callback) {
+                connection.beginTransaction(function(error) {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+            //Get class id
+            function(callback) {
+                connection.query(`SELECT id FROM classes WHERE UPPER(name) = UPPER(?) LIMIT 1`, class_name, function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        if (results.length == 0) {
+                            //new class => insert
+                            var program_code = _global.getProgramCodeFromClassName(class_name);
+                            connection.query(`SELECT id FROM programs WHERE UPPER(code) = UPPER(?) LIMIT 1`, program_code, function(error, results, fields) {
+                                if (error) {
+                                    callback(error);
+                                } else {
+                                    if (results.length == 0) {
+                                        //program not found
+                                        callback({ message: 'Program not found' });
+                                    } else {
+                                        var email = class_name.toLowerCase() + '@student.hcmus.edu.vn';
+                                        var new_class = {
+                                            name: class_name,
+                                            email: email,
+                                            program_id: results[0].id
+                                        }
+                                        connection.query(`INSERT INTO classes SET ?`, new_class, function(error, results, fields) {
+                                            if (error) {
+                                                callback(error);
+                                            } else {
+                                                class_id = results.insertId;
+                                                callback();
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+                        } else {
+                            class_id = results[0].id;
+                            callback();
+                        }
+                    }
+                });
+            },
+            //Insert student into class
+            function(callback) {
+                async.each(student_list, function(student, callback) {
+                    connection.query(`SELECT id FROM students WHERE stud_id = ? LIMIT 1`, student.stud_id, function(error, results, fields) {
+                        if (error) {
+                            console.log(error.message + ' at get student_id from datbase (file)');
+                            callback(error);
+                        } else {
+                            if (results.length == 0) {
+                                //new student to system
+                                var new_user = {
+                                    first_name: _global.getFirstName(student.name),
+                                    last_name: _global.getLastName(student.name),
+                                    email: student.stud_id + '@student.hcmus.edu.vn',
+                                    phone: student.phone,
+                                    role_id: 1,
+                                    password: bcrypt.hashSync(student.stud_id.toString(), 10),
+                                };
+                                connection.query(`INSERT INTO users SET ?`, new_user, function(error, results, fields) {
+                                    if (error) {
+                                        callback(error);
+                                    } else {
+                                        var student_id = results.insertId;
+                                        var new_student = {
+                                            id: student_id,
+                                            stud_id: student.stud_id,
+                                            class_id: class_id,
+                                        }
+                                        connection.query(`INSERT INTO students SET ?`, new_student, function(error, results, fields) {
+                                            if (error) {
+                                                callback(error);
+                                            } else {
+                                                callback();
+                                            }
+                                        });
+                                    }
+                                });
+                            } else {
+                                //old student => ignore
+                                callback();
+                            }
+                        }
+                    });
+                }, function(error) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            //Commit transaction
+            function(callback) {
+                connection.commit(function(error) {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+        ], function(error) {
+            if (error) {
+                _global.sendError(res, null, error.message);
+                connection.rollback(function() {
+                    console.log(error);
+                });
+                console.log(error);
+            } else {
+                console.log('success import students!---------------------------------------');
+                res.send({ result: 'success', message: 'Students imported successfully' });
+            }
+            connection.release();
+        });
+    });
+});
+router.post('/export', function(req, res, next) {
+    if (req.body.classes_id == undefined || req.body.classes_id.length == 0) {
+        _global.sendError(res, null, "Classes id is required");
+        return;
+    }
+    var classes_id = req.body.classes_id;
+    var student_lists = [];
+    pool.getConnection(function(error, connection) {
+        if (error) {
+            _global.sendError(res, error.message);
+            throw error;
+        }
+        async.series([
+            //Start transaction
+            function(callback) {
+                connection.beginTransaction(function(error) {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+            //get student from each class
+            function(callback) {
+                async.each(classes_id, function(class_id, callback) {
+                    connection.query(`SELECT users.id, students.stud_id as code, CONCAT(users.first_name,' ',users.last_name) as name, users.phone, classes.name as class_name
+                                FROM users,students,classes
+                                WHERE users.id = students.id AND classes.id = students.class_id AND classes.id = ?`, class_id, function(error, results, fields) {
+                        if (error) {
+                            console.log(error.message + ' at get student by class');
+                            callback(error);
+                        } else {
+                            student_lists.push(results);
+                            callback();
+                        }
+                    });
+                }, function(error) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            //Commit transaction
+            function(callback) {
+                connection.commit(function(error) {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+        ], function(error) {
+            if (error) {
+                _global.sendError(res, null, error.message);
+                connection.rollback(function() {
+                    console.log(error);
+                });
+                console.log(error);
+            } else {
+                console.log('success export students!---------------------------------------');
+                res.send({ result: 'success', message: 'Students exported successfully' ,student_lists: student_lists});
+            }
+            connection.release();
+        });
     });
 });
 

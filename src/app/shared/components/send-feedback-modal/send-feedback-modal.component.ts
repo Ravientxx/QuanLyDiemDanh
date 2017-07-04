@@ -8,18 +8,18 @@ declare var jQuery: any;
   templateUrl: './send-feedback-modal.component.html',
 })
 export class SendFeedbackModalComponent implements OnInit {
-	@Output() onSent : EventEmitter<string> = new EventEmitter<string>();
+	@Output() public onSent : EventEmitter<string> = new EventEmitter<string>();
 
-    isAnonymous = false;
-    title = '';
-    content = '';
+    public isAnonymous = false;
+    public title = '';
+    public content = '';
 
     public apiResult: string;
     public apiResultMessage: string;
     public onOpenModal() {
         jQuery("#sendFeedbackModal").modal("show");
     }
-    onSendFeedback() {
+    public onSendFeedback() {
         this.feedbackService.sendFeedbacks(this.title, this.content, this.isAnonymous).subscribe(result => {
             this.apiResult = result.result;
             this.apiResultMessage = result.message;
@@ -31,10 +31,10 @@ export class SendFeedbackModalComponent implements OnInit {
                 jQuery("#sendFeedbackModal").modal("hide");
                 this.onSent.emit('success');
             }
-        }, error => { console.log(error) });
+        }, error => { this.appService.showPNotify('failure', "Server Error! Can't send feedbacks", 'error'); });
     }
-	constructor(private feedbackService : FeedbackService,private appService: AppService) { }
-	ngOnInit() {
+	public constructor(public  feedbackService : FeedbackService,public  appService: AppService) { }
+	public ngOnInit() {
 	}
 
 }

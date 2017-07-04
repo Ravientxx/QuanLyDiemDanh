@@ -8,22 +8,22 @@ import { LocalStorageService } from 'angular-2-local-storage';
 
 @Injectable()
 export class AuthService {
-	constructor(private http: Http,private appConfig : AppConfig,private router:Router,private localStorage : LocalStorageService) {}
+	public constructor(public  http: Http,public  appConfig : AppConfig,public  router:Router,public  localStorage : LocalStorageService) {}
     // isLoggedIn: boolean = false;
-    token :string = '';
+    public token :string = '';
     // store the URL to redirect after logging in
-    redirectUrl: string;
-    redirectMessage: string;
-    current_user : any;
+    public redirectUrl: string;
+    public redirectMessage: string;
+    public current_user : any;
 
-    tokenExpired(redirectUrl: string){
+    public tokenExpired(redirectUrl: string){
         this.redirectUrl = redirectUrl;
         this.redirectMessage = 'Your session is expired. Please login again!';
         this.logout();
     }
 
-    private loginUrl = this.appConfig.host + '/authenticate/login';
-    login(email : string, password: string): Observable < { result: string, message: string ,token: string, user: any} > {
+    public loginUrl = this.appConfig.host + '/authenticate/login';
+    public login(email : string, password: string): Observable < { result: string, message: string ,token: string, user: any} > {
         var params = {
             'email': email,
             'password': password
@@ -35,8 +35,8 @@ export class AuthService {
             .catch((error: any) => Observable.throw(error || 'Server error'));
     }
 
-    private logoutUrl = this.appConfig.host + '/authenticate/logout';
-    logout(): void {
+    public  logoutUrl = this.appConfig.host + '/authenticate/logout';
+    public logout(): void {
         var params = {
             'token': this.token,
         };
@@ -49,8 +49,8 @@ export class AuthService {
         this.localStorage.remove('token','current_user');
     }
 
-    private forgotPasswordUrl = this.appConfig.host + '/authenticate/forgot-password';
-    forgotPassword(email : string): Observable < { result: string, message: string} > {
+    public  forgotPasswordUrl = this.appConfig.host + '/authenticate/forgot-password';
+    public forgotPassword(email : string): Observable < { result: string, message: string} > {
         this.token = '';
         this.current_user = '';
         this.localStorage.set('isLoggedIn',false);
@@ -64,8 +64,8 @@ export class AuthService {
             //...errors if any
             .catch((error: any) => Observable.throw(error || 'Server error'));
     }
-    private resetPasswordCheckUrl = this.appConfig.host + '/authenticate/reset-password-check';
-    resetPasswordCheck(token : string): Observable < { result: string, message: string} > {
+    public  resetPasswordCheckUrl = this.appConfig.host + '/authenticate/reset-password-check';
+    public resetPasswordCheck(token : string): Observable < { result: string, message: string} > {
         var params = {
             'token': token,
         };
@@ -73,8 +73,8 @@ export class AuthService {
             .map((res: Response) => res.json())
             .catch((error: any) => Observable.throw(error || 'Server error'));
     }
-    private resetPasswordUrl = this.appConfig.host + '/authenticate/reset-password';
-    resetPassword(password : string,confirm_password: string,token:string): Observable < { result: string, message: string} > {
+    public  resetPasswordUrl = this.appConfig.host + '/authenticate/reset-password';
+    public resetPassword(password : string,confirm_password: string,token:string): Observable < { result: string, message: string} > {
         var params = {
             'password': password,
             'confirm_password': confirm_password,

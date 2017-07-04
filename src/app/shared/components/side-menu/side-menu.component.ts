@@ -8,7 +8,7 @@ import { AppService } from '../../services/app.service';
 })
 export class SideMenuComponent implements OnInit {
 
-    constructor(private authService: AuthService, private appService: AppService) {
+    public constructor(public  authService: AuthService, public  appService: AppService) {
         switch (authService.current_user.role_id) {
             case appService.userType.staff:
                 this.sideMenu = this.staffMenu;
@@ -22,7 +22,7 @@ export class SideMenuComponent implements OnInit {
         }
     }
 
-    ngOnInit() {}
+    public ngOnInit() {}
 
     public sideMenu: Array < any > = [];
 
@@ -47,8 +47,8 @@ export class SideMenuComponent implements OnInit {
 
     public studentMenu = [
         { title: 'Dashboard', url: '/', icon: 'fa-home' },
-        { title: 'Courses', url: '/courses', icon: 'fa-book' },
-        { title: 'Teachers', url: '/teachers', icon: 'fa-graduation-cap' },
+        { title: 'Check Attendance',url: '/check-attendance',icon: 'fa-check-square-o' },
+        { title: 'Schedule', url: '/schedule', icon: 'fa-calendar' },
         { title: 'Absence Requests', url: '/absence-requests', icon: 'fa-envelope' },
         { title: 'Logout', url: '/logout', icon: 'fa-sign-out' }
     ];
