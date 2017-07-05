@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
-    "start": "ng build --prod --aot && supervisor ./bin/www",
+    "start": "ng build",
     "client": "ng serve",
     "server": "supervisor ./bin/www",
     "build": "ng build",
