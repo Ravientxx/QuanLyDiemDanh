@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
-    "start": "http-server",
+    "start": "node ./bin/www",
     "client": "ng serve",
     "server": "supervisor ./bin/www",
     "build": "ng build",
