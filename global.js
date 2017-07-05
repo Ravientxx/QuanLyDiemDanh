@@ -1,9 +1,9 @@
 module.exports = {
     db: {
-        host: 'localhost',
-        user: 'root',
-        password: '',
-        database: 'qldd'
+        host: 'sql12.freemysqlhosting.net',
+        user: 'sql12183615',
+        password: 'zp4iQbvFvN',
+        database: 'sql12183615'
     },
     host: 'localhost:4200',
     email_setting: {
