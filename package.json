@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
-    "start": "node ./bin/www",
+    "start": "node app.js",
     "client": "ng serve",
     "server": "supervisor ./bin/www",
     "build": "ng build",
@@ -12,7 +12,6 @@
 	"prod": "NODE_ENV=production ./bin/www",
     "lint": "ng lint",
     "e2e": "ng e2e",
-	"preinstall": "npm install -g http-server",
     "postinstall": "ng build --aot -prod"
   },
   "private": true,
@@ -60,12 +59,12 @@
     "swagger-jsdoc": "^1.9.3",
     "ts-xlsx": "0.0.10",
     "xlsx": "^0.10.6",
-    "zone.js": "^0.8.4"
-  },
-  "devDependencies": {
+    "zone.js": "^0.8.4",
     "@types/jasmine": "2.5.38",
     "@types/node": "~6.0.60",
-    "@types/socket.io-client": "^1.4.29",
+    "@types/socket.io-client": "^1.4.29"
+  },
+  "devDependencies": {
     "codelyzer": "~2.0.0",
     "jasmine-core": "~2.5.2",
     "jasmine-spec-reporter": "~3.2.0",
@@ -79,5 +78,9 @@
     "ts-node": "~2.0.0",
     "tslint": "~4.5.0",
     "typescript": "~2.2.0"
+  },
+  "engines": {
+	"node": "6.9.2",
+	"npm": "3.10.9"
   }
 }
