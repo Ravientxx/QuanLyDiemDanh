@@ -4,16 +4,20 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
-    "start": "ng build",
+    "start": "node app.js",
     "client": "ng serve",
     "server": "supervisor ./bin/www",
     "build": "ng build",
     "test": "ng test",
+	"prod": "NODE_ENV=production ./bin/www",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "postinstall": "ng build --aot -prod"
   },
   "private": true,
   "dependencies": {
+    "@angular/cli": "1.0.0",
+    "@angular/compiler-cli": "^4.0.0",
     "@angular/common": "^4.0.0",
     "@angular/compiler": "^4.0.0",
     "@angular/core": "^4.0.0",
@@ -55,14 +59,12 @@
     "swagger-jsdoc": "^1.9.3",
     "ts-xlsx": "0.0.10",
     "xlsx": "^0.10.6",
-    "zone.js": "^0.8.4"
-  },
-  "devDependencies": {
-    "@angular/cli": "1.0.0",
-    "@angular/compiler-cli": "^4.0.0",
+    "zone.js": "^0.8.4",
     "@types/jasmine": "2.5.38",
     "@types/node": "~6.0.60",
-    "@types/socket.io-client": "^1.4.29",
+    "@types/socket.io-client": "^1.4.29"
+  },
+  "devDependencies": {
     "codelyzer": "~2.0.0",
     "jasmine-core": "~2.5.2",
     "jasmine-spec-reporter": "~3.2.0",
@@ -76,5 +78,9 @@
     "ts-node": "~2.0.0",
     "tslint": "~4.5.0",
     "typescript": "~2.2.0"
+  },
+  "engines": {
+	"node": "6.9.2",
+	"npm": "3.10.9"
   }
 }
