@@ -1,4 +1,4 @@
 export class AppConfig {
-    public apiHost = "http://localhost:3000/api";
-    public host = "http://localhost:3000";
+    public apiHost = "http:qldd.herokuapp.com/api";
+    public host = "http:qldd.herokuapp.com";
 }
