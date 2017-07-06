@@ -810,6 +810,7 @@ router.post('/generate-delegate-code', function(req, res, next) {
                         code: code,
                         course_id: course_id,
                         class_id: class_id,
+                        attendance_id: results[0].id,
                         in_use: false,
                         created_by: req.decoded.id,
                     });

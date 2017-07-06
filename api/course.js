@@ -89,14 +89,12 @@ router.post('/list', function(req, res, next) {
             if (sort != 'none') {
                 _global.sortListByKey(sort, search_list, 'last_name');
             }
-
             if (limit != -1) {
                 res.send({
                     result: 'success',
                     total_items: search_list.length,
                     courses: _global.filterListByPage(page, limit, search_list)
                 });
-
             } else {
                 res.send({
                     result: 'success',
@@ -121,7 +119,6 @@ router.post('/list', function(req, res, next) {
                                 classes.name as class_name 
                         FROM courses, class_has_course, classes
                         WHERE class_has_course.course_id = courses.id AND classes.id = class_has_course.class_id AND courses.program_id = ?`;
-
         if (class_id != 0) {
             query += ' AND class_has_course.class_id = ' + class_id;
         }

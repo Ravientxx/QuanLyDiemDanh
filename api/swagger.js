@@ -342,6 +342,30 @@
 *         description: json
 */
 
+/**
+* @swagger
+* /api/attendance/check-delegate-code:
+*   post:
+*     summary: Check delegate code
+*     description:
+*     tags: [Attendance]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: token
+*         in: formData
+*         required: true
+*         type: string
+*       - name: code
+*         description: code
+*         in: formData
+*         required: true
+*         type: string
+*     responses:
+*       200:
+*         description: json
+*/
 
 /**
 * @swagger
