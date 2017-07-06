@@ -312,6 +312,7 @@ router.put('/update', function(req, res, next) {
         });
     });
 });
+
 router.post('/import', function(req, res, next) {
     if (req.body.class_name == undefined || req.body.class_name == '') {
         _global.sendError(res, null, "Class name is required");
@@ -451,6 +452,7 @@ router.post('/import', function(req, res, next) {
         });
     });
 });
+
 router.post('/export', function(req, res, next) {
     if (req.body.classes_id == undefined || req.body.classes_id.length == 0) {
         _global.sendError(res, null, "Classes id is required");
@@ -510,6 +512,29 @@ router.post('/export', function(req, res, next) {
             } else {
                 console.log('success export students!---------------------------------------');
                 res.send({ result: 'success', message: 'Students exported successfully' ,student_lists: student_lists});
+            }
+            connection.release();
+        });
+    });
+});
+
+router.post('/detail-by-code', function(req, res, next) {
+    if (req.body.code == undefined || req.body.code == '') {
+        _global.sendError(res, null, "Student code is required");
+        return;
+    }
+    var student_code = req.body.code;
+    pool.getConnection(function(error, connection) {
+        connection.query(`SELECT * FROM users,students 
+            WHERE students.stud_id = ? AND users.id = students.id LIMIT 1`, student_code, function(error, rows, fields) {
+            if (error) {
+                _global.sendError(res, error.message);
+                throw error;
+            }
+            if(rows.length == 0){
+                res.send({ result: 'failure',message:'Student not found'});
+            }else{
+                res.send({ result: 'success', student: rows[0]});
             }
             connection.release();
         });

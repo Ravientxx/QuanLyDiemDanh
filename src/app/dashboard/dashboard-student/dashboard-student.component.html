@@ -23,8 +23,7 @@
                                 <input class="form-control" type="text" name="editing_phone" [(ngModel)]="editing_phone">
                             </li>
                             <li>
-                                <i class="fa fa-envelope-o"></i>
-                                <input class="form-control" type="text" name="editing_mail" [(ngModel)]="editing_mail">
+                                <i class="fa fa-envelope-o"></i> {{authService.current_user.email}}
                             </li>
                         </ul>
                         <button class="btn btn-default" (click)="onCancelEditProfile()">Cancel</button>
@@ -106,9 +105,9 @@
                             <ng-container *ngFor="let attendance_detail of course.attendance_details;let j = index">
                                 <ng-template #tolTemplate>
                                     <div>Created at : {{attendance_detail.created_at | date:'short'}}</div>
-                                    <div *ngIf="attendance_detail.attendance_type == appService.attendance_type.present">Checked at : {{attendance_detail.attendance_time | date:'short'}}</div>
+                                    <div *ngIf="attendance_detail.attendance_type != appService.attendance_type.absent">Attended at : {{attendance_detail.attendance_time | date:'short'}}</div>
                                 </ng-template>
-                                <td [tooltip]="tolTemplate" container="body"><i *ngIf="attendance_detail.attendance_type" class="fa fa-check attendance-check"></i></td>
+                                <td [tooltip]="tolTemplate" container="body"><i *ngIf="attendance_detail.attendance_type == appService.attendance_type.checklist" class="fa fa-check attendance-check"></i><i *ngIf="attendance_detail.attendance_type == appService.attendance_type.qr" class="fa fa-qrcode attendance-check"></i><i *ngIf="attendance_detail.attendance_type == appService.attendance_type.quiz" class="fa fa-question-circle attendance-check"></i><i *ngIf="attendance_detail.attendance_type == appService.attendance_type.face" class="fa fa-user-circle-o attendance-check"></i></td>
                             </ng-container>
                         </tr>
                     </tbody>

@@ -75,10 +75,13 @@ router.get('/detail/:id', function(req, res, next) {
                 throw error;
             }
             var teacher = rows[0];
-            connection.query(`SELECT courses.id, teacher_teach_course.teacher_role, courses.code AS course_code, courses.name AS course_name,courses.attendance_count,programs.name AS program_name, semesters.name AS semester_name 
-                FROM teacher_teach_course , courses, programs , semesters 
-                WHERE teacher_teach_course.course_id = courses.id AND teacher_teach_course.teacher_id = ? AND programs.id = courses.program_id 
-                GROUP BY courses.code`, id, function(error, rows, fields) {
+            connection.query(`SELECT courses.id, teacher_teach_course.teacher_role, courses.code AS course_code, 
+                                    courses.name AS course_name,class_has_course.attendance_count,classes.name AS class_name,
+                                    semesters.name AS semester_name 
+                FROM teacher_teach_course , courses, classes , semesters , class_has_course 
+                WHERE teacher_teach_course.course_id = courses.id AND courses.id = class_has_course.course_id AND
+                 teacher_teach_course.teacher_id = ? AND classes.id = class_has_course.class_id AND
+                  semesters.id = courses.semester_id `, id, function(error, rows, fields) {
                 if (error) {
                     _global.sendError(res, error.message);
                     throw error;

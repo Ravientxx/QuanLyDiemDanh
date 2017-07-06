@@ -249,9 +249,48 @@ CREATE TABLE `class_has_course` (
   `class_id` int(11) NOT NULL,
   `course_id` int(11) NOT NULL,
   `total_stud` tinyint(1) NOT NULL DEFAULT '0',
+  `attendance_count` tinyint(1) NOT NULL DEFAULT '0',
   `schedules` varchar(255) CHARACTER SET utf8 DEFAULT NULL,
   `attendance_count` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`,`class_id`,`course_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- ----------------------------
+-- Table structure for quiz
+-- ----------------------------
+DROP TABLE IF EXISTS `quiz`;
+CREATE TABLE `quiz` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) CHARACTER SET utf8 DEFAULT NULL,
+  `class_has_course_id` int(11) NOT NULL,
+  `closed` boolean DEFAULT FALSE,
+  `created_by` int(11) DEFAULT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`,`class_has_course_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- ----------------------------
+-- Table structure for questions
+-- ----------------------------
+DROP TABLE IF EXISTS `quiz_questions`;
+CREATE TABLE `quiz_questions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `quiz_id` int(11) NOT NULL,
+  `text` text NOT NULL,
+  PRIMARY KEY (`id`,`quiz_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- ----------------------------
+-- Table structure for answers
+-- ----------------------------
+DROP TABLE IF EXISTS `quiz_answers`;
+CREATE TABLE `quiz_answers` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `quiz_question_id` int(11) NOT NULL,
+  `answered_by` int(11) NOT NULL,
+  `text` text DEFAULT NULL,
+  `answered_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`,`quiz_question_id`,`answered_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
@@ -384,9 +423,9 @@ CREATE TRIGGER trigger_delete_attendance
     BEFORE DELETE ON attendance
     FOR EACH ROW
 BEGIN
-  UPDATE courses
+  UPDATE class_has_course
   SET attendance_count = attendance_count - 1
-  WHERE id = OLD.course_id;
+  WHERE course_id = OLD.course_id AND  class_id = OLD.class_id;
 
   DELETE FROM attendance_detail
   WHERE attendance_id = OLD.id;
@@ -411,6 +450,23 @@ BEGIN
   IF NEW.attendance_type = 0 AND OLD.attendance_type = 1 THEN
     UPDATE attendance
     SET student_count = student_count - 1
+    WHERE id = NEW.attendance_id;
+  END IF;
+END//
+DELIMITER ;
+
+-- ----------------------------
+-- Trigger for insert attendance_detail
+-- ----------------------------
+DELIMITER //
+DROP TRIGGER IF EXISTS trigger_insert_attendance_detail//
+CREATE TRIGGER trigger_insert_attendance_detail
+    AFTER INSERT ON attendance_detail
+    FOR EACH ROW
+BEGIN
+  IF NEW.attendance_type = 1 THEN
+    UPDATE attendance
+    SET student_count = student_count + 1
     WHERE id = NEW.attendance_id;
   END IF;
 END//

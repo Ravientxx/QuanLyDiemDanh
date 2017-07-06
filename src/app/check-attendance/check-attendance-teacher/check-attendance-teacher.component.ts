@@ -13,7 +13,9 @@ export class CheckAttendanceTeacherComponent implements OnInit {
         public authService: AuthService, public attendanceService: AttendanceService, public localStorage: LocalStorageService, public appService: AppService, public router: Router) {
         checkAttendanceSocketService.consumeEventOnCheckAttendanceUpdated();
         checkAttendanceSocketService.invokeCheckAttendanceUpdated.subscribe(result=>{
-            this.getOpeningAttendance();
+            if(this.selected_course_id == result['course_id'] && this.selected_class_id == result['class_id']){
+                this.getOpeningAttendance();
+            }
         });
         checkAttendanceSocketService.consumeEventOnCheckAttendanceCreated();
         checkAttendanceSocketService.invokeCheckAttendanceCreated.subscribe(result=>{
@@ -21,8 +23,10 @@ export class CheckAttendanceTeacherComponent implements OnInit {
         });
         checkAttendanceSocketService.consumeEventOnCheckAttendanceStopped();
         checkAttendanceSocketService.invokeCheckAttendanceStopped.subscribe(result=>{
-            this.stopped_modal_message = "Session is " + result;
-            jQuery('#sessionStoppedModal').modal({backdrop: 'static', keyboard: false}) ;
+            if(this.selected_course_id == result['course_id'] && this.selected_class_id == result['class_id']){
+                this.stopped_modal_message = "Session is " + result['message'];
+                jQuery('#sessionStoppedModal').modal({backdrop: 'static', keyboard: false}) ;
+            }
         });
     }
 
@@ -131,17 +135,25 @@ export class CheckAttendanceTeacherComponent implements OnInit {
     }
     public confirmCancelAttendanceSession(){
         this.attendanceService.cancelAttendance(this.selected_attendance['id']).subscribe(result=>{
-            this.checkAttendanceSocketService.emitEventOnCheckAttendanceStopped('cancelled by ' + this.authService.current_user.first_name + ' ' + this.authService.current_user.last_name);
+            this.checkAttendanceSocketService.emitEventOnCheckAttendanceStopped({
+                message: 'cancelled by ' + this.authService.current_user.first_name + ' ' + this.authService.current_user.last_name,
+                course_id : this.selected_course_id,
+                class_id : this.selected_class_id,
+            });
             this.router.navigate(['/dashboard']);
         },error=>{this.appService.showPNotify('failure', "Server Error! Can't cancel attendance session", 'error');});
     }
     public confirmCloseAttendanceSession(){
         this.attendanceService.closeAttendance(this.selected_attendance['id']).subscribe(result=>{
-            this.checkAttendanceSocketService.emitEventOnCheckAttendanceStopped('closed by ' + this.authService.current_user.first_name + ' ' + this.authService.current_user.last_name);
+            this.checkAttendanceSocketService.emitEventOnCheckAttendanceStopped({
+                message: 'closed by ' + this.authService.current_user.first_name + ' ' + this.authService.current_user.last_name,
+                course_id : this.selected_course_id,
+                class_id : this.selected_class_id,
+            });
             this.router.navigate(['/dashboard']);
         },error=>{this.appService.showPNotify('failure', "Server Error! Can't close attendance session", 'error');});
     }
-    public showQRCode(){
+    public generateQRCode(){
         var check_attendance_url = this.appConfig.apiHost + "/check-attendance/qr-code/" + this.selected_attendance_id;
         this.localStorage.set('qrCodeData',check_attendance_url);
         window.open(this.appConfig.host + '/qr-code', '_blank', 'height=300,width=300,scrollbars=yes,status=0,toolbar=0,menubar=0,location=0');
@@ -152,7 +164,9 @@ export class CheckAttendanceTeacherComponent implements OnInit {
             jQuery('#delegateCodeModal').modal('show');
         },error=>{this.appService.showPNotify('failure', "Server Error! Can't generate delegate code", 'error');});
     }
-
+    public generateQuiz(){
+        this.router.navigate(['/check-attendance-quiz']);
+    }
     public onAttendanceCheckClick(student_index: number, attendance_detail_index: number) {
         var type;
         if (this.check_attendance_list[student_index].attendance_details[attendance_detail_index].attendance_type) {
@@ -162,7 +176,10 @@ export class CheckAttendanceTeacherComponent implements OnInit {
         }
         this.checkAttendanceService.checkList(this.check_attendance_list[student_index].attendance_details[attendance_detail_index].attendance_id,this.check_attendance_list[student_index].id,type).subscribe(result=>{
             this.check_attendance_list[student_index].attendance_details[attendance_detail_index].attendance_type = type;
-            this.checkAttendanceSocketService.emitEventOnCheckAttendanceUpdated(null);
+            this.checkAttendanceSocketService.emitEventOnCheckAttendanceUpdated({
+                course_id : this.selected_course_id,
+                class_id : this.selected_class_id,
+            });
         },error=>{this.appService.showPNotify('failure',"Server Error! Can't check_list",'error');});
     }
 }

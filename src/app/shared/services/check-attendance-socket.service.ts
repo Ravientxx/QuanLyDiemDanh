@@ -21,7 +21,7 @@ export class CheckAttendanceSocketService {
   public consumeEventOnCheckAttendanceUpdated(){
     var self = this;
     this.socket.on('checkAttendanceUpdated', function(event:any){
-      self.invokeCheckAttendanceUpdated.next();
+      self.invokeCheckAttendanceUpdated.next(event);
     });
   }
 
@@ -33,7 +33,7 @@ export class CheckAttendanceSocketService {
   public consumeEventOnCheckAttendanceCreated(){
     var self = this;
     this.socket.on('checkAttendanceCreated', function(event:any){
-      self.invokeCheckAttendanceCreated.next();
+      self.invokeCheckAttendanceCreated.next(event);
     });
   }
   // Emit: Check Attendance created event

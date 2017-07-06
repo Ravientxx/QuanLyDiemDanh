@@ -35,6 +35,12 @@ export class EditCourseComponent implements OnInit {
         this.route.params.subscribe(params => {this.course_id = params['id'] });
         this.courseService.getCourseDetail(this.course_id).subscribe(result => {
             this.course = result.course;
+            if(this.course['not_in_current_semester']){
+                this.router.navigate(['/courses/',this.course_id]);
+                setTimeout(() => {
+                    this.appService.showPNotify('failure', "Can't edit course, that semester is ended", 'error');
+                }, 3000);
+            }
             this.lecturers = result.lecturers;
             this.TAs = result.TAs;
             for(var i = 0 ; i < this.lecturers.length; i++){

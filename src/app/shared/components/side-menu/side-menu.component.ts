@@ -47,7 +47,8 @@ export class SideMenuComponent implements OnInit {
 
     public studentMenu = [
         { title: 'Dashboard', url: '/', icon: 'fa-home' },
-        { title: 'Check Attendance',url: '/check-attendance',icon: 'fa-check-square-o' },
+        { title: 'Attendance - Checklist',url: '/check-attendance',icon: 'fa-check-square-o' },
+        { title: 'Attendance - Quiz',url: '/check-attendance-quiz',icon: 'fa-question-circle' },
         { title: 'Schedule', url: '/schedule', icon: 'fa-calendar' },
         { title: 'Absence Requests', url: '/absence-requests', icon: 'fa-envelope' },
         { title: 'Logout', url: '/logout', icon: 'fa-sign-out' }
@@ -56,6 +57,7 @@ export class SideMenuComponent implements OnInit {
     public teacherMenu = [
         { title: 'Dashboard', url: '/', icon: 'fa-home' },
         { title: 'Check Attendance',url: '/check-attendance',icon: 'fa-check-square-o' },
+        { title: 'Quiz Results',url: '/quiz',icon: 'fa-question-circle' },
         { title: 'Logout', url: '/logout', icon: 'fa-sign-out' }
     ];
 }

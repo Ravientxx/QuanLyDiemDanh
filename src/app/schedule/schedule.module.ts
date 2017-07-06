@@ -6,7 +6,6 @@ import { CollapseModule } from 'ngx-bootstrap';
 import { ScheduleComponent }    from './schedule.component';
 import { ScheduleStudentComponent }  from './schedule-student/schedule-student.component';
 import { ScheduleStaffComponent }    from './schedule-staff/schedule-staff.component';
-import { Ng2TableModule } from 'ng2-table/ng2-table';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
 import {FileUploadModule} from "ng2-file-upload";
@@ -21,7 +20,6 @@ const scheduleRoutes: Routes = [
     CommonModule,
     FormsModule,
     RouterModule.forChild(scheduleRoutes),
-    Ng2TableModule,
     CollapseModule.forRoot(),
     PaginationModule.forRoot(),
     TabsModule,

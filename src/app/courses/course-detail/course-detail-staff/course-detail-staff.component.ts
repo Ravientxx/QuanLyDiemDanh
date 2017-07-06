@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { CourseService, AttendanceService, AppService, EditScheduleModalComponent, ScheduleService, ResultMessageModalComponent } from '../../../shared/shared.module';
+import { CourseService,StudentService, AttendanceService, AppService, EditScheduleModalComponent, ScheduleService, ResultMessageModalComponent } from '../../../shared/shared.module';
 declare let jQuery: any;
 @Component({
     selector: 'course-detail-staff',
@@ -28,7 +28,7 @@ export class CourseDetailStaffComponent implements OnInit {
     @ViewChild(ResultMessageModalComponent)
     public  resultMessageModal: ResultMessageModalComponent;
 
-    public constructor(public  route: ActivatedRoute, public  router: Router,public  appService: AppService, public  courseService: CourseService, public  attendanceSerivce: AttendanceService, public  scheduleService: ScheduleService) {}
+    public constructor(public route: ActivatedRoute, public studentService: StudentService, public  router: Router,public  appService: AppService, public  courseService: CourseService, public  attendanceSerivce: AttendanceService, public  scheduleService: ScheduleService) {}
 
     public getAttendanceList() {
         var classes_id : Array<number> = [];
@@ -131,7 +131,7 @@ export class CourseDetailStaffComponent implements OnInit {
                             attendance_id: this.temp_attendance_lists[k][i].attendance_details[j].attendance_id,
                             attendance_type: this.temp_attendance_lists[k][i].attendance_details[j].attendance_type,
                             attendance_time: this.temp_attendance_lists[k][i].attendance_details[j].attendance_time,
-                            created_at: this.attendance_lists[k][i].attendance_details[j].created_at,
+                            created_at: this.temp_attendance_lists[k][i].attendance_details[j].created_at,
                         };
                         attendance.attendance_details.push(attendance_detail);
                     }
@@ -179,6 +179,23 @@ export class CourseDetailStaffComponent implements OnInit {
 
     public new_code: string = '';
     public new_name: string = '';
+    public keyDownFunction(event) {
+      if(event.keyCode == 13) {
+        this.onAddToAttendanceList();
+      }
+    }
+    public getSearchingStudentDetail(){
+        if(this.new_code.length > 6){
+            this.studentService.getStudentDetailByCode(this.new_code).subscribe(result=>{
+                if(result.result == 'success'){
+                    this.new_name = result.student.first_name + ' ' + result.student.last_name;
+                }
+                else{
+                    this.new_name = '';
+                }
+            },error =>{console.log(error)});
+        }
+    }
     public onAddToAttendanceList() {
         this.attendanceSerivce.checkAddToCourse(this.course_id,this.new_code,this.new_name).subscribe(results=>{
             if(results.result == 'success'){
@@ -227,4 +244,7 @@ export class CourseDetailStaffComponent implements OnInit {
         }
         this.temp_attendance_lists[this.selected_class_index].pop();
     }
+
+
+
 }

@@ -12,7 +12,10 @@ var teacher_list = [];
 router.get('/detail/:id', function(req, res, next) {
     var id = req.params['id'];
     pool.getConnection(function(error, connection) {
-        connection.query(`SELECT courses.*,semesters.name as semester_name,programs.name as program_name FROM courses,semesters,programs WHERE programs.id = courses.program_id AND courses.id = ? AND courses.semester_id = semesters.id LIMIT 1`, id, function(error, rows, fields) {
+        connection.query(`SELECT courses.*,semesters.name as semester_name, semesters.id as semester_id,programs.name as program_name,
+                            (semesters.id - (SELECT MAX(id) FROM semesters)) as not_in_current_semester
+            FROM courses,semesters,programs 
+            WHERE programs.id = courses.program_id AND courses.id = ? AND courses.semester_id = semesters.id LIMIT 1`, id, function(error, rows, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 throw error;
@@ -114,17 +117,18 @@ router.post('/list', function(req, res, next) {
                                 FROM teacher_teach_course,users 
                                 WHERE users.id = teacher_teach_course.teacher_id AND 
                                     courses.id = teacher_teach_course.course_id AND 
-                                    teacher_teach_course.teacher_role = 1) as TAs 
-                        FROM courses, class_has_course
-                        WHERE class_has_course.course_id = courses.id AND 
-                            courses.program_id = ?`;
+                                    teacher_teach_course.teacher_role = 1) as TAs,
+                                classes.name as class_name 
+                        FROM courses, class_has_course, classes
+                        WHERE class_has_course.course_id = courses.id AND classes.id = class_has_course.class_id AND courses.program_id = ?`;
+
         if (class_id != 0) {
             query += ' AND class_has_course.class_id = ' + class_id;
         }
         if (semester_id != 0) {
             query += ' AND courses.semester_id = ' + semester_id;
         }
-        query += ' GROUP BY courses.code ORDER BY courses.id';
+        //query += ' GROUP BY courses.code ORDER BY courses.id';
         connection.query(query, program_id, return_function);
     });
 });
@@ -426,7 +430,7 @@ router.post('/edit', function(req, res, next) {
         _global.sendError(res, null, "Lecturers is required");
         return;
     }
-    var id = req.body.id;
+    var course_id = req.body.id;
     var new_name = req.body.name;
     var new_code = req.body.code;
     var new_lecturers = req.body.lecturers;
@@ -439,7 +443,7 @@ router.post('/edit', function(req, res, next) {
             _global.sendError(res, error.message);
             throw error;
         }
-        connection.query(`SELECT code FROM courses WHERE id = ? LIMIT 1`, id, function(error, rows, fields) {
+        connection.query(`SELECT code FROM courses WHERE id = ? LIMIT 1`, course_id, function(error, rows, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 throw error;
@@ -460,12 +464,11 @@ router.post('/edit', function(req, res, next) {
                 },
                 //Insert new Course
                 function(callback) {
-                    connection.query(`UPDATE courses SET code = ? ,name = ? , note = ? , office_hour = ? WHERE id = ?`, [new_code, new_name, new_note, new_office_hour, id], function(error, results, fields) {
+                    connection.query(`UPDATE courses SET code = ? ,name = ? , note = ? , office_hour = ? WHERE id = ?`, [new_code, new_name, new_note, new_office_hour, course_id], function(error, results, fields) {
                         if (error) {
                             console.log('update courses error');
                             callback(error);
                         } else {
-                            new_course_id = results.insertId;
                             callback();
                         }
                     });
@@ -477,7 +480,7 @@ router.post('/edit', function(req, res, next) {
                     for (var i = 0; i < new_lecturers.length; i++) {
                         var temp = [];
                         temp.push(new_lecturers[i].id);
-                        temp.push(new_course_id);
+                        temp.push(course_id);
                         temp.push(_global.lecturer_role);
                         new_teacher_teach_course.push(temp);
                     }
@@ -485,11 +488,11 @@ router.post('/edit', function(req, res, next) {
                     for (var i = 0; i < new_TAs.length; i++) {
                         var temp = [];
                         temp.push(new_TAs[i].id);
-                        temp.push(new_course_id);
+                        temp.push(course_id);
                         temp.push(_global.ta_role);
                         new_teacher_teach_course.push(temp);
                     }
-                    connection.query(`DELETE FROM teacher_teach_course WHERE course_id = ?`, id, function(error, results, fields) {
+                    connection.query(`DELETE FROM teacher_teach_course WHERE course_id = ?`, course_id, function(error, results, fields) {
                         if (error) {
                             console.log(error.message + ' at remove old teacher_teach_course');
                             callback(error);
@@ -951,6 +954,8 @@ router.post('/studying', function(req, res, next) {
                     _global.sendError(res, error.message);
                     throw error;
                 }
+
+                console.log(rows);
 
                 res.send({
                     result: 'success',

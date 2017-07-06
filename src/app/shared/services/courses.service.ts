@@ -108,7 +108,7 @@ export class CourseService {
             });
     }
     public  getTeachingCoursesUrl = this.appConfig.apiHost + '/course/list/teaching';
-    public getTeachingCourses(teacher_id: number,searchText: string = null, program_id: number = 1, class_id: number = 0): Observable < { result: string, courses: Array < any >, message:string } > {
+    public getTeachingCourses(teacher_id: number,searchText: string = null, program_id: number = 0, class_id: number = 0): Observable < { result: string, courses: Array < any >, message:string } > {
         var params = {
             'teacher_id': teacher_id,
             'searchText': searchText,

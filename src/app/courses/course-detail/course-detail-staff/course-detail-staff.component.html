@@ -3,7 +3,7 @@
             <div class="x_title">
                 <h3 class="course_title">{{course['code']}} - {{course['name']}} ({{course['semester_name']}})</h3>
                 <div class="pull-right">
-                    <button type="button" class="btn btn-success btn-round navbar-btn" (click)="onEditCourse()"> <i class="fa fa-pencil"></i> Edit Course</button>
+                    <button *ngIf="!course['not_in_current_course']" type="button" class="btn btn-success btn-round navbar-btn" (click)="onEditCourse()"> <i class="fa fa-pencil"></i> Edit Course</button>
                     <button type="button" class="btn btn-success btn-round navbar-btn" (click)="onOpenSchedule()"> <i class="fa fa-calendar"></i> Schedule</button>
                 </div>
                 <div class="clearfix"></div>
@@ -50,8 +50,8 @@
                 <br>
                 <div>
                     <div class="pull-right">
-                        <button type="button" class="btn btn-primary btn-round" (click)="onEditAttendance()"> <i class="fa fa-pencil"></i> Edit Attendance</button>
-                        <button type="button" class="btn btn-primary btn-round"> <i class="fa fa-upload"></i> Import</button>
+                        <button *ngIf="!course['not_in_current_course']" type="button" class="btn btn-primary btn-round" (click)="onEditAttendance()"> <i class="fa fa-pencil"></i> Edit Attendance</button>
+                        <button *ngIf="!course['not_in_current_course']" type="button" class="btn btn-primary btn-round"> <i class="fa fa-upload"></i> Import</button>
                         <button type="button" class="btn btn-primary btn-round"> <i class="fa fa-download"></i> Export</button>
                     </div>
                     <ul class="nav nav-tabs" *ngIf="class_has_course.length > 1">
@@ -108,9 +108,9 @@
                                 <ng-container *ngFor="let attendance_detail of attendance.attendance_details;let j = index">
                                     <ng-template #tolTemplate>
                                         <div>Created at : {{attendance_detail.created_at | date:'short'}}</div>
-                                        <div *ngIf="attendance_detail.attendance_type == appService.attendance_type.present">Checked at : {{attendance_detail.attendance_time | date:'short'}}</div>
+                                        <div *ngIf="attendance_detail.attendance_type != appService.attendance_type.absent">Attended at : {{attendance_detail.attendance_time | date:'short'}}</div>
                                     </ng-template>
-                                    <td [tooltip]="tolTemplate" container="body"><i *ngIf="attendance_detail.attendance_type" class="fa fa-check attendance-check"></i></td>
+                                    <td [tooltip]="tolTemplate" container="body"><i *ngIf="attendance_detail.attendance_type == appService.attendance_type.checklist" class="fa fa-check attendance-check"></i><i *ngIf="attendance_detail.attendance_type == appService.attendance_type.qr" class="fa fa-qrcode attendance-check"></i><i *ngIf="attendance_detail.attendance_type == appService.attendance_type.quiz" class="fa fa-question-circle attendance-check"></i><i *ngIf="attendance_detail.attendance_type == appService.attendance_type.face" class="fa fa-user-circle-o attendance-check"></i></td>
                                 </ng-container>
                             </tr>
                         </tbody>
@@ -163,15 +163,15 @@
                                 <td (click)="onRemoveAttendanceClick(i)"><i class="fa fa-close attendance-check" style="color:red"></i></td>
                                 <td>{{attendance.code}}</td>
                                 <td><input class="form-control" [(ngModel)]="attendance.name" name="name{{i}}" /></td>
-                                <td *ngFor="let attendance_detail of attendance.attendance_details;let j = index" (click)="onAttendanceCheckClick(i,j)"><i *ngIf="attendance_detail.attendance_type" class="fa fa-check attendance-check"></i></td>
+                                <td *ngFor="let attendance_detail of attendance.attendance_details;let j = index" (click)="onAttendanceCheckClick(i,j)"><i *ngIf="attendance_detail.attendance_type == appService.attendance_type.checklist" class="fa fa-check attendance-check"></i><i *ngIf="attendance_detail.attendance_type == appService.attendance_type.qr" class="fa fa-qrcode attendance-check"></i><i *ngIf="attendance_detail.attendance_type == appService.attendance_type.quiz" class="fa fa-question-circle attendance-check"></i><i *ngIf="attendance_detail.attendance_type == appService.attendance_type.face" class="fa fa-user-circle-o attendance-check"></i></td>
                             </tr>
                         </tbody>
                     </table>
                     <div class="form-horizontal">
-                        <div class="form-group">
+                        <div class="form-group" (keydown)="keyDownFunction($event)">
                             <label class="control-label col-sm-2">Add student to course : </label>
                             <div class="col-sm-2">
-                                <input type="text" placeholder="Code" [(ngModel)]="new_code" name="new_code" required="required" class="form-control">
+                                <input type="text" placeholder="Code" [(ngModel)]="new_code" (ngModelChange)="getSearchingStudentDetail()" name="new_code" required="required" class="form-control">
                             </div>
                             <div class="col-sm-3">
                                 <input type="text" placeholder="Name" [(ngModel)]="new_name" name="new_name" required="required" class="form-control">
@@ -187,26 +187,7 @@
             </div>
         </div>
 </div>
-<edit-schedule-modal [modal_id]="scheduleModal.id" [modal_title]="scheduleModal.title" [classes]="class_has_course" (onSave)="onSaveSchedule($event)"></edit-schedule-modal>
-<result-message-modal [modal_title]="apiResult" [modal_message]="apiResultMessage"></result-message-modal>
-<div class="modal fade" id="progressModal" role="dialog">
-    <div class="vertical-alignment-helper">
-        <div class="modal-dialog modal-sm vertical-align-center">
-            <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-body">
-                    <div class="text-center">
-                        <h2>Loading</h2>
-                    </div>
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<edit-schedule-modal [modal_id]="scheduleModal.id" [modal_title]="scheduleModal.title" [classes]="class_has_course" (onSave)="onSaveSchedule($event)" [view_only]="course['not_in_current_course']"></edit-schedule-modal>
 <div class="modal fade" id="confirmRemoveModal" role="dialog">
     <div class="vertical-alignment-helper">
         <div class="modal-dialog modal-sm vertical-align-center">
