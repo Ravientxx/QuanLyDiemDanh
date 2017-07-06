@@ -86,14 +86,12 @@ router.post('/list', function(req, res, next) {
             if (sort != 'none') {
                 _global.sortListByKey(sort, search_list, 'last_name');
             }
-
             if (limit != -1) {
                 res.send({
                     result: 'success',
                     total_items: search_list.length,
                     courses: _global.filterListByPage(page, limit, search_list)
                 });
-
             } else {
                 res.send({
                     result: 'success',
@@ -114,17 +112,17 @@ router.post('/list', function(req, res, next) {
                                 FROM teacher_teach_course,users 
                                 WHERE users.id = teacher_teach_course.teacher_id AND 
                                     courses.id = teacher_teach_course.course_id AND 
-                                    teacher_teach_course.teacher_role = 1) as TAs 
-                        FROM courses, class_has_course
-                        WHERE class_has_course.course_id = courses.id AND 
-                            courses.program_id = ?`;
+                                    teacher_teach_course.teacher_role = 1) as TAs,
+                                classes.name as class_name 
+                        FROM courses, class_has_course, classes
+                        WHERE class_has_course.course_id = courses.id AND classes.id = class_has_course.class_id AND courses.program_id = ?`;
         if (class_id != 0) {
             query += ' AND class_has_course.class_id = ' + class_id;
         }
         if (semester_id != 0) {
             query += ' AND courses.semester_id = ' + semester_id;
         }
-        query += ' GROUP BY courses.code ORDER BY courses.id';
+        //query += ' GROUP BY courses.code ORDER BY courses.id';
         connection.query(query, program_id, return_function);
     });
 });
