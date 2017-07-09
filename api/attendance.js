@@ -10,9 +10,9 @@ var randomstring = require("randomstring");
 
 var delegate_list = [];
 
-router.post('/list-by-course/', function(req, res, next) {
+router.post('/list-by-course', function(req, res, next) {
     if (req.body.course_id == null) {
-        _global.sendError(res, null, "Course_id is required");
+        _global.sendError(res, null, "Course id is required");
         throw "Course_id is required";
     }
     if (req.body.classes_id == null || req.body.classes_id.length == 0) {
@@ -86,7 +86,8 @@ router.post('/list-by-course/', function(req, res, next) {
 
     });
 });
-router.post('/check-add-to-course/', function(req, res, next) {
+
+router.post('/check-add-to-course', function(req, res, next) {
     if (req.body.course_id == null || req.body.course_id == 0) {
         _global.sendError(res, null, "Course_id is required");
         throw "Course_id is required";
@@ -129,7 +130,8 @@ router.post('/check-add-to-course/', function(req, res, next) {
         });
     });
 });
-router.post('/update-list-by-course/', function(req, res, next) {
+
+router.post('/update-list-by-course', function(req, res, next) {
     if (req.body.course_id == null || req.body.course_id == 0) {
         _global.sendError(res, null, "Course_id is required");
         throw "Course_id is required";
@@ -380,6 +382,7 @@ router.post('/update-list-by-course/', function(req, res, next) {
         });
     });
 });
+
 router.post('/opening-by-teacher', function(req, res, next) {
     if (req.body.teacher_id == null || req.body.teacher_id == 0) {
         _global.sendError(res, null, "teacher_id is required");
@@ -421,6 +424,7 @@ router.post('/opening-by-teacher', function(req, res, next) {
         });
     });
 });
+
 router.post('/create', function(req, res, next) {
     if (req.body.course_id == null || req.body.course_id == 0) {
         _global.sendError(res, null, "course_id is required");
@@ -471,7 +475,7 @@ router.post('/create', function(req, res, next) {
                                 throw error;
                             } else {
                                 console.log('insert attendance_details');
-                                res.send({ result: 'success' , attendance_id: inserted.insertId });
+                                res.send({ result: 'success', attendance_id: inserted.insertId });
                                 connection.release();
                             }
                         });
@@ -481,6 +485,7 @@ router.post('/create', function(req, res, next) {
         });
     });
 });
+
 router.post('/delete', function(req, res, next) {
     if (req.body.attendance_id == null || req.body.attendance_id == 0) {
         _global.sendError(res, null, "attendance_id is required");
@@ -512,6 +517,7 @@ router.post('/delete', function(req, res, next) {
         });
     });
 });
+
 router.post('/close', function(req, res, next) {
     if (req.body.attendance_id == null || req.body.attendance_id == 0) {
         _global.sendError(res, null, "attendance_id is required");
@@ -543,7 +549,10 @@ router.post('/close', function(req, res, next) {
         });
     });
 });
-router.post('/check-attendance-list/', function(req, res, next) {
+
+router.post('/check-attendance-list', function(req, res, next) {
+    var listOnlyFlag = req.body.islistOnly == null ? 0 : 1;
+
     if (req.body.course_id == null || req.body.course_id == 0) {
         _global.sendError(res, null, "Course_id is required");
         throw "Course_id is required";
@@ -572,11 +581,163 @@ router.post('/check-attendance-list/', function(req, res, next) {
                     name: student.name,
                     attendance_details: []
                 };
-                connection.query(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type, created_at  
+
+                if (listOnlyFlag){
+                    check_attendance_list.push(attendance);
+                    callback();
+                }
+                else {
+                    connection.query(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type FROM attendance, attendance_detail 
+                        WHERE attendance.id = attendance_detail.attendance_id AND  course_id = ? AND student_id = ?`, [course_id, student.id], function(error, results, fields) {
+                        if (error) {
+                            console.log(error.message + ' at get check_attendance_details');
+                            callback(error);
+                        } else {
+                            for (var i = 0; i < results.length; i++) {
+                                attendance.attendance_details.push({
+                                    attendance_id: results[i].attendance_id,
+                                    attendance_time: results[i].attendance_time,
+                                    attendance_type: results[i].attendance_type
+                                });
+                            }
+                            check_attendance_list.push(attendance);
+                            callback();
+                        }
+                    });
+                }
+            }, function(error) {
+                if (error) {
+                    _global.sendError(res, error.message);
+                    throw error;
+                } else {
+                    console.log('loaded check_attendance_list');
+                    res.send({
+                        result: 'success',
+                        length: check_attendance_list.length,
+                        check_attendance_list: check_attendance_list
+                    });
+                    connection.release();
+                }
+            });
+        });
+
+    });
+});
+
+router.post('/check-attendance', function(req, res, next) {
+    if (req.body.attendance_id == null || req.body.attendance_id == 0) {
+        _global.sendError(res, null, "attendance_id is required");
+        throw "attendance_id is required";
+    }
+
+    var attendance_id = req.body.attendance_id;
+    pool.getConnection(function(error, connection) {
+        if (error) {
+            var message = error.message + ' at get student_list by course';
+            _global.sendError(res, message);
+            throw message;
+        }
+
+        connection.query(`SELECT students.id as id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name, attendance_detail.attendance_type as status 
+            FROM users, attendance_detail, students 
+            WHERE users.id = students.id
+            AND attendance_detail.student_id = students.id
+            AND attendance_detail.attendance_id = ?`, [attendance_id], function(error, rows, fields) {
+            
+            if (error) {
+                var message = error.message + ' at get student_list by course';
+                _global.sendError(res, message);
+                throw message;
+            }
+
+            console.log('loaded check_attendance_list');
+            
+            res.send({
+                result: 'success',
+                length: rows.length,
+                check_attendance_list: rows
+            });
+
+            connection.release();
+        });
+
+    });
+});
+
+router.post('/update-attendance', function(req, res, next){
+    if (req.body.attendance_id == null || req.body.attendance_id == 0) {
+        _global.sendError(res, null, "attendance_id is required");
+        throw "attendance_id is required";
+    }
+
+    var attendance_id = req.body.attendance_id;
+    pool.getConnection(function(error, connection) {
+        if (error) {
+            var message = error.message + ' at get attendance data by course';
+            _global.sendError(res, message);
+            throw message;
+        }
+
+        var attendance_detail = req.body.data;        
+
+        async.each(attendance_detail, function(detail, callback) {
+            connection.query(`UPDATE attendance_detail
+                SET attendance_detail.attendance_type = ?, attendance_detail.attendance_time = ?
+                WHERE attendance_detail.student_id = ? AND attendance_detail.attendance_id = ?`, [detail.status, new Date(), 
+                detail.student_id, attendance_id], function(error, results, fields) {
+                if (error) {
+                    console.log(error.message + ' at get attendance_details');
+                    callback(error);
+                }
+                else {
+                    callback();
+                }
+            });
+        }, function(error) {
+            if (error) {
+                _global.sendError(res, error.message);
+                throw error;
+            }
+            else {
+                res.send({result: "success"});
+                connection.release();
+            }
+        });
+    });
+});
+
+router.post('/list-by-student/', function(req, res, next) {
+    if (req.body.student_id == null) {
+        _global.sendError(res, null, "student_id is required");
+        throw "student_id is required";
+    }
+    var student_id = req.body.student_id;
+    pool.getConnection(function(error, connection) {
+        connection.query(`SELECT courses.code, courses.name , courses.id , courses.attendance_count, class_has_course.class_id 
+                FROM users,student_enroll_course,class_has_course ,courses 
+                WHERE users.id = ? AND users.id = student_enroll_course.student_id AND student_enroll_course.class_has_course_id = class_has_course.id 
+                    AND class_has_course.course_id = courses.id AND courses.semester_id = (SELECT MAX(id) FROM semesters)`, student_id, function(error, rows, fields) {
+            if (error) {
+                var message = error.message + ' at get enrolling courses by student';
+                _global.sendError(res, message);
+                throw message;
+            }
+            var course_list = rows;
+            var attendance_list_by_student = [];
+            async.each(course_list, function(course, callback) {
+                var attendance = {
+                    id: course.id,
+                    code: course.code,
+                    name: course.name,
+                    class_id: course.class_id,
+                    attendance_count: course.attendance_count,
+                    attendance_details: []
+                };
+                connection.query(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type ,created_at
                     FROM attendance, attendance_detail 
-                    WHERE attendance.id = attendance_detail.attendance_id AND  course_id = ? AND student_id = ?`, [course_id, student.id], function(error, results, fields) {
+                    WHERE attendance.closed = 1 AND attendance.id = attendance_detail.attendance_id AND course_id = ? AND class_id = ? AND student_id = ? `, [course.id, course.class_id, student_id], function(error, results, fields) {
                     if (error) {
-                        console.log(error.message + ' at get check_attendance_details');
+                        console.log(error.message + ' at get attendance_details by student');
                         callback(error);
                     } else {
                         for (var i = 0; i < results.length; i++) {
@@ -587,7 +748,7 @@ router.post('/check-attendance-list/', function(req, res, next) {
                                 created_at: results[i].created_at
                             });
                         }
-                        check_attendance_list.push(attendance);
+                        attendance_list_by_student.push(attendance);
                         callback();
                     }
                 });
@@ -596,16 +757,135 @@ router.post('/check-attendance-list/', function(req, res, next) {
                     _global.sendError(res, error.message);
                     throw error;
                 } else {
-                    console.log('loaded check_attendance_list');
+                    console.log('loaded attendance_list_by_student');
                     res.send({
                         result: 'success',
-                        check_attendance_list: check_attendance_list
+                        attendance_list_by_student: attendance_list_by_student
                     });
-                    connection.release();
                 }
             });
         });
+    });
+});
 
+router.post('/generate-delegate-code', function(req, res, next) {
+    if (req.body.course_id == null || req.body.course_id == 0) {
+        _global.sendError(res, null, "Course_id is required");
+        throw "Course_id is required";
+    }
+    if (req.body.class_id == null || req.body.class_id == 0) {
+        _global.sendError(res, null, "Class id is required");
+        throw "Class id is required";
+    }
+    var course_id = req.body.course_id;
+    var class_id = req.body.class_id;
+    pool.getConnection(function(error, connection) {
+        //check attendance is opening or not ?
+        connection.query(`SELECT * FROM attendance WHERE course_id = ? AND class_id = ? AND closed = 0`, [course_id, class_id], function(error, results, fields) {
+            if (error) {
+                _global.sendError(res, null, 'error at check  attendance opening or not');
+                return console.log(error.message + ' at check  attendance opening or not');
+            } else {
+                if (results.length == 0) {
+                    _global.sendError(res, null, 'This course doesnt have any opening attendance');
+                    console.log('This course doesnt have any opening attendance');
+                } else {
+                    var code = randomstring.generate({
+                        length: 7,
+                        capitalization: 'uppercase'
+                    });
+                    for (var i = 0; i < delegate_list.length; i++) {
+                        if (delegate_list[i]['course_id'] == course_id && delegate_list[i]['class_id'] == class_id) {
+                            delegate_list[i]['code'] = code;
+                            delegate_list[i]['in_use'] = false;
+                            res.send({
+                                result: 'success',
+                                code: code
+                            });
+                            connection.release();
+                            return;
+                        }
+                    }
+                    delegate_list.push({
+                        code: code,
+                        course_id: course_id,
+                        class_id: class_id,
+                        attendance_id: results[0].id,
+                        in_use: false,
+                        created_by: req.decoded.id,
+                    });
+                    res.send({
+                        result: 'success',
+                        code: code
+                    });
+                }
+                connection.release();
+            }
+        });
+    });
+});
+
+router.post('/check-delegate-code', function(req, res, next) {
+    if (req.body.code == null || req.body.code == '') {
+        _global.sendError(res, null, "Delegate code is required");
+        throw "Delegate code is required";
+    }
+    var code = req.body.code;
+    for (var i = 0; i < delegate_list.length; i++) {
+        if (delegate_list[i]['code'] == code) {
+            // if (delegate_list[i]['in_use'] == true) {
+            //     _global.sendError(res, null, 'This code is being used!');
+            //     console.log('This code is being used!');
+            //     return;
+            // } else {
+            //     delegate_list[i]['in_use'] = true;
+            //     res.send({
+            //         result: 'success',
+            //         delegate_detail: delegate_list[i]
+            //     });
+            //     return;
+            // }
+            res.send({
+                result: 'success',
+                delegate_detail: delegate_list[i]
+            });
+            return;
+        }
+    }
+    _global.sendError(res, null, 'Invalid code! It might have been expired or the attendance is already closed');
+    console.log('Invalid code! It might have been expired or the attendance is already closed');
+});
+
+router.post('/opening-for-student', function(req, res, next) {
+    var student_id = req.decoded.id;
+    pool.getConnection(function(error, connection) {
+        if (error) {
+            var message = error.message + ' at get attendance data for student';
+            _global.sendError(res, message);
+            throw message;
+        }
+
+        query = `SELECT class_has_course.id as class_has_course_id, attendance.id as attendance_id
+            FROM qldd.attendance, class_has_course, student_enroll_course as sec
+            WHERE attendance.closed = 0 AND
+            class_has_course.class_id = attendance.class_id 
+            AND class_has_course.course_id = attendance.course_id
+            AND sec.class_has_course_id = class_has_course.id
+            AND sec.student_id = ?`;
+
+        connection.query(query, student_id, function(error, results, fields) {
+            if (error) {
+                _global.sendError(res, null, 'error at get opening attendances');
+                return console.log(error.message + ' at get opening attendances');
+            } else {
+                res.send({
+                    result: 'success',
+                    length: results.length,
+                    opening_attendances: results
+                });
+                connection.release();
+            }
+        });
     });
 });
 router.post('/check-attendance', function(req, res, next) {
@@ -688,6 +968,7 @@ router.post('/update-attendance', function(req, res, next){
         });
     });
 });
+
 router.post('/list-by-student/', function(req, res, next) {
     if (req.body.student_id == null) {
         _global.sendError(res, null, "student_id is required");
@@ -806,6 +1087,7 @@ router.post('/generate-delegate-code', function(req, res, next) {
         });
     });
 });
+
 router.post('/check-delegate-code', function(req, res, next) {
     if (req.body.code == null || req.body.code == '') {
         _global.sendError(res, null, "Delegate code is required");
@@ -869,4 +1151,5 @@ router.post('/opening-for-student', function(req, res, next) {
         });
     });
 });
+
 module.exports = router;

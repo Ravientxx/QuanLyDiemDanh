@@ -230,7 +230,6 @@ router.post('/change-password', function(req, res, next) {
                 //update password
                 connection.query('UPDATE users SET password = ? WHERE id = ? LIMIT 1', params, function(error, results, fields) {
                     if (error) {
-                        _global.sendError(res, error.message);
                         return connection.rollback(function() {
                             throw error;
                         });

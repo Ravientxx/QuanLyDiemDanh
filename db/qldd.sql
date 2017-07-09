@@ -414,7 +414,7 @@ CREATE TRIGGER trigger_insert_attendance
 BEGIN
     UPDATE class_has_course
 	SET attendance_count = attendance_count + 1
-	WHERE course_id = NEW.course_id AND  class_id = NEW.class_id;
+	WHERE course_id = NEW.course_id AND class_id = NEW.class_id;
 END//
 DELIMITER ;
 
