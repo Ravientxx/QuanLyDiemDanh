@@ -85,16 +85,19 @@ module.exports = {
             }
         }
     },
+
     getFirstName: function(name) {
         var i = name.lastIndexOf(' ');
         var first_name = name.substr(0, i);
         return first_name;
     },
+
     getLastName: function(name) {
         var i = name.lastIndexOf(' ');
         var last_name = name.substr(i + 1, name.length - 1);
         return last_name;
     },
+
     getProgramCodeFromClassName: function(class_name) {
         var program_code = '';
         for (var i = 0; i < class_name.length; i++) {
@@ -104,6 +107,7 @@ module.exports = {
         }
         return program_code;
     },
+    
     removeExtraFromTeacherName: function(teacher_name) {
         var name = teacher_name;
         //cắt học vị

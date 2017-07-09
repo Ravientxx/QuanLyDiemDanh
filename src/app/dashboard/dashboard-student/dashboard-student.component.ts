@@ -82,5 +82,10 @@ export class DashboardStudentComponent implements OnInit {
     public onChangePassword(){
         this.router.navigate(['/change-password']);
     }
+    public keyDownFunction(event) {
+      if(event.keyCode == 13) {
+        this.onSaveEditProfile();
+      }
+    }
 }
 

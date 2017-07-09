@@ -93,9 +93,6 @@ export class LayoutComponent implements AfterViewInit, AfterViewChecked {
                     mouseWheel: { preventDefault: true, scrollAmount: 150 }
                 });
             }
-            jQuery(function() {
-                console.log('test');
-            });
         });
     }
 

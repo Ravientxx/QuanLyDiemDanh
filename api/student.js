@@ -70,6 +70,7 @@ router.post('/list', function(req, res, next) {
         }
     });
 });
+
 router.post('/add', function(req, res, next) {
     if (req.body.program_id == undefined || req.body.program_id == 0) {
         _global.sendError(res, null, "Program is required");
@@ -194,6 +195,7 @@ router.post('/add', function(req, res, next) {
         });
     });
 });
+
 router.get('/detail/:id', function(req, res, next) {
     var id = req.params['id'];
     pool.getConnection(function(error, connection) {
@@ -224,6 +226,7 @@ router.get('/detail/:id', function(req, res, next) {
         });
     });
 });
+
 router.put('/update', function(req, res, next) {
     if (req.body.id == undefined || req.body.id == '') {
         _global.sendError(res, null, "Student code is required");
@@ -309,6 +312,7 @@ router.put('/update', function(req, res, next) {
         });
     });
 });
+
 router.post('/import', function(req, res, next) {
     if (req.body.class_name == undefined || req.body.class_name == '') {
         _global.sendError(res, null, "Class name is required");
@@ -448,6 +452,7 @@ router.post('/import', function(req, res, next) {
         });
     });
 });
+
 router.post('/export', function(req, res, next) {
     if (req.body.classes_id == undefined || req.body.classes_id.length == 0) {
         _global.sendError(res, null, "Classes id is required");
@@ -512,6 +517,7 @@ router.post('/export', function(req, res, next) {
         });
     });
 });
+
 router.post('/detail-by-code', function(req, res, next) {
     if (req.body.code == undefined || req.body.code == '') {
         _global.sendError(res, null, "Student code is required");
@@ -534,4 +540,5 @@ router.post('/detail-by-code', function(req, res, next) {
         });
     });
 });
+
 module.exports = router;

@@ -4,7 +4,6 @@ import { FormsModule }    from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 
 import { CollapseModule } from 'ngx-bootstrap';
-
 import { CheckAttendanceComponent } from './check-attendance.component'
 import { CheckAttendanceTeacherComponent } from './check-attendance-teacher/check-attendance-teacher.component'
 import { CheckAttendanceStudentComponent } from './check-attendance-student/check-attendance-student.component'
@@ -31,7 +30,7 @@ const Routes: Routes = [
   declarations: [
     CheckAttendanceComponent,
     CheckAttendanceStudentComponent,
-    CheckAttendanceTeacherComponent
+    CheckAttendanceTeacherComponent,
   ],
   providers: []
 })

@@ -20,7 +20,11 @@ export class LoginComponent implements OnInit {
     public password :string = '';
 
     public error_message: any;
-
+    public keyDownFunction(event) {
+      if(event.keyCode == 13) {
+        this.login();
+      }
+    }
     public login() {
         this.authService.redirectMessage = '';
         this.authService.login(this.email,this.password).subscribe(results => {

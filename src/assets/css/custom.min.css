@@ -5048,3 +5048,15 @@ table td {
 .gray_background{
     background: #ededed;
 }
+.only_bottom_border{
+    border-top-style: hidden !important;
+    border-left-style: hidden !important;
+    border-right-style: hidden !important;
+}
+.input_search{
+    background-color: white;
+    background-image: url('searchicon.png');
+    background-position: 10px 5px;
+    background-repeat: no-repeat;
+    padding-left: 40px;
+}

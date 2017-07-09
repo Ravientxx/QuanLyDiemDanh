@@ -1,3 +1,5 @@
+// Authenticate
+
 /**
 * @swagger
 * tags:
@@ -7,7 +9,7 @@
 
 /**
  * @swagger
- * /api/authenticate/login:
+ * /authenticate/login:
  *   post:
  *     summary: login and retrieve token
  *     description:
@@ -32,7 +34,7 @@
 
 /**
  * @swagger
- * /api/authenticate/logout:
+ * /authenticate/logout:
  *   post:
  *     summary: logout
  *     description:
@@ -45,265 +47,107 @@
  *         in: formData
  *         required: true
  *         type: string
+ *       - name: user_id
+ *         description: user id
+ *         in: formData
+ *         required: true
+ *         type: integer
  *     responses:
  *       200:
  *         description: json
  */
 
-/**
- * @swagger
- * /api/authenticate/test:
- *   post:
- *     summary: test
- *     description:
- *     tags: [Auth]
- *     produces:
- *       - application/json
- *     parameters:
- *     responses:
- *       200:
- *         description: json
- */
-
-/**
-* @swagger
-* tags:
-*   name: User
-*   description: User management
-*/
-
-/**
-* @swagger
-* /api/user/detail:
-*   post:
-*     summary: Get a user profile
-*     description: 
-*     tags: [User]
-*     produces:
-*       - application/json
-*     parameters:
-*       - name: id
-*         description: user ID
-*         in: formData
-*         required: true
-*         type: integer
-*     responses:
-*       200:
-*         description: json
-*/
-
-/**
-* @swagger
-* /api/user/update:
-*   put:
-*     summary: update user profile
-*     description: 
-*     tags: [User]
-*     produces:
-*       - application/json
-*     parameters:
-*       - name: id
-*         description: user ID
-*         in: formData
-*         required: true
-*         type: integer
-*       - name: firstname
-*         description: user firstname
-*         in: formData
-*         type: string
-*       - name: lastname
-*         description: user lastname
-*         in: formData
-*         type: string
-*       - name: email
-*         description: user email
-*         in: formData
-*         type: string
-*         format: email
-*       - name: phone
-*         description: user phone
-*         in: formData
-*         type: string
-*     responses:
-*       200:
-*         description: json
-*/
-
-/**
-* @swagger
-* /api/user/delete:
-*   delete:
-*     summary: delete a user
-*     description: 
-*     tags: [User]
-*     produces:
-*       - application/json
-*     parameters:
-*       - name: id
-*         description: user ID
-*         in: formData
-*         required: true
-*         type: integer
-*     responses:
-*       200:
-*         description: json
-*/
-
-/**
-* @swagger
-* /api/user/changePassword:
-*   put:
-*     summary: change password
-*     description: 
-*     tags: [User]
-*     produces:
-*       - application/json
-*     parameters:
-*       - name: id
-*         description: user ID
-*         in: formData
-*         required: true
-*         type: integer
-*       - name: currentPassword
-*         description: current password
-*         in: formData
-*         required: true
-*         type: string
-*       - name: newPassword
-*         description: new password
-*         in: formData
-*         required: true
-*         type: string
-*     responses:
-*       200:
-*         description: json
-*/
-
-/**
-* @swagger
-* tags:
-*   name: Teacher
-*   description: Teacher management
-*/
-
-/**
-* @swagger
-* /api/teacher/list:
-*   post:
-*     summary: Get teacher list
-*     description: 
-*     tags: [Teacher]
-*     produces:
-*       - application/json
-*     parameters:
-*       - name: searchText
-*         description: words exist in name
-*         in: formData
-*         type: string
-*       - name: page
-*         description: page number for pagination
-*         in: formData
-*         type: integer
-*       - name: limit
-*         description: number records per page
-*         in: formData
-*         type: integer
-*       - name: sort
-*         description: acs or dcs
-*         in: formData
-*         type: string
-*     responses:
-*       200:
-*         description: json
-*/
-
-/**
-* @swagger
-* /api/teacher/detail:
-*   get:
-*     summary: Get a teacher profile
-*     description: 
-*     tags: [Teacher]
-*     produces:
-*       - application/json
-*     parameters:
-*       - name: id
-*         description: user ID
-*         in: formData
-*         required: true
-*         type: integer
-*     responses:
-*       200:
-*         description: json
-*/
-
-/**
-* @swagger
-* /api/teacher/add:
-*   post:
-*     summary: Add a teacher
-*     description: 
-*     tags: [Teacher]
-*     produces:
-*       - application/json
-*     parameters:
-*       - name: firstname
-*         description: user firstname
-*         in: formData
-*         required: true
-*         type: string
-*       - name: lastname
-*         description: user lastname
-*         in: formData
-*         required: true
-*         type: string
-*       - name: email
-*         description: user email
-*         in: formData
-*         required: true
-*         type: string
-*         format: email
-*       - name: phone
-*         description: user phone
-*         in: formData
-*         type: string
-*     responses:
-*       200:
-*         description: json
-*/
+// Student
 
 /**
 * @swagger
 * tags:
 *   name: Student
-*   description: Student management
+*   description: Student data
 */
 
 /**
 * @swagger
-* /api/student/list:
+* /api/attendance/check-attendance-list:
 *   post:
-*     summary: Get student list
-*     description: 
+*     summary: Get students of course
+*     description:
 *     tags: [Student]
 *     produces:
 *       - application/json
 *     parameters:
-*       - name: searchText
-*         description: words exist in name
+*       - name: token
+*         description: user token
 *         in: formData
+*         required: true
 *         type: string
-*       - name: page
-*         description: page number for pagination
+*       - name: class_id
+*         description: class id
+*         in: formData
+*         required: true
+*         type: integer
+*       - name: course_id
+*         description: course id
+*         in: formData
+*         required: true
+*         type: integer
+*       - name: islistOnly
+*         description: islistOnly
 *         in: formData
 *         type: integer
-*       - name: limit
-*         description: number records per page
+*     responses:
+*       200:
+*         description: json
+*/
+
+/**
+* @swagger
+* /api/attendance/check-attendance:
+*   post:
+*     summary: Get students of course
+*     description:
+*     tags: [Student]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: user token
 *         in: formData
+*         required: true
+*         type: string
+*       - name: attendance_id
+*         description: attendance id
+*         in: formData
+*         required: true
 *         type: integer
-*       - name: sort
-*         description: asc or dsc
+*     responses:
+*       200:
+*         description: json
+*/
+
+// Course
+
+/**
+* @swagger
+* tags:
+*   name: Course
+*   description: Course data
+*/
+
+/**
+* @swagger
+* /api/course/teaching:
+*   post:
+*     summary: Get Course list
+*     description:
+*     tags: [Course]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: token
 *         in: formData
+*         required: true
 *         type: string
 *     responses:
 *       200:
@@ -312,16 +156,209 @@
 
 /**
 * @swagger
-* /api/student/detail:
+* /api/course/studying:
 *   post:
-*     summary: Get a student detail
-*     description: 
-*     tags: [Student]
+*     summary: Get Course list
+*     description:
+*     tags: [Course]
 *     produces:
 *       - application/json
 *     parameters:
-*       - name: id
-*         description: student id
+*       - name: token
+*         description: token
+*         in: formData
+*         required: true
+*         type: string
+*     responses:
+*       200:
+*         description: json
+*/
+
+// Attendance
+
+/**
+* @swagger
+* tags:
+*   name: Attendance
+*   description: Attendance management
+*/
+
+/**
+* @swagger
+* /api/attendance/opening-by-teacher:
+*   post:
+*     summary: Get opening attendance
+*     description:
+*     tags: [Attendance]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: token
+*         in: formData
+*         required: true
+*         type: string
+*       - name: teacher_id
+*         description: teacher id
+*         in: formData
+*         required: true
+*         type: integer
+*       - name: isMobile
+*         description: mobile reduce data
+*         in: formData
+*         type: integer
+*     responses:
+*       200:
+*         description: json
+*/
+
+/**
+* @swagger
+* /api/attendance/opening-for-student:
+*   post:
+*     summary: Get opening attendance
+*     description:
+*     tags: [Attendance]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: token
+*         in: formData
+*         required: true
+*         type: string
+*     responses:
+*       200:
+*         description: json
+*/
+
+/**
+* @swagger
+* /api/attendance/create:
+*   post:
+*     summary: request an attendance id from server
+*     description:
+*     tags: [Attendance]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: token
+*         in: formData
+*         required: true
+*         type: string
+*       - name: course_id
+*         description: courses id
+*         in: formData
+*         required: true
+*         type: integer
+*       - name: class_id
+*         description: class id
+*         in: formData
+*         required: true
+*         type: integer
+*     responses:
+*       200:
+*         description: json
+*/
+
+/**
+* @swagger
+* /api/attendance/delete:
+*   post:
+*     summary: delete an attendance
+*     description:
+*     tags: [Attendance]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: token
+*         in: formData
+*         required: true
+*         type: string
+*       - name: attendance_id
+*         description: attend id
+*         in: formData
+*         required: true
+*         type: integer
+*     responses:
+*       200:
+*         description: json
+*/
+
+/**
+* @swagger
+* /api/attendance/close:
+*   post:
+*     summary: delete an attendance
+*     description:
+*     tags: [Attendance]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: token
+*         in: formData
+*         required: true
+*         type: string
+*       - name: attendance_id
+*         description: attend id
+*         in: formData
+*         required: true
+*         type: integer
+*     responses:
+*       200:
+*         description: json
+*/
+
+/**
+* @swagger
+* /api/attendance/update-attendance:
+*   post:
+*     summary: Update student attendance type
+*     description:
+*     tags: [Attendance]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: user token
+*         in: formData
+*         required: true
+*         type: string
+*       - name: attendance_id
+*         description: attendance id
+*         in: formData
+*         required: true
+*         type: integer
+*       - name: data
+*         description: attendance detail
+*         in: formData
+*         required: true
+*         type: array
+*     responses:
+*       200:
+*         description: json
+*/
+
+/**
+* @swagger
+* /api/attendance/check-delegate-code:
+*   post:
+*     summary: Check delegate code
+*     description:
+*     tags: [Attendance]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: token
+*         in: formData
+*         required: true
+*         type: string
+*       - name: code
+*         description: code
 *         in: formData
 *         required: true
 *         type: string
@@ -333,35 +370,58 @@
 /**
 * @swagger
 * tags:
-*   name: Course
-*   description: Course management
+*   name: Feedback
+*   description: Feedback management
 */
 
 /**
 * @swagger
-* /api/course/list:
+* /api/feedback/send:
 *   post:
-*     summary: Get Course list
-*     description: 
-*     tags: [Course]
+*     summary: Send feedback
+*     description:
+*     tags: [Feedback]
 *     produces:
 *       - application/json
 *     parameters:
-*       - name: searchText
-*         description: words exist in name
+*       - name: token
+*         description: user token
 *         in: formData
+*         required: true
 *         type: string
-*       - name: page
-*         description: page number for pagination
+*       - name: title
+*         description: title
 *         in: formData
-*         type: integer
-*       - name: limit
-*         description: number records per page
+*         required: true
+*         type: string
+*       - name: content
+*         description: content
 *         in: formData
-*         type: integer
-*       - name: sort
-*         description: asc or dsc
+*         required: true
+*         type: string
+*       - name: isAnonymous
+*         description: isAnonymous (only use for student)
 *         in: formData
+*         type: boolean
+*     responses:
+*       200:
+*         description: json
+*/
+
+/**
+* @swagger
+* /api/feedback/history:
+*   post:
+*     summary: Sent Feedback List
+*     description:
+*     tags: [Feedback]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: user token
+*         in: formData
+*         required: true
 *         type: string
 *     responses:
 *       200:
@@ -370,19 +430,31 @@
 
 /**
 * @swagger
-* /api/course/detail:
+* tags:
+*   name: AbsenceRequest
+*   description: AbsenceRequest management
+*/
+
+/**
+* @swagger
+* /api/absence-request/by-student:
 *   post:
-*     summary: get a Course detail
-*     description: 
-*     tags: [Course]
+*     summary: Send feedback
+*     description:
+*     tags: [AbsenceRequest]
 *     produces:
 *       - application/json
 *     parameters:
-*       - name: id
-*         description: course id
+*       - name: token
+*         description: user token
 *         in: formData
-*         type: integer
 *         required: true
+*         type: string
+*       - name: id
+*         description: student id
+*         in: formData
+*         required: true
+*         type: integer
 *     responses:
 *       200:
 *         description: json
