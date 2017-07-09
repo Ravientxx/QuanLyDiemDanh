@@ -14,7 +14,7 @@
                     </ul>
                     <button class="btn btn-primary" (click)="onEditProfile()"><i class="fa fa-pencil"></i> Edit</button>
                 </ng-container>
-                <ng-container *ngIf="isEditingProfile">
+                <ng-container *ngIf="isEditingProfile" (keydown)="keyDownFunction($event)">
                     <h3><input class="form-control" type="text" name="editing_name" [(ngModel)] = "editing_name"></h3>
                     <ul class="list-unstyled user_data" style="font-size: medium;">
                         <li>

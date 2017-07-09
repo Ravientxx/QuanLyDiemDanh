@@ -15,7 +15,7 @@
                         </ul>
                         <button class="btn btn-primary" (click)="onEditProfile()"><i class="fa fa-pencil"></i> Edit</button>
                     </ng-container>
-                    <ng-container *ngIf="isEditingProfile">
+                    <ng-container *ngIf="isEditingProfile" (keydown)="keyDownFunction($event)">
                         <h3><input class="form-control" type="text" name="editing_name" [(ngModel)] = "editing_name"></h3>
                         <ul class="list-unstyled user_data" style="font-size: medium;">
                             <li>
@@ -55,7 +55,7 @@
         <div class="x_content">
             <div class="row">
                 <div class="form-group col-sm-4 col-xs-12">
-                    <input placeholder="Search Course Name" class="form-control" [(ngModel)]="search_text" (ngModelChange)="getTeachingList()" />
+                    <input placeholder="Search Course Name" class="form-control input_search" [(ngModel)]="search_text" (ngModelChange)="getTeachingList()" />
                 </div>
                 <div class="form-group col-sm-6 col-xs-12">
                     <div class="col-xs-6">

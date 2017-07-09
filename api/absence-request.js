@@ -44,6 +44,7 @@ router.post('/by-student', function(req, res, next) {
         });
     });
 });
+
 router.put('/change-status', function(req, res, next) {
     if (req.body.id == undefined || req.body.id == 0) {
         _global.sendError(res, null, "Request Id is required");
@@ -66,6 +67,7 @@ router.put('/change-status', function(req, res, next) {
         });
     });
 });
+
 router.post('/list', function(req, res, next) {
     var status = req.body.status ? req.body.status : 0;
     var search_text = req.body.search_text ? req.body.search_text : '';
@@ -109,6 +111,7 @@ router.post('/list', function(req, res, next) {
         });
     });
 });
+
 router.post('/create', function(req, res, next) {
     if (req.body.reason == undefined || req.body.reason == '') {
         _global.sendError(res, null, "Reason is required");
@@ -148,6 +151,7 @@ router.post('/create', function(req, res, next) {
         });
     });
 });
+
 router.post('/cancel', function(req, res, next) {
     if (req.body.id == undefined || req.body.id == '') {
         _global.sendError(res, null, "Request id is required");

@@ -150,5 +150,10 @@ export class DashboardStaffComponent implements OnInit {
 	public onExportExamineesList(){
 		
 	}
+	public keyDownFunction(event) {
+      if(event.keyCode == 13) {
+        this.onSaveEditProfile();
+      }
+    }
 }
 

@@ -30,6 +30,7 @@ const ROUTES = [{
         { path: 'feedbacks', loadChildren: 'app/feedback/feedback.module#FeedbackModule' },
         { path: 'settings', loadChildren: 'app/settings/setting.module#SettingModule' },
         { path: 'check-attendance', loadChildren: 'app/check-attendance/check-attendance.module#CheckAttendanceModule' },
+        { path: 'check-attendance/quiz', loadChildren: 'app/check-attendance-quiz/check-attendance-quiz.module#CheckAttendanceQuizModule' },
         { path: 'quiz', loadChildren: 'app/quiz/quiz.module#QuizModule' },
         { path: 'change-password', component: ChangePasswordComponent },
     ]

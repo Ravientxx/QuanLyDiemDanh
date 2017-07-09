@@ -52,6 +52,7 @@ router.get('/detail/:id', function(req, res, next) {
         });
     });
 });
+
 router.post('/list', function(req, res, next) {
     var searchText = req.body.searchText;
     var page = req.body.page != null ? req.body.page : _global.default_page;
@@ -128,6 +129,7 @@ router.post('/list', function(req, res, next) {
         connection.query(query, program_id, return_function);
     });
 });
+
 router.post('/add', function(req, res, next) {
     if (req.body.code === undefined || req.body.code == '') {
         _global.sendError(res, null, "Course code is required");
@@ -407,6 +409,7 @@ router.post('/add', function(req, res, next) {
         });
     });
 });
+
 router.post('/edit', function(req, res, next) {
     if (req.body.id === undefined || req.body.id == 0) {
         _global.sendError(res, null, "Course ID is required");
@@ -527,6 +530,7 @@ router.post('/edit', function(req, res, next) {
         });
     });
 });
+
 router.post('/list/teaching', function(req, res, next) {
     if (req.body.teacher_id === undefined || req.body.teacher_id == 0) {
         _global.sendError(res, null, "Teacher id is required");
@@ -594,6 +598,7 @@ router.post('/list/teaching', function(req, res, next) {
         connection.query(query, program_id, return_function);
     });
 });
+
 router.post('/import', function(req, res, next) {
     if (req.body.class_name == undefined || req.body.class_name == '') {
         _global.sendError(res, null, "Class name is required");
@@ -809,6 +814,7 @@ router.post('/import', function(req, res, next) {
         });
     });
 });
+
 router.post('/export', function(req, res, next) {
     if (req.body.classes_id == undefined || req.body.classes_id.length == 0) {
         _global.sendError(res, null, "Classes id is required");
@@ -884,6 +890,9 @@ router.post('/export', function(req, res, next) {
         });
     });
 });
+
+//API mobile
+
 router.post('/teaching', function(req, res, next){
     var teacher_id = req.decoded.id;
 
@@ -971,4 +980,5 @@ router.post('/studying', function(req, res, next) {
         });
     }
 });
+
 module.exports = router;

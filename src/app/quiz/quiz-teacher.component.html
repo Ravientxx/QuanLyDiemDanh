@@ -3,8 +3,8 @@
         <div class="x_title">
             <h3>Quiz Results</h3>
             <div class="pull-right navbar-btn">
-                <select class="form-control" [(ngModel)]="selected_course_id" (ngModelChange)="onChangeCourse()">
-                    <option *ngFor="let course of courses" [value]="course.id">{{course.name}}</option>
+                <select class="form-control" [(ngModel)]="selected_course" (ngModelChange)="onChangeCourse()">
+                    <option *ngFor="let course of courses" [ngValue]="course">{{course.name}}</option>
                 </select>
             </div>
             <div class="clearfix"></div>
@@ -12,19 +12,19 @@
         <div class="x_content">
             <accordion>
                 <ng-container *ngFor="let quiz of quiz_list">
-                    <accordion-group #group [isOpen]="quiz.isColapsed">
-                        <div accordion-heading>
-                            {{quiz.title}}
+                    <accordion-group #group [isOpen]="quiz.isOpen">
+                        <h4 accordion-heading>
+                            {{quiz.title}} - {{quiz.created_at | date:'short'}} - {{quiz.questions.length}} questions
                             <i class="pull-right float-xs-right fa" [ngClass]="{'fa-chevron-down': group?.isOpen, 'fa-chevron-right': !group?.isOpen}"></i>
-                        </div>
+                        </h4>
                         <ng-container *ngFor="let question of quiz.questions">
-                            <h4>{{question.text}}</h4>
+                            <h4 class="underline">Q: {{question.text}} <small> ({{question.answers.length}} answers)</small></h4>
                             <div style="overflow:auto; max-height:300px;">
                                 <table class="table table-striped">
                                     <tbody>
                                         <tr *ngFor="let answer of question.answers">
+                                            <td width="20%">{{answer.student_name}} - {{answer.student_code}}</td>
                                             <td>{{answer.text}}</td>
-                                            <td width="30%">{{answer.student_name}} - {{answer.student_code}}</td>
                                         </tr>
                                     </tbody>
                                 </table>
