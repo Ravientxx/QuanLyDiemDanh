@@ -1,28 +1,28 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { AppService, AttendanceService, AuthService, CheckAttendanceSocketService, AppConfig, CheckAttendanceService } from '../../shared/shared.module';
+import { AppService, AttendanceService, AuthService, SocketService, AppConfig, CheckAttendanceService } from '../../shared/shared.module';
 import { LocalStorageService } from 'angular-2-local-storage';
 declare var jQuery:any;
 @Component({
     selector: 'check-attendance-teacher',
     templateUrl: './check-attendance-teacher.component.html'
 })
-export class CheckAttendanceTeacherComponent implements OnInit {
+export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
     public stopped_modal_message;
-    public constructor(public checkAttendanceService : CheckAttendanceService,public appConfig: AppConfig,public checkAttendanceSocketService: CheckAttendanceSocketService ,
+    public constructor(public checkAttendanceService : CheckAttendanceService,public appConfig: AppConfig,public socketService: SocketService ,
         public authService: AuthService, public attendanceService: AttendanceService, public localStorage: LocalStorageService, public appService: AppService, public router: Router) {
-        checkAttendanceSocketService.consumeEventOnCheckAttendanceUpdated();
-        checkAttendanceSocketService.invokeCheckAttendanceUpdated.subscribe(result=>{
+        socketService.consumeEventOnCheckAttendanceUpdated();
+        socketService.invokeCheckAttendanceUpdated.subscribe(result=>{
             if(this.selected_course_id == result['course_id'] && this.selected_class_id == result['class_id']){
                 this.getOpeningAttendance();
             }
         });
-        checkAttendanceSocketService.consumeEventOnCheckAttendanceCreated();
-        checkAttendanceSocketService.invokeCheckAttendanceCreated.subscribe(result=>{
+        socketService.consumeEventOnCheckAttendanceCreated();
+        socketService.invokeCheckAttendanceCreated.subscribe(result=>{
             this.getOpeningAttendance();
         });
-        checkAttendanceSocketService.consumeEventOnCheckAttendanceStopped();
-        checkAttendanceSocketService.invokeCheckAttendanceStopped.subscribe(result=>{
+        socketService.consumeEventOnCheckAttendanceStopped();
+        socketService.invokeCheckAttendanceStopped.subscribe(result=>{
             if(this.selected_course_id == result['course_id'] && this.selected_class_id == result['class_id']){
                 this.stopped_modal_message = "Session is " + result['message'];
                 jQuery('#sessionStoppedModal').modal({backdrop: 'static', keyboard: false}) ;
@@ -97,6 +97,12 @@ export class CheckAttendanceTeacherComponent implements OnInit {
             }, error => { this.appService.showPNotify('failure', "Server Error! Can't get opening attendances", 'error'); });
     }
 
+    public ngOnDestroy(){
+        this.socketService.stopEventOnCheckAttendanceStopped();
+        this.socketService.stopEventOnCheckAttendanceCreated();
+        this.socketService.stopEventOnCheckAttendanceUpdated();
+    }
+
     public getOpeningAttendance(){
         this.attendanceService.getOpeningAttendanceCourse(this.authService.current_user.id).subscribe(result => {
             this.opening_attendances = result.opening_attendances;
@@ -114,7 +120,7 @@ export class CheckAttendanceTeacherComponent implements OnInit {
         this.attendanceService.createAttendance(this.selected_course_id, this.selected_class_id, this.authService.current_user.id)
             .subscribe(result => {
                 this.getOpeningAttendance();
-                this.checkAttendanceSocketService.emitEventOnCheckAttendanceCreated(null);
+                this.socketService.emitEventOnCheckAttendanceCreated(null);
             }, error => { this.appService.showPNotify('failure', "Server Error! Can't create new attendances", 'error'); });
     }
     public onChangeAttendance() {
@@ -135,7 +141,7 @@ export class CheckAttendanceTeacherComponent implements OnInit {
     }
     public confirmCancelAttendanceSession(){
         this.attendanceService.cancelAttendance(this.selected_attendance['id']).subscribe(result=>{
-            this.checkAttendanceSocketService.emitEventOnCheckAttendanceStopped({
+            this.socketService.emitEventOnCheckAttendanceStopped({
                 message: 'cancelled by ' + this.authService.current_user.first_name + ' ' + this.authService.current_user.last_name,
                 course_id : this.selected_course_id,
                 class_id : this.selected_class_id,
@@ -145,7 +151,7 @@ export class CheckAttendanceTeacherComponent implements OnInit {
     }
     public confirmCloseAttendanceSession(){
         this.attendanceService.closeAttendance(this.selected_attendance['id']).subscribe(result=>{
-            this.checkAttendanceSocketService.emitEventOnCheckAttendanceStopped({
+            this.socketService.emitEventOnCheckAttendanceStopped({
                 message: 'closed by ' + this.authService.current_user.first_name + ' ' + this.authService.current_user.last_name,
                 course_id : this.selected_course_id,
                 class_id : this.selected_class_id,
@@ -165,7 +171,8 @@ export class CheckAttendanceTeacherComponent implements OnInit {
         },error=>{this.appService.showPNotify('failure', "Server Error! Can't generate delegate code", 'error');});
     }
     public generateQuiz(){
-        this.router.navigate(['/check-attendance-quiz']);
+        this.localStorage.set('selected_attendance',this.selected_attendance);
+        this.router.navigate(['/check-attendance/quiz/']);
     }
     public onAttendanceCheckClick(student_index: number, attendance_detail_index: number) {
         var type;
@@ -176,7 +183,7 @@ export class CheckAttendanceTeacherComponent implements OnInit {
         }
         this.checkAttendanceService.checkList(this.check_attendance_list[student_index].attendance_details[attendance_detail_index].attendance_id,this.check_attendance_list[student_index].id,type).subscribe(result=>{
             this.check_attendance_list[student_index].attendance_details[attendance_detail_index].attendance_type = type;
-            this.checkAttendanceSocketService.emitEventOnCheckAttendanceUpdated({
+            this.socketService.emitEventOnCheckAttendanceUpdated({
                 course_id : this.selected_course_id,
                 class_id : this.selected_class_id,
             });

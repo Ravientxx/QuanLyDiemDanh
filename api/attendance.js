@@ -572,7 +572,9 @@ router.post('/check-attendance-list/', function(req, res, next) {
                     name: student.name,
                     attendance_details: []
                 };
-                connection.query(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type FROM attendance, attendance_detail WHERE attendance.id = attendance_detail.attendance_id AND  course_id = ? AND student_id = ?`, [course_id, student.id], function(error, results, fields) {
+                connection.query(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type, created_at  
+                    FROM attendance, attendance_detail 
+                    WHERE attendance.id = attendance_detail.attendance_id AND  course_id = ? AND student_id = ?`, [course_id, student.id], function(error, results, fields) {
                     if (error) {
                         console.log(error.message + ' at get check_attendance_details');
                         callback(error);
@@ -581,7 +583,8 @@ router.post('/check-attendance-list/', function(req, res, next) {
                             attendance.attendance_details.push({
                                 attendance_id: results[i].attendance_id,
                                 attendance_time: results[i].attendance_time,
-                                attendance_type: results[i].attendance_type
+                                attendance_type: results[i].attendance_type,
+                                created_at: results[i].created_at
                             });
                         }
                         check_attendance_list.push(attendance);
@@ -605,7 +608,6 @@ router.post('/check-attendance-list/', function(req, res, next) {
 
     });
 });
-
 router.post('/check-attendance', function(req, res, next) {
     if (req.body.attendance_id == null || req.body.attendance_id == 0) {
         _global.sendError(res, null, "attendance_id is required");
@@ -645,7 +647,6 @@ router.post('/check-attendance', function(req, res, next) {
 
     });
 });
-
 router.post('/update-attendance', function(req, res, next){
     if (req.body.attendance_id == null || req.body.attendance_id == 0) {
         _global.sendError(res, null, "attendance_id is required");
@@ -772,8 +773,9 @@ router.post('/generate-delegate-code', function(req, res, next) {
                     console.log('This course doesnt have any opening attendance');
                 } else {
                     var code = randomstring.generate({
-                        length: 7,
-                        capitalization: 'uppercase'
+                        length: 5,
+                        capitalization: 'uppercase',
+                        charset: 'numeric'
                     });
                     for (var i = 0; i < delegate_list.length; i++) {
                         if (delegate_list[i]['course_id'] == course_id && delegate_list[i]['class_id'] == class_id) {

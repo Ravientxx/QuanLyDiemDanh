@@ -2,18 +2,19 @@ import { NgModule }       from '@angular/core';
 import { CommonModule }   from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
-
+import { TextMaskModule } from 'angular2-text-mask';
+import { Autosize } from 'angular2-autosize/angular2-autosize';
 import { CollapseModule } from 'ngx-bootstrap';
-import { CheckAttendanceComponent } from './check-attendance.component'
-import { CheckAttendanceTeacherComponent } from './check-attendance-teacher/check-attendance-teacher.component'
-import { CheckAttendanceStudentComponent } from './check-attendance-student/check-attendance-student.component'
+import { CheckAttendanceQuizComponent } from './check-attendance-quiz.component'
+import { CheckAttendanceQuizTeacherComponent } from './check-attendance-quiz-teacher/check-attendance-quiz-teacher.component'
+import { CheckAttendanceQuizStudentComponent } from './check-attendance-quiz-student/check-attendance-quiz-student.component'
 import { TooltipModule } from 'ngx-bootstrap';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
 import {FileUploadModule} from "ng2-file-upload";
 import { SharedModule } from '../shared/shared.module';
 const Routes: Routes = [
-  { path: '',  component: CheckAttendanceComponent },
+  { path: '',  component: CheckAttendanceQuizComponent },
 ];
 
 @NgModule({
@@ -24,15 +25,17 @@ const Routes: Routes = [
     CollapseModule.forRoot(),
     TooltipModule.forRoot(),
     PaginationModule.forRoot(),
-    TabsModule,
-    SharedModule
+    TabsModule.forRoot(),
+    SharedModule,
+    TextMaskModule
   ],
   declarations: [
-    CheckAttendanceComponent,
-    CheckAttendanceStudentComponent,
-    CheckAttendanceTeacherComponent,
+    CheckAttendanceQuizComponent,
+    CheckAttendanceQuizStudentComponent,
+    CheckAttendanceQuizTeacherComponent,
+    Autosize
   ],
   providers: []
 })
 
-export class CheckAttendanceModule {}
+export class CheckAttendanceQuizModule {}

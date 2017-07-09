@@ -84,8 +84,7 @@ router.post('/forgot-password', function(req, res, next) {
                     to: email, // list of receivers
                     subject: 'Password reset request', // Subject line
                     text: `Hi,\r\n
-A password reset was requested for your account.To confirm this request, and set a new password for your account, please
-go to the following web address: \r\n\r\n` + link + 
+A password reset was requested for your account.To confirm this request, and set a new password for your account, please go to the following web address: \r\n\r\n` + link + 
 ` \r\n(This link is valid for 30 minutes from the time this reset was first requested)\r\n
 If this password reset was not requested by you, no action is needed.\r\n
 If you need help, please contact the site administrator,\r\n

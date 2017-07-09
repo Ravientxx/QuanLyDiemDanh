@@ -15,8 +15,6 @@ import { TopNavigationComponent } from './components/top-navigation/top-navigati
 import { FooterComponent } from './components/footer/footer.component';
 import { PageNotFoundComponent } from './components/page-not-found.component';
 export {PageNotFoundComponent};
-import { QRCodeComponent } from './components/qr-code.component';
-export {QRCodeComponent};
 import { EditScheduleModalComponent } from './components/edit-schedule-modal/edit-schedule-modal.component';
 export { EditScheduleModalComponent };
 import { ResultMessageModalComponent } from './components/result-message-modal/result-message-modal.component';
@@ -29,7 +27,8 @@ import { CreateAbsenceRequestModalComponent } from './components/create-absence-
 export { CreateAbsenceRequestModalComponent };
 import { SendFeedbackModalComponent } from './components/send-feedback-modal/send-feedback-modal.component';
 export { SendFeedbackModalComponent };
-
+import { QRCodeComponent } from './components/qr-code.component';
+export { QRCodeComponent };
 import {AppService} from './services/app.service';
 export {AppService};
 import {CourseService} from './services/courses.service';
@@ -54,8 +53,8 @@ import {SemesterService} from './services/semester.service';
 export {SemesterService};
 import {FeedbackService} from './services/feedback.service';
 export {FeedbackService};
-import {CheckAttendanceSocketService} from './services/check-attendance-socket.service';
-export {CheckAttendanceSocketService};
+import {SocketService} from './services/socket.service';
+export {SocketService};
 import {CheckAttendanceService} from './services/check-attendance.service';
 export {CheckAttendanceService};
 import {QuizService} from './services/quiz.service';
@@ -88,8 +87,8 @@ export {QuizService};
     ImportModalComponent,
     CreateAbsenceRequestModalComponent,
     SendFeedbackModalComponent,
-    QRCodeComponent,
-    ExportModalComponent
+    ExportModalComponent,
+    QRCodeComponent
   ],
   exports: [
     FooterComponent,
@@ -101,8 +100,8 @@ export {QuizService};
     ImportModalComponent,
     CreateAbsenceRequestModalComponent,
     SendFeedbackModalComponent,
-    QRCodeComponent,
-    ExportModalComponent
+    ExportModalComponent,
+    QRCodeComponent
   ],  
   providers: [
     AppService,
@@ -118,7 +117,7 @@ export {QuizService};
     SemesterService,
     FeedbackService,
     CheckAttendanceService,
-    CheckAttendanceSocketService,
+    SocketService,
     QuizService
   ]
 })

@@ -50,6 +50,20 @@ io.sockets.on('connection', function(socket){
     //socket.broadcast.emit('checkAttendanceStopped', checkAttendanceStopped);
     io.emit('checkAttendanceStopped', checkAttendanceStopped);
   });
+
+  // Socket event for quiz stopped
+  socket.on('quizStopped', function(quizStopped){
+    console.log('quizStopped');
+    console.log(quizStopped);
+    io.emit('quizStopped', quizStopped);
+  });
+
+  // Socket event for quiz answered
+  socket.on('quizAnswered', function(quizAnswered){
+    console.log('quizAnswered');
+    console.log(quizAnswered);
+    io.emit('quizAnswered', quizAnswered);
+  });
 });
 /**
  * Listen on provided port, on all network interfaces.
