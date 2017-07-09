@@ -265,6 +265,11 @@ CREATE TABLE `quiz` (
   `closed` boolean DEFAULT FALSE,
   `created_by` int(11) DEFAULT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `started_at` datetime DEFAULT NULL,
+  `ended_at` datetime DEFAULT NULL,
+  `is_use_timer` boolean DEFAULT TRUE,
+  `timer` varchar(255) CHARACTER SET utf8 DEFAULT NULL,
+  `code` varchar(7) CHARACTER SET utf8 DEFAULT NULL,
   PRIMARY KEY (`id`,`class_has_course_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -409,7 +414,7 @@ CREATE TRIGGER trigger_insert_attendance
 BEGIN
     UPDATE class_has_course
 	SET attendance_count = attendance_count + 1
-	WHERE course_id = NEW.course_id AND  class_id = NEW.class_id;
+	WHERE course_id = NEW.course_id AND class_id = NEW.class_id;
 END//
 DELIMITER ;
 

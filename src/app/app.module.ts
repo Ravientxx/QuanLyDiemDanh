@@ -9,7 +9,7 @@ import { AppComponent } from './app.component';
 import { LoginComponent } from './login.component';
 import { LogoutComponent } from './logout.component';
 import { ForgotPasswordComponent } from './forgot-password.component';
-import { SharedModule,QRCodeComponent, PageNotFoundComponent, AuthService, AuthGuardService } from './shared/shared.module';
+import { SharedModule, PageNotFoundComponent, QRCodeComponent, AuthService, AuthGuardService } from './shared/shared.module';
 
 const ROUTES = [
     { path: '', loadChildren: 'app/layout/layout.module#LayoutModule' }, 

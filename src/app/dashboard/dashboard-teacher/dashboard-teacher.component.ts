@@ -1,6 +1,6 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import {  AppService, AuthService ,CheckAttendanceSocketService, AttendanceService , 
+import {  AppService, AuthService ,SocketService, AttendanceService , 
     SendFeedbackModalComponent, TeacherService, CourseService} from '../../shared/shared.module';
 import { LocalStorageService } from 'angular-2-local-storage';
 declare var jQuery:any;
@@ -8,18 +8,18 @@ declare var jQuery:any;
 	selector: 'app-dashboard-teacher',
 	templateUrl: './dashboard-teacher.component.html'
 })
-export class DashboardTeacherComponent implements OnInit {
+export class DashboardTeacherComponent implements OnInit, OnDestroy {
 
 	public opening_attendances = [];
 
-	constructor(public  router: Router,public  localStorage : LocalStorageService,public  checkAttendanceSocketService: CheckAttendanceSocketService ,
+	constructor(public  router: Router,public  localStorage : LocalStorageService,public socketService: SocketService ,
         public  appService: AppService,public  authService: AuthService,public  attendanceService: AttendanceService, public  teacherService: TeacherService,public  courseService : CourseService) {
-	    checkAttendanceSocketService.consumeEventOnCheckAttendanceCreated();
-        checkAttendanceSocketService.invokeCheckAttendanceCreated.subscribe(result=>{
+	    socketService.consumeEventOnCheckAttendanceCreated();
+        socketService.invokeCheckAttendanceCreated.subscribe(result=>{
             this.getOpeningAttendance();
         });
-        checkAttendanceSocketService.consumeEventOnCheckAttendanceStopped();
-        checkAttendanceSocketService.invokeCheckAttendanceStopped.subscribe(result=>{
+        socketService.consumeEventOnCheckAttendanceStopped();
+        socketService.invokeCheckAttendanceStopped.subscribe(result=>{
             this.getOpeningAttendance();
         });
     }
@@ -49,6 +49,10 @@ export class DashboardTeacherComponent implements OnInit {
             this.onChangeProgram();
         }, error => {this.appService.showPNotify('failure',"Server Error! Can't get semester-program-class",'error');});
 	}
+    public ngOnDestroy(){
+        this.socketService.stopEventOnCheckAttendanceStopped();
+        this.socketService.stopEventOnCheckAttendanceCreated();
+    }
 
 	public isEditingProfile = false;
 	public editing_name = '';
@@ -139,6 +143,11 @@ export class DashboardTeacherComponent implements OnInit {
     }
     public onChangePassword(){
         this.router.navigate(['/change-password']);
+    }
+    public keyDownFunction(event) {
+      if(event.keyCode == 13) {
+        this.onSaveEditProfile();
+      }
     }
 }
 

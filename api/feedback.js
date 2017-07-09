@@ -63,6 +63,7 @@ router.post('/list', function(req, res, next) {
         });
     });
 });
+
 router.put('/read', function(req, res, next) {
     if (req.body.feedback_id == undefined || req.body.feedback_id == 0) {
         _global.sendError(res, null, "feedback id is required");
@@ -84,6 +85,7 @@ router.put('/read', function(req, res, next) {
         });
     });
 });
+
 router.post('/send', function(req, res, next) {
     if (req.body.title == undefined || req.body.title == '') {
         _global.sendError(res, null, "title is required");
@@ -115,4 +117,32 @@ router.post('/send', function(req, res, next) {
         });
     });
 });
+
+router.post('/history', function(req, res, next) {
+    var user_id = req.decoded.id;
+
+    pool.getConnection(function(error, connection) {
+        if (error) {
+            _global.sendError(res, error.message);
+            throw error;
+        }
+
+        var query = `SELECT id, title, content, feedbacks.read, DATE_FORMAT(created_at, "%d-%m-%Y %H:%i") as time FROM feedbacks WHERE from_id = ? ORDER BY feedbacks.read, feedbacks.created_at DESC LIMIT 10`;
+
+        connection.query(query, user_id, function(error, rows, fields) {
+            if (error) {
+                _global.sendError(res, error.message);
+                throw error;
+            }
+
+            res.send({ 
+                result: 'success',
+                total_items: rows.length,
+                list: rows
+            });
+            connection.release();
+        });
+    });
+});
+
 module.exports = router;

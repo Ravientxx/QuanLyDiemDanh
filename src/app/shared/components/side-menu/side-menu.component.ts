@@ -33,14 +33,15 @@ export class SideMenuComponent implements OnInit {
         { title: 'Teachers', url: '/teachers', icon: 'fa-graduation-cap' },
         { title: 'Schedule', url: '/schedule', icon: 'fa-calendar' },
         { title: 'Absence Requests', url: '/absence-requests', icon: 'fa-envelope' },
-        { title: 'Feedbacks', url: '/feedbacks', icon: 'fa-comments' }, {
-            title: 'Administration',
-            url: '/administration',
-            icon: 'fa-key',
-            subMenu: [{ title: 'Users', url: '/administration/users' },
-                { title: 'Activity Logs', url: '/administration/logs' }
-            ]
-        },
+        { title: 'Feedbacks', url: '/feedbacks', icon: 'fa-comments' }, 
+        // {
+        //     title: 'Administration',
+        //     url: '/administration',
+        //     icon: 'fa-key',
+        //     subMenu: [{ title: 'Users', url: '/administration/users' },
+        //         { title: 'Activity Logs', url: '/administration/logs' }
+        //     ]
+        // },
         { title: 'Settings', url: '/settings', icon: 'fa-cog' },
         { title: 'Logout', url: '/logout', icon: 'fa-sign-out' }
     ];
@@ -48,7 +49,7 @@ export class SideMenuComponent implements OnInit {
     public studentMenu = [
         { title: 'Dashboard', url: '/', icon: 'fa-home' },
         { title: 'Attendance - Checklist',url: '/check-attendance',icon: 'fa-check-square-o' },
-        { title: 'Attendance - Quiz',url: '/check-attendance-quiz',icon: 'fa-question-circle' },
+        { title: 'Attendance - Quiz',url: '/check-attendance/quiz',icon: 'fa-question-circle' },
         { title: 'Schedule', url: '/schedule', icon: 'fa-calendar' },
         { title: 'Absence Requests', url: '/absence-requests', icon: 'fa-envelope' },
         { title: 'Logout', url: '/logout', icon: 'fa-sign-out' }

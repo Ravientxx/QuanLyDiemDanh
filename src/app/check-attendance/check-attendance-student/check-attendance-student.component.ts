@@ -1,24 +1,24 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { AppService, AttendanceService, AuthService, CheckAttendanceSocketService, AppConfig, CheckAttendanceService } from '../../shared/shared.module';
+import { AppService, AttendanceService, AuthService,SocketService, AppConfig, CheckAttendanceService } from '../../shared/shared.module';
 import { LocalStorageService } from 'angular-2-local-storage';
 declare var jQuery: any;
 @Component({
     selector: 'check-attendance-student',
     templateUrl: './check-attendance-student.component.html'
 })
-export class CheckAttendanceStudentComponent implements OnInit {
+export class CheckAttendanceStudentComponent implements OnInit, OnDestroy {
     public stopped_modal_message;
-    public constructor(public checkAttendanceService: CheckAttendanceService, public appConfig: AppConfig, public checkAttendanceSocketService: CheckAttendanceSocketService,
+    public constructor(public checkAttendanceService: CheckAttendanceService, public appConfig: AppConfig, public socketService: SocketService,
         public authService: AuthService, public attendanceService: AttendanceService, public localStorage: LocalStorageService, public appService: AppService, public router: Router) {
-        checkAttendanceSocketService.consumeEventOnCheckAttendanceUpdated();
-        checkAttendanceSocketService.invokeCheckAttendanceUpdated.subscribe(result=>{
+        socketService.consumeEventOnCheckAttendanceUpdated();
+        socketService.invokeCheckAttendanceUpdated.subscribe(result=>{
             if(this.delegate_detail['course_id'] == result['course_id'] && this.delegate_detail['class_id'] == result['class_id']){
                 this.getOpeningAttendance();
             }
         });
-        checkAttendanceSocketService.consumeEventOnCheckAttendanceStopped();
-        checkAttendanceSocketService.invokeCheckAttendanceStopped.subscribe(result=>{
+        socketService.consumeEventOnCheckAttendanceStopped();
+        socketService.invokeCheckAttendanceStopped.subscribe(result=>{
             if(this.delegate_detail['course_id'] == result['course_id'] && this.delegate_detail['class_id'] == result['class_id']){
                 this.stopped_modal_message = "Session is " + result['message'];
                 jQuery('#sessionStoppedModal').modal({backdrop: 'static', keyboard: false}) ;
@@ -50,6 +50,11 @@ export class CheckAttendanceStudentComponent implements OnInit {
     }
     public ngOnInit() {
         jQuery('#enterDelegateCodeModal').modal({ backdrop: 'static', keyboard: false });
+    }
+    public ngOnDestroy(){
+        this.socketService.stopEventOnCheckAttendanceStopped();
+        this.socketService.stopEventOnCheckAttendanceCreated();
+        this.socketService.stopEventOnCheckAttendanceUpdated();
     }
     public cancelCheckDelegateCode(){
         jQuery("#enterDelegateCodeModal").modal("hide");
@@ -95,7 +100,12 @@ export class CheckAttendanceStudentComponent implements OnInit {
         }
         this.checkAttendanceService.checkList(this.check_attendance_list[student_index].attendance_details[attendance_detail_index].attendance_id, this.check_attendance_list[student_index].id, type).subscribe(result => {
             this.check_attendance_list[student_index].attendance_details[attendance_detail_index].attendance_type = type;
-            this.checkAttendanceSocketService.emitEventOnCheckAttendanceUpdated({course_id: this.delegate_detail['course_id'], class_id:  this.delegate_detail['class_id']});
+            this.socketService.emitEventOnCheckAttendanceUpdated({course_id: this.delegate_detail['course_id'], class_id:  this.delegate_detail['class_id']});
         }, error => { this.appService.showPNotify('failure', "Server Error! Can't check_list", 'error'); });
+    }
+    public keyDownFunction(event) {
+      if(event.keyCode == 13) {
+        this.checkDelegateCode();
+      }
     }
 }

@@ -11,7 +11,7 @@ export class QuizTeacherComponent implements OnInit {
     public apiResultMessage: any;
 
     public courses: Array < any > = [];
-    public selected_course_id;
+    public selected_course;
     public selected_class_id;
     public quiz_list = [];
 
@@ -26,25 +26,18 @@ export class QuizTeacherComponent implements OnInit {
                 this.appService.showPNotify(this.apiResult,this.apiResultMessage,'error');
             }
             this.courses = result.courses;
-            this.selected_course_id = this.courses[0].id;
-            this.selected_class_id = this.courses[0].class_id;
+            this.selected_course = this.courses[0];
             this.loadQuiz();
         },error=>{this.appService.showPNotify('failure',"Server Error! Can't get teaching course",'error');});
     }
 
     public onChangeCourse() {
-        console.log(this.selected_course_id);
-        for(var i = 0 ; i < this.courses.length; i++){
-            if(this.selected_course_id == this.courses[i].id){
-                this.selected_class_id = this.courses[i].class_id;
-                break;
-            }
-        }
+        console.log(this.selected_course);
         this.loadQuiz();
     }
 
     public loadQuiz(){
-        this.quizService.getQuizByCourseAndClass(this.selected_course_id,this.selected_class_id).subscribe(result=>{
+        this.quizService.getQuizByCourseAndClass(this.selected_course['id'],this.selected_course['class_id']).subscribe(result=>{
             this.apiResult = result.result;
             this.apiResultMessage = result.message;
             if(this.apiResult == 'failure'){
@@ -52,7 +45,7 @@ export class QuizTeacherComponent implements OnInit {
             }else{
                 this.quiz_list = result.quiz_list;
                 for(var i = 0 ; i < this.quiz_list.length; i++){
-                    this.quiz_list[i]['isColapsed'] = true;
+                    this.quiz_list[i]['isOpen'] = false;
                 }
             }
         },error=>{this.appService.showPNotify('failure',"Server Error! Can't get quiz list",'error');});
