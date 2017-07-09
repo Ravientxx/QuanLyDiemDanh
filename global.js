@@ -1,9 +1,9 @@
 module.exports = {
     db: {
-        host: 'sql12.freemysqlhosting.net',
-        user: 'sql12183615',
-        password: 'zp4iQbvFvN',
-        database: 'sql12183615'
+        host: 'www.db4free.net',
+        user: 'lequen',
+        password: '123456',
+        database: 'qldd'
     },
     host: 'localhost:4200',
     email_setting: {
