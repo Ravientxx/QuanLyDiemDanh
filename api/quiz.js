@@ -230,9 +230,9 @@ router.post('/start', function(req, res, next) {
                     charset: 'numeric'
                 });
                 var new_quiz = {};
-                if(quiz.is_use_timer){
+                if (quiz.is_use_timer) {
                     var temp = quiz.timer.split(':');
-                    var seconds = (+temp[0]*60 + (+temp[1])) * 1000;
+                    var seconds = (+temp[0] * 60 + (+temp[1])) * 1000;
                     new_quiz = {
                         title: quiz.title,
                         class_has_course_id: class_has_course_id,
@@ -243,7 +243,7 @@ router.post('/start', function(req, res, next) {
                         is_use_timer: quiz.is_use_timer,
                         code: quiz_code
                     };
-                }else{
+                } else {
                     new_quiz = {
                         title: quiz.title,
                         class_has_course_id: class_has_course_id,
@@ -293,7 +293,7 @@ router.post('/start', function(req, res, next) {
                 throw error;
             } else {
                 console.log('success start quiz---------------------------------------');
-                res.send({ result: 'success',quiz_id: quiz_id, code: quiz_code, message: 'Start quiz successfully' });
+                res.send({ result: 'success', quiz_id: quiz_id, code: quiz_code, message: 'Start quiz successfully' });
             }
         });
     });
@@ -322,9 +322,10 @@ router.post('/check-code', function(req, res, next) {
         _global.sendError(res, null, "Quiz code is required");
         throw "Quiz code is required";
     }
+    var student_id = req.decoded.id;
     var code = req.body.code;
     pool.getConnection(function(error, connection) {
-        connection.query(`SELECT id FROM quiz WHERE code = ? AND closed = 0 LIMIT 1`, code, function(error, results, fields) {
+        connection.query(`SELECT id,class_has_course_id FROM quiz WHERE code = ? AND closed = 0 LIMIT 1`, code, function(error, results, fields) {
             if (error) {
                 _global.sendError(res, null, error.message);
                 throw error;
@@ -334,9 +335,36 @@ router.post('/check-code', function(req, res, next) {
                     connection.release();
                     return console.log('Invalid code! It might have been expired or the quiz is already closed');
                 } else {
-                    console.log('success check quiz code---------------------------------------');
-                    res.send({ result: 'success', quiz_id: results[0].id, message: 'check quiz successfully' });
-                    connection.release();
+                    connection.query(`SELECT * FROM quiz,quiz_questions,quiz_answers 
+                        WHERE quiz.id = quiz_questions.quiz_id AND quiz_questions.id = quiz_answers.quiz_question_id AND quiz_id = ? AND quiz_answers.answered_by = ?`, [results[0].id, student_id], function(error, result, fields) {
+                        if (error) {
+                            _global.sendError(res, null, error.message);
+                            throw error;
+                        } else {
+                            if (result.length == 0) {
+                                connection.query(`SELECT * FROM student_enroll_course WHERE class_has_course_id = ? AND student_id = ?`, [results[0].class_has_course_id, student_id], function(error, result, fields) {
+                                    if (error) {
+                                        _global.sendError(res, null, error.message);
+                                        throw error;
+                                    } else {
+                                        if (result.length == 0) {
+                                            _global.sendError(res, null, 'You are not in this course');
+                                            connection.release();
+                                            return console.log('You are not in this course');
+                                        } else {
+                                            console.log('success check quiz code---------------------------------------');
+                                            res.send({ result: 'success', quiz_id: results[0].id, message: 'check quiz successfully' });
+                                            connection.release();
+                                        }
+                                    }
+                                });
+                            } else {
+                                _global.sendError(res, null, 'You already took this quiz');
+                                connection.release();
+                                return console.log('You already took this quiz');
+                            }
+                        }
+                    });
                 }
             }
         });
@@ -363,6 +391,8 @@ router.post('/submit', function(req, res, next) {
             throw "Answer for question " + (i + 1) + " are required";
         }
     }
+    var attendance_id = 0;
+    var check_attendance_exist = false;
     pool.getConnection(function(error, connection) {
         async.series([
             //Start transaction
@@ -372,11 +402,11 @@ router.post('/submit', function(req, res, next) {
                     else callback();
                 });
             },
-            //insert quiz
+            //insert quiz_answers
             function(callback) {
                 var answers = [];
-                for(var i = 0 ; i < quiz.questions.length; i++){
-                    answers.push([quiz.questions[i].id,student_id,quiz.questions[i].answer,new Date()]);
+                for (var i = 0; i < quiz.questions.length; i++) {
+                    answers.push([quiz.questions[i].id, student_id, quiz.questions[i].answer, new Date()]);
                 }
                 connection.query(`INSERT INTO quiz_answers (quiz_question_id,answered_by,text,answered_at) VALUES ?`, [answers], function(error, results, fields) {
                     if (error) {
@@ -385,6 +415,61 @@ router.post('/submit', function(req, res, next) {
                         callback();
                     }
                 });
+            },
+            //insert attendance_id
+            function(callback) {
+                connection.query(`SELECT attendance.id 
+                    FROM quiz,class_has_course,attendance 
+                    WHERE quiz.class_has_course_id = class_has_course.id AND class_has_course.class_id = attendance.class_id 
+                    AND class_has_course.course_id = class_has_course.course_id AND attendance.closed = 0 AND quiz.id = ?`, quiz.id, function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        attendance_id = results[0].id;
+                        callback();
+                    }
+                });
+            },
+            //check if attendance_detail exist
+            function(callback) {
+                connection.query(`SELECT * FROM attendance_detail WHERE attendance_id = ? AND student_id = ?`, [attendance_id, student_id], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        if (results.length == 0) {
+                            check_attendance_exist = false;
+                        } else {
+                            check_attendance_exist = true;
+                        }
+                        callback();
+                    }
+                });
+            },
+            //insert attendance_detail
+            function(callback) {
+                if (check_attendance_exist) {
+                    connection.query(`UPDATE attendance_detail SET attendance_type = ? WHERE attendance_id = ? AND student_id = ?`, [_global.attendance_type.quiz,attendance_id,student_id], function(error, results, fields) {
+                        if (error) {
+                            callback(error);
+                        } else {
+                            callback();
+                        }
+                    });
+                } else {
+                    var attendance_detail = {
+                        attendance_id: attendance_id,
+                        student_id: student_id,
+                        attendance_time: new Date(),
+                        attendance_type: _global.attendance_type.quiz,
+                    }
+                    connection.query(`INSERT INTO attendance_detail SET ?`, attendance_detail, function(error, results, fields) {
+                        if (error) {
+                            callback(error);
+                        } else {
+                            callback();
+                        }
+                    });
+                }
             },
             //Commit transaction
             function(callback) {

@@ -8,6 +8,7 @@ import { TeacherService, ResultMessageModalComponent, AppService } from '../../s
 export class TeacherDetailComponent implements OnInit {
     public teacher_id: number;
     public teaching_courses: Array < any > ;
+    public teacher_not_found = false;
     public teacher = {
         id: 0,
         first_name: '',
@@ -22,6 +23,10 @@ export class TeacherDetailComponent implements OnInit {
         this.teacherService.getTeacherDetail(this.teacher_id)
             .subscribe(result => {
                 this.teacher = result.teacher;
+                if(this.teacher == undefined || this.teacher == null){
+                    this.teacher_not_found = true;
+                    return;
+                }
                 this.teaching_courses = result.teaching_courses;
                 this.editing_name = this.teacher.first_name + ' ' + this.teacher.last_name;
             }, err => { this.appService.showPNotify('failure', "Server Error! Can't teacher detail", 'error'); });

@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { CourseService, AttendanceService, AppService, EditScheduleModalComponent, ScheduleService, ResultMessageModalComponent } from '../../../shared/shared.module';
+import { CourseService, AttendanceService, AppService, EditScheduleModalComponent, ScheduleService, ResultMessageModalComponent,AuthService } from '../../../shared/shared.module';
 declare let jQuery: any;
 @Component({
     selector: 'course-detail-teacher',
@@ -8,7 +8,7 @@ declare let jQuery: any;
 })
 export class CourseDetailTeacherComponent implements OnInit {
     public schedules = [];
-
+    public course_not_found = false;
     public course_id: any;
     public course: Array < any > = [];
     public lecturers: Array < any > = [];
@@ -28,7 +28,7 @@ export class CourseDetailTeacherComponent implements OnInit {
     @ViewChild(ResultMessageModalComponent)
     public  resultMessageModal: ResultMessageModalComponent;
 
-    public constructor(public  route: ActivatedRoute, public  router: Router,public  appService: AppService, public  courseService: CourseService, public  attendanceSerivce: AttendanceService, public  scheduleService: ScheduleService) {}
+    public constructor(public  route: ActivatedRoute, public  router: Router,public authService: AuthService, public  appService: AppService, public  courseService: CourseService, public  attendanceSerivce: AttendanceService, public  scheduleService: ScheduleService) {}
 
     public getAttendanceList() {
         var classes_id : Array<number> = [];
@@ -48,14 +48,35 @@ export class CourseDetailTeacherComponent implements OnInit {
             this.apiResult = result.result;
             this.apiResultMessage = result.message;
             if(this.apiResult == 'failure'){
+                this.course_not_found = true;
                 this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
+            }else{
+                this.course = result.course;
+                this.lecturers = result.lecturers;
+                this.TAs = result.TAs;
+                this.class_has_course = result.class_has_course;
+                if(this.course == undefined || this.course == null){
+                    this.course_not_found = true;
+                }else{
+                    var check_not_teaching = true;
+                    for(var i = 0 ; i < this.lecturers.length; i++){
+                        if(this.lecturers[i].id == this.authService.current_user.id){
+                            check_not_teaching = false;
+                        }
+                    }
+                    for(var i = 0 ; i < this.TAs.length; i++){
+                        if(this.TAs[i].id == this.authService.current_user.id){
+                            check_not_teaching = false;
+                        }
+                    }
+                    if(check_not_teaching){
+                        this.course_not_found = true;
+                    }else{
+                       //get list student
+                        this.getAttendanceList();
+                    }
+                }
             }
-            this.course = result.course;
-            this.lecturers = result.lecturers;
-            this.TAs = result.TAs;
-            this.class_has_course = result.class_has_course;
-            //get list student
-            this.getAttendanceList();
         }, error => { this.appService.showPNotify('failure', "Server Error! Can't course detail", 'error');  });
     }
 

@@ -9,7 +9,7 @@ declare var jQuery: any;
 export class StudentDetailComponent implements OnInit {
 
     public student_id: number;
-
+    public student_not_found = false;
     public constructor(public  route: ActivatedRoute, public  router: Router, public  studentService: StudentService,public  authService: AuthService, public  appService: AppService, public  absenceRequestService: AbsenceRequestService) {
 
     }
@@ -33,6 +33,10 @@ export class StudentDetailComponent implements OnInit {
         //get Student from database
         this.studentService.getStudentrDetail(this.student_id).subscribe(result => {
             this.student = result.student;
+            if(this.student == undefined || this.student==null){
+                this.student_not_found =true;
+                return;
+            }
             this.current_courses = result.current_courses;
             this.editing_name = this.student.first_name + ' ' + this.student.last_name;
             this.absenceRequestService.getRequestsByStudent(this.student_id,-1,'')

@@ -1,4 +1,5 @@
 import { Component, OnInit, Input,ViewChild } from '@angular/core';
+import {Location} from '@angular/common';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 import { TeacherService, CourseService, AppService, ResultMessageModalComponent } from '../../shared/shared.module';
 declare let jQuery: any;
@@ -24,7 +25,7 @@ export class EditCourseComponent implements OnInit {
     @ViewChild(ResultMessageModalComponent)
     public resultMessageModal: ResultMessageModalComponent;
 
-    public constructor(public route: ActivatedRoute,public router: Router, public appService: AppService, public courseService: CourseService, public teacherService: TeacherService) {
+    public constructor(public route: ActivatedRoute,public router: Router,public location : Location, public appService: AppService, public courseService: CourseService, public teacherService: TeacherService) {
 
     }
     public ngOnInit(): void {
@@ -68,7 +69,7 @@ export class EditCourseComponent implements OnInit {
     public temp_TAs: Array < any > = [];
 
     public onCancelEditCourse() {
-        this.router.navigate(['/courses/']);
+        this.location.back();
     }
 
     public onSaveCourse(isContinue: boolean = false) {

@@ -98,6 +98,7 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
     }
 
     public ngOnDestroy(){
+        console.log('abc');
         this.socketService.stopEventOnCheckAttendanceStopped();
         this.socketService.stopEventOnCheckAttendanceCreated();
         this.socketService.stopEventOnCheckAttendanceUpdated();
@@ -146,6 +147,7 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
                 course_id : this.selected_course_id,
                 class_id : this.selected_class_id,
             });
+            this.appService.showPNotify('success',"Canceled Attendance Session",'success');
             this.router.navigate(['/dashboard']);
         },error=>{this.appService.showPNotify('failure', "Server Error! Can't cancel attendance session", 'error');});
     }
@@ -156,6 +158,7 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
                 course_id : this.selected_course_id,
                 class_id : this.selected_class_id,
             });
+            this.appService.showPNotify('success',"Closed Attendance Session",'success');
             this.router.navigate(['/dashboard']);
         },error=>{this.appService.showPNotify('failure', "Server Error! Can't close attendance session", 'error');});
     }

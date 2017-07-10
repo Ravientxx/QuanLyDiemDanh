@@ -1,5 +1,11 @@
 <div class="col-md-12">
-        <div class="x_panel">
+    <div *ngIf="course_not_found" class="x_panel">
+        <div class="x_title">
+            <h3 class="course_title">Course not found or You're not teaching this course</h3>
+            <div class="clearfix"></div>
+        </div>
+    </div>
+        <div *ngIf="!course_not_found" class="x_panel">
             <div class="x_title">
                 <h3 class="course_title">{{course['code']}} - {{course['name']}} ({{course['semester_name']}})</h3>
                 <div class="pull-right">

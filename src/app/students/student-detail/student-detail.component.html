@@ -1,5 +1,11 @@
 <div class="col-md-12 col-sm-12 col-xs-12">
-    <div class="x_panel">
+    <div *ngIf="student_not_found" class="x_panel">
+        <div class="x_title">
+            <h3 class="course_title">Student not found</h3>
+            <div class="clearfix"></div>
+        </div>
+    </div>
+    <div *ngIf="!student_not_found" class="x_panel">
         <div class="x_content">
             <div class="col-md-3 col-sm-3 col-xs-12 profile_left">
                 <ng-container *ngIf="!isEditingStudent">

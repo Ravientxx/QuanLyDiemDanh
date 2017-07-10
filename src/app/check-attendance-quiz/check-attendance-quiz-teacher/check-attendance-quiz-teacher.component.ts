@@ -105,10 +105,8 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
                 this.quiz.code = result.code;
                 if(this.quiz.is_use_timer){
                     var temp = this.quiz.timer.split(':');
-                    var seconds = (+temp[0]*60 + (+temp[1]));
+                    var time_left = (+temp[0]*60 + (+temp[1]));
                     var interval = setInterval(() => {
-                        var temp = this.quiz.timer.split(':');
-                        var time_left = (+temp[0]*60 + (+temp[1]));
                         var second = Math.floor(time_left % 60);
                         var minute = Math.floor(time_left / 60);
                         if (second == 0 && minute == 0) {
@@ -116,6 +114,7 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
                             this.stopQuiz();
                         }
                         this.quiz.timer = (minute > 9 ? minute : '0' + minute) + ':' + (second > 9 ? second : '0' + second);
+                        time_left--;
                     }, 1000);
                 }
                 this.is_started = true;

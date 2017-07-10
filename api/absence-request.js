@@ -3,7 +3,7 @@ var router = express.Router();
 var _global = require('../global.js');
 var mysql = require('mysql');
 var async = require("async");
-
+var nodemailer = require('nodemailer');
 var pool = mysql.createPool(_global.db);
 
 router.post('/by-student', function(req, res, next) {
@@ -61,6 +61,31 @@ router.put('/change-status', function(req, res, next) {
             if (error) {
                 _global.sendError(res, error.message);
                 throw error;
+            }
+            if(status != _global.absence_request_status.new){
+                connection.query(`SELECT * FROM absence_requests, users WHERE absence_requests.student_id = users.id AND absence_requests.id = ? LIMIT 1`, id, function(error, rows, fields) {
+                    if (error) {
+                        _global.sendError(res, error.message);
+                        throw error;
+                    }
+                    else{
+                        var email = rows[0].email;
+                        var status_text =  status == _global.absence_request_status.accepted ? 'accepted' : 'rejected';
+                        let transporter = nodemailer.createTransport(_global.email_setting);
+                        let mailOptions = {
+                            from: '"Giáo vụ"', // sender address
+                            to: email, // list of receivers
+                            subject: 'Your absence request has been ' + status_text, // Subject line
+                            text: `Hi ` + rows[0].last_name +`,\r\n\r\nYour absence request:\r\n_Reason: ` + rows[0].reason + `\r\n_From : `+ rows[0].start_date + ` to `+ rows[0].end_date +`\r\n\r\nHas been ` + status_text + ` by ` + req.decoded.first_name + ` ` + req.decoded.last_name + `.\r\n\r\nIf you need help, please contact giaovu.clc@fit.hcmus.edu.vn`,
+                        };
+                        transporter.sendMail(mailOptions, (error, info) => {
+                            if (error) {
+                                return console.log(error);
+                            }
+                            console.log('Message %s sent: %s', info.messageId, info.response);
+                        });
+                    }
+                });
             }
             res.send({ result: 'success', message: 'successfully changed request status' });
             connection.release();

@@ -8,7 +8,7 @@ declare let jQuery: any;
 })
 export class CourseDetailStaffComponent implements OnInit {
     public schedules = [];
-
+    public course_not_found = false;
     public course_id: any;
     public course: Array < any > = [];
     public lecturers: Array < any > = [];
@@ -50,8 +50,12 @@ export class CourseDetailStaffComponent implements OnInit {
             this.lecturers = result.lecturers;
             this.TAs = result.TAs;
             this.class_has_course = result.class_has_course;
-            //get list student
-            this.getAttendanceList();
+            if(this.course == undefined || this.course == null){
+                this.course_not_found = true;
+            }else{
+                //get list student
+                this.getAttendanceList();
+            }
         }, error => { this.appService.showPNotify('failure',"Server Error! Can't get course detail",'error'); });
     }
 
