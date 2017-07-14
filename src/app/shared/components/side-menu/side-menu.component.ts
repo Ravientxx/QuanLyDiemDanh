@@ -58,7 +58,7 @@ export class SideMenuComponent implements OnInit {
     public teacherMenu = [
         { title: 'Dashboard', url: '/', icon: 'fa-home' },
         { title: 'Check Attendance',url: '/check-attendance',icon: 'fa-check-square-o' },
-        { title: 'Quiz Results',url: '/quiz',icon: 'fa-question-circle' },
+        { title: 'Quiz Management',url: '/quiz',icon: 'fa-question-circle' },
         { title: 'Logout', url: '/logout', icon: 'fa-sign-out' }
     ];
 }
