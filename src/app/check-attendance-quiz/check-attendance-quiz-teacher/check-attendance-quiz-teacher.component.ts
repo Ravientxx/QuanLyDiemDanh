@@ -29,6 +29,8 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
     public apiResult;
     public apiResultMessage;
     public selected_attendance = {};
+    public quizzes = [];
+    public selected_quiz = 0;
     public quiz = {
         id: 0,
         code: '',
@@ -66,7 +68,7 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
                     }, 1000);
                     this.is_started = true;
                 } else {
-
+                    this.getQuiz();
                 }
             }
         }, error => { this.appService.showPNotify('failure', "Server Error! Can't get opening quiz", 'error'); });
@@ -139,5 +141,44 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
     }
     public onBack() {
         this.location.back();
+    }
+    public onChangeQuiz(){
+        for(var i = 0 ; i < this.quizzes.length; i++){
+            if(this.selected_quiz == this.quizzes[i].id){
+                this.quiz.questions = [];
+                this.quiz.title = this.quizzes[i].title;
+                for(var j = 0; j < this.quizzes[i].questions.length; j++){
+                    this.quiz.questions.push({
+                        text : this.quizzes[i].questions[j].text,
+                        answers: []
+                    });
+                }
+                return;
+            }
+        }
+    }
+    public getQuiz(){
+        this.quizService.getQuizByCourseAndClass(this.selected_attendance['course_id'], this.selected_attendance['class_id']).subscribe(result=>{
+            this.apiResult = result.result;
+            this.apiResultMessage = result.message;
+            if(this.apiResult == 'failure'){
+                this.appService.showPNotify(this.apiResult,this.apiResultMessage,'error');
+            }else{
+                this.quizzes = result.quiz_list;
+                this.quizzes.unshift({
+                    id: 0,
+                    code: '',
+                    is_use_timer: true,
+                    timer: '15:00',
+                    title: 'New Quiz',
+                    questions: [{
+                        text: '',
+                        answers: []
+                    }]
+                });
+                this.selected_quiz = this.quizzes[0].id;
+                this.onChangeQuiz();
+            }
+        },error=>{this.appService.showPNotify('failure',"Server Error! Can't get quiz list",'error');});
     }
 }

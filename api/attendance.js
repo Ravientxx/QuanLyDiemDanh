@@ -556,29 +556,29 @@ router.post('/close', function(req, res, next) {
                                     //count absences and total attendance
                                     connection.query(`SELECT COUNT(*) as count, attendance_type FROM attendance,attendance_detail 
                                                 WHERE id = attendance_id AND student_id = ? AND course_id = ? AND class_id = ? 
-                                                GROUP BY attendance_type`, [student.id,student.course_id,student.class_id], function(error, results, fields) {
+                                                GROUP BY attendance_type`, [student.id, student.course_id, student.class_id], function(error, results, fields) {
                                         if (error) {
                                             console.log(error.message + ' at insert attendance_details');
                                             callback(error);
                                         } else {
                                             var total = 0;
                                             var absence = 0;
-                                            for(var i = 0 ; i < results.length; i++){
-                                                if(results[i].attendance_type == _global.attendance_type.absent) absence = results[i].count;
+                                            for (var i = 0; i < results.length; i++) {
+                                                if (results[i].attendance_type == _global.attendance_type.absent) absence = results[i].count;
                                                 total += results[i].count;
                                             }
                                             let mailOptions = {
                                                 from: '"Giáo vụ"', // sender address
                                                 to: student.email, // list of receivers
                                                 subject: 'Update on your absence from ' + student.course_code + '-' + student.course_name, // Subject line
-                                                text: `Hi ` + student.last_name + `,\r\n\r\n Today, you were absent from the class `+ student.course_code + '-' + student.course_name +`.Currently, your absence/total is ` + absence +`/`+ total + ` (`+ Math.floor(100*absence/total) +`%).` + `Please be aware that if you exceed 30% of the total attendance, you won't be able to attend the final exam.\r\n\r\n If you need help, please contact giaovu.clc@fit.hcmus.edu.vn`,
+                                                text: `Hi ` + student.last_name + `,\r\n\r\n Today, you were absent from the class ` + student.course_code + '-' + student.course_name + `.Currently, your absence/total is ` + absence + `/` + total + ` (` + Math.floor(100 * absence / total) + `%).` + `Please be aware that if you exceed 30% of the total attendance, you won't be able to attend the final exam.\r\n\r\n If you need help, please contact giaovu.clc@fit.hcmus.edu.vn`,
                                             };
                                             transporter.sendMail(mailOptions, (error, info) => {
                                                 if (error) {
                                                     callback(error);
-                                                }else{
+                                                } else {
                                                     console.log(mailOptions);
-                                                    
+
                                                 }
                                             });
                                             callback();
@@ -755,7 +755,58 @@ router.post('/update-attendance', function(req, res, next) {
         });
     });
 });
+router.post('/update-attendance-offline', function(req, res, next) {
+    if (req.body.data == null || req.body.data.length == 0) {
+        _global.sendError(res, null, "attendance detail is required");
+        throw "attendance detail is required";
+    }
+    if (req.body.course_id == null || req.body.course_id == 0) {
+        _global.sendError(res, null, "course id is required");
+        throw "course id is required";
+    }
+    if (req.body.class_id == null || req.body.class_id == 0) {
+        _global.sendError(res, null, "class id is required");
+        throw "class id is required";
+    }
 
+    var attendance_id = 0;
+    var attendance_detail = req.body.data;
+    pool.getConnection(function(error, connection) {
+        var new_attendance = {
+            course_id: course_id,
+            classes_id: class_id,
+            created_by: req.decoded.id,
+        }
+        connection.query(`INSERT INTO attendance SET ? `, new_attendance, function(error, results, fields) {
+            if (error) {
+                _global.sendError(res, null, "error at insert new attendance");
+                connection.release();
+                return console.log(error.message + ' at insert new attendance');
+            } else {
+                attendance_id = results.insertId;
+                var new_attendance_details = [];
+                for(var i = 0 ; i < attendance_detail.length; i++){
+                    new_attendance_details.push([
+                        attendance_id,
+                        attendance_detail[i].student_id,
+                        attendance_detail[i].status,
+                        attendance_detail[i].time
+                        ]);
+                }
+                connection.query(`INSERT INTO attendance_detail (attendance_id,student_id,attendance_type,attendance_time) VALUES ?`, [new_attendance_details], function(error, results, fields) {
+                    if (error) {
+                        _global.sendError(res, null, "error at insert new attendance_details");
+                        connection.release();
+                        return console.log(error.message + ' at insert new attendance_details');
+                    } else {
+                        res.send({ result: "success" });
+                        connection.release();
+                    }
+                });
+            }
+        });
+    });
+});
 router.post('/list-by-student/', function(req, res, next) {
     if (req.body.student_id == null) {
         _global.sendError(res, null, "student_id is required");

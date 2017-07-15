@@ -22,7 +22,7 @@
                                     <textarea class="form-control" name="content" rows="4" [(ngModel)]="content"></textarea>
                                 </div>
                             </div>
-                            <div class="form-group">
+                            <div *ngIf="authService.current_user.role_id != appService.userType.teacher" class="form-group">
                                 <label class="control-label col-md-3 col-sm-3 col-xs-11"> Anonymous? </label>
                                 <div class="col-xs-1">
                                         <input class="form-control" type="checkbox" name="isAnonymous" [(ngModel)]="isAnonymous" />

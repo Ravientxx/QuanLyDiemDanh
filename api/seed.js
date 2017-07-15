@@ -1134,8 +1134,6 @@ var insert_feeback = [
 var insert_quiz = [
     ['Angular', 20, 1, 1],//1
     ['Window', 20, 1, 1],//2
-    ['HTML/CSS', 24, 1, 1],//3
-    ['Javascript', 24, 1, 1],//4
 ];
 //[quiz_id, text]
 var insert_quiz_question = [

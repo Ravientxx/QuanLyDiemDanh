@@ -1,6 +1,7 @@
 import { Component, OnInit, Input, Output , EventEmitter} from '@angular/core';
 import { FeedbackService } from '../../services/feedback.service';
 import { AppService } from '../../services/app.service';
+import { AuthService } from '../../services/auth.service';
 declare var jQuery: any;
 
 @Component({
@@ -33,7 +34,7 @@ export class SendFeedbackModalComponent implements OnInit {
             }
         }, error => { this.appService.showPNotify('failure', "Server Error! Can't send feedbacks", 'error'); });
     }
-	public constructor(public  feedbackService : FeedbackService,public  appService: AppService) { }
+	public constructor(public  feedbackService : FeedbackService,public  appService: AppService,public authService: AuthService) { }
 	public ngOnInit() {
 	}
 

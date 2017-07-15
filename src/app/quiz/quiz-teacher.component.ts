@@ -14,6 +14,14 @@ export class QuizTeacherComponent implements OnInit {
     public selected_course;
     public selected_class_id;
     public quiz_list = [];
+    public quiz = {
+        id: 0,
+        title: '',
+        questions: [{
+            text: '',
+            answers: []
+        }]
+    };
 
     public constructor(public authService: AuthService, public courseService: CourseService, public  appService: AppService,
     public quizService: QuizService, public  studentService: StudentService, public  router: Router) {}
@@ -49,5 +57,29 @@ export class QuizTeacherComponent implements OnInit {
                 }
             }
         },error=>{this.appService.showPNotify('failure',"Server Error! Can't get quiz list",'error');});
+    }
+    public onAddQuiz(){
+        jQuery('#addQuizModal').modal('show');
+    }
+    public addQuiz(){
+
+    }
+    public onAddQuestion() {
+        this.quiz.questions.push({
+            text: '',
+            answers: []
+        });
+    }
+    public onRemoveQuestion(index: number) {
+        for (var i = index; i < this.quiz.questions.length - 1; i++) {
+            this.quiz.questions[i].text = this.quiz.questions[i + 1].text;
+        }
+        this.quiz.questions.pop();
+    }
+    public onDeleteQuiz(){
+        jQuery('#deleteQuizModal').modal('show');
+    }
+    public deleteQuiz(){
+
     }
 }

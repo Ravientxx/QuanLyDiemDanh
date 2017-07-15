@@ -85,8 +85,8 @@ a:hover {
 }
 
 .daterangepicker td.in-range {
-    background: #E4E7EA;
-    color: #73879C
+    background: #536A7F;
+    color: #fff
 }
 
 .daterangepicker td.active,
@@ -5060,3 +5060,4 @@ table td {
     background-repeat: no-repeat;
     padding-left: 40px;
 }
+.date
