@@ -69,11 +69,10 @@
             <div class="col-md-9 col-sm-9 col-xs-12">
                 <tabset>
                     <tab heading='Current Courses'>
-                        <table class="data table table-striped text-center table-hover">
+                        <table class="data table table-striped text-center">
                             <thead>
                                 <tr>
-                                    <th>Code</th>
-                                    <th>Name</th>
+                                    <th>Course</th>
                                     <th>Lecturers</th>
                                     <th>No. Absences</th>
                                     <th>Attendance Status</th>
@@ -81,9 +80,8 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr *ngFor="let course of current_courses" (click)="onCourseClick(course.id)">
-                                    <td>{{course.code}}</td>
-                                    <td>{{course.name}}</td>
+                                <tr *ngFor="let course of current_courses">
+                                    <td><a routerLink="/courses/{{course.id}}" routerLinkActive="active"><strong>{{course.code}} - {{course.name}}</strong></a></td>
                                     <td>{{course.lecturers}}</td>
                                     <td>{{course.absence_count}}</td>
                                     <td *ngIf="course.attendance_status == appService.attendance_status.normal">Normal</td>

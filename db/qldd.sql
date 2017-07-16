@@ -297,6 +297,20 @@ CREATE TABLE `quiz_answers` (
   PRIMARY KEY (`id`,`quiz_question_id`,`answered_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+-- ----------------------------
+-- Table structure for notifications
+-- ----------------------------
+DROP TABLE IF EXISTS `notifications`;
+CREATE TABLE `notifications` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `to_id` int(11) NOT NULL,
+  `message` text DEFAULT NULL,
+  `object_id` int(11) NOT NULL,
+  `object_type` tinyint(1) DEFAULT NULL,
+  `read` boolean DEFAULT FALSE,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
 
 -- ----------------------------
 -- Trigger for insert user to create teacher

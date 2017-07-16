@@ -4,7 +4,7 @@
             <section class="login_content">
                 <img src="assets/images/logo2.png" alt="">
                 <form (keydown)="keyDownFunction($event)">
-                    <h1>Login Form</h1>
+                    <h1>Login</h1>
                     <div *ngIf="authService.redirectMessage" class="alert-danger alert text-center" style="padding-top: 6px;padding-bottom: 6px">
                         <i class="fa fa-warning"></i> {{authService.redirectMessage}}
                     </div>
