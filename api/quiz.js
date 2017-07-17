@@ -97,7 +97,7 @@ router.post('/detail', function(req, res, next) {
                     res.send({
                         result: 'success',
                         quiz: _quiz,
-                        total_item: questions.length;
+                        total_item: questions.length
                     });
                     connection.release();
                 }
