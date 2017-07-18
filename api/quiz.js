@@ -74,6 +74,7 @@ router.post('/list', function(req, res, next) {
         });
     });
 });
+
 router.post('/detail', function(req, res, next) {
     if (req.body.quiz_id == null || req.body.quiz_id == 0) {
         _global.sendError(res, null, "quiz_id is required");
@@ -105,6 +106,7 @@ router.post('/detail', function(req, res, next) {
         });
     });
 });
+
 router.post('/opening', function(req, res, next) {
     if (req.body.course_id == null || req.body.course_id == 0) {
         _global.sendError(res, null, "Course_id is required");
@@ -170,6 +172,7 @@ router.post('/opening', function(req, res, next) {
         });
     });
 });
+
 router.post('/start', function(req, res, next) {
     if (req.body.course_id == null || req.body.course_id == 0) {
         _global.sendError(res, null, "Course_id is required");
@@ -195,7 +198,7 @@ router.post('/start', function(req, res, next) {
     var class_id = req.body.class_id;
     var course_id = req.body.course_id;
     for (var i = 0; i < quiz.questions.length; i++) {
-        if (req.body.quiz.questions[i].title == null || req.body.quiz.questions[i].title == '') {
+        if (req.body.quiz.questions[i].text == null || req.body.quiz.questions[i].text == '') {
             _global.sendError(res, null, "Title of question " + (i + 1) + " are required");
             throw "Title of question " + (i + 1) + " are required";
         }
@@ -268,7 +271,7 @@ router.post('/start', function(req, res, next) {
             function(callback) {
                 var new_questions = [];
                 for (var i = 0; i < quiz.questions.length; i++) {
-                    new_questions.push([quiz_id, quiz.questions[i].title]);
+                    new_questions.push([quiz_id, quiz.questions[i].text]);
                 }
                 connection.query(`INSERT INTO quiz_questions (quiz_id,text) VALUES ?`, [new_questions], function(error, results, fields) {
                     if (error) {
@@ -299,6 +302,7 @@ router.post('/start', function(req, res, next) {
         });
     });
 });
+
 router.post('/stop', function(req, res, next) {
     if (req.body.quiz_id == null || req.body.quiz_id == 0) {
         _global.sendError(res, null, "quiz_id is required");
@@ -318,6 +322,7 @@ router.post('/stop', function(req, res, next) {
         });
     });
 });
+
 router.post('/check-code', function(req, res, next) {
     if (req.body.code == null || req.body.code == '') {
         _global.sendError(res, null, "Quiz code is required");
@@ -371,6 +376,7 @@ router.post('/check-code', function(req, res, next) {
         });
     });
 });
+
 router.post('/submit', function(req, res, next) {
     if (req.body.student_id == null || req.body.student_id == 0) {
         _global.sendError(res, null, "student_id is required");
@@ -493,4 +499,5 @@ router.post('/submit', function(req, res, next) {
         });
     });
 });
+
 module.exports = router;
