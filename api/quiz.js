@@ -74,6 +74,7 @@ router.post('/list', function(req, res, next) {
         });
     });
 });
+
 router.post('/detail', function(req, res, next) {
     if (req.body.quiz_id == null || req.body.quiz_id == 0) {
         _global.sendError(res, null, "quiz_id is required");
@@ -105,6 +106,7 @@ router.post('/detail', function(req, res, next) {
         });
     });
 });
+
 router.post('/opening', function(req, res, next) {
     if (req.body.course_id == null || req.body.course_id == 0) {
         _global.sendError(res, null, "Course_id is required");
@@ -170,6 +172,7 @@ router.post('/opening', function(req, res, next) {
         });
     });
 });
+
 router.post('/start', function(req, res, next) {
     if (req.body.course_id == null || req.body.course_id == 0) {
         _global.sendError(res, null, "Course_id is required");
@@ -313,6 +316,7 @@ router.post('/start', function(req, res, next) {
         }
     });
 });
+
 router.post('/stop', function(req, res, next) {
     if (req.body.quiz_id == null || req.body.quiz_id == 0) {
         _global.sendError(res, null, "quiz_id is required");
@@ -332,6 +336,7 @@ router.post('/stop', function(req, res, next) {
         });
     });
 });
+
 router.post('/check-code', function(req, res, next) {
     if (req.body.code == null || req.body.code == '') {
         _global.sendError(res, null, "Quiz code is required");
@@ -385,6 +390,7 @@ router.post('/check-code', function(req, res, next) {
         });
     });
 });
+
 router.post('/submit', function(req, res, next) {
     if (req.body.student_id == null || req.body.student_id == 0) {
         _global.sendError(res, null, "student_id is required");
@@ -507,6 +513,7 @@ router.post('/submit', function(req, res, next) {
         });
     });
 });
+
 router.post('/delete', function(req, res, next) {
     if (req.body.quiz_id == null || req.body.quiz_id == 0) {
         _global.sendError(res, null, "quiz_id is required");
@@ -589,6 +596,7 @@ router.post('/delete', function(req, res, next) {
         });
     });
 });
+
 router.post('/add', function(req, res, next) {
     if (req.body.course_id == null || req.body.course_id == 0) {
         _global.sendError(res, null, "Course_id is required");
@@ -693,4 +701,5 @@ router.post('/add', function(req, res, next) {
         });
     });
 });
+
 module.exports = router;

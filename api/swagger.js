@@ -459,3 +459,61 @@
 *       200:
 *         description: json
 */
+
+/**
+* @swagger
+* tags:
+*   name: Quiz
+*   description: Quiz management
+*/
+
+/**
+* @swagger
+* /api/quiz/detail:
+*   post:
+*     summary: Quiz detail
+*     description:
+*     tags: [Quiz]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: user token
+*         in: formData
+*         required: true
+*         type: string
+*       - name: quiz_id
+*         description: quiz id
+*         in: formData
+*         required: true
+*         type: integer
+*     responses:
+*       200:
+*         description: json
+*/
+
+
+/**
+* @swagger
+* /api/quiz/check-code:
+*   post:
+*     summary: check quiz code
+*     description:
+*     tags: [Quiz]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: user token
+*         in: formData
+*         required: true
+*         type: string
+*       - name: code
+*         description: quiz code
+*         in: formData
+*         required: true
+*         type: string
+*     responses:
+*       200:
+*         description: json
+*/

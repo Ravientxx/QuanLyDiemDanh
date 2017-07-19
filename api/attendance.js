@@ -715,6 +715,7 @@ router.post('/check-attendance', function(req, res, next) {
 
     });
 });
+
 router.post('/update-attendance', function(req, res, next) {
     if (req.body.attendance_id == null || req.body.attendance_id == 0) {
         _global.sendError(res, null, "attendance_id is required");
@@ -755,6 +756,7 @@ router.post('/update-attendance', function(req, res, next) {
         });
     });
 });
+
 router.post('/update-attendance-offline', function(req, res, next) {
     if (req.body.data == null || req.body.data.length == 0) {
         _global.sendError(res, null, "attendance detail is required");
@@ -807,6 +809,7 @@ router.post('/update-attendance-offline', function(req, res, next) {
         });
     });
 });
+
 router.post('/list-by-student/', function(req, res, next) {
     if (req.body.student_id == null) {
         _global.sendError(res, null, "student_id is required");
@@ -912,6 +915,7 @@ router.post('/generate-delegate-code', function(req, res, next) {
                         code: code,
                         course_id: course_id,
                         class_id: class_id,
+                        attendance_id: results[0].id,
                         in_use: false,
                         created_by: req.decoded.id,
                     });
