@@ -67,4 +67,21 @@ export class ScheduleService {
                 return Observable.throw(error || 'Server error');
             });
     }
+    public  getSchedulesAndCoursesByTeacherUrl = this.appConfig.apiHost + '/schedule/schedules-and-courses-by-teacher/';
+    public getSchedulesAndCoursesByTeacher(semester_id : number): Observable < { result: string, courses: Array<any> ,message : string} > {
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.get(this.getSchedulesAndCoursesByTeacherUrl,options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => {
+                if(error.status == 401){
+                    this.authService.tokenExpired(this.router.url);
+                }
+                return Observable.throw(error || 'Server error');
+            });
+    }
 }

@@ -24,7 +24,7 @@ router.post('/list', function(req, res, next) {
     pool.getConnection(function(error, connection) {
         connection.query(`SELECT quiz.* FROM quiz,class_has_course 
             WHERE quiz.class_has_course_id = class_has_course.id AND class_has_course.class_id = ? AND
-             class_has_course.course_id = ? AND quiz.closed = 1`, [class_id, course_id], function(error, quizzes, fields) {
+             class_has_course.course_id = ? AND closed = 1`, [class_id, course_id], function(error, quizzes, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 return console.log(error);
@@ -195,108 +195,122 @@ router.post('/start', function(req, res, next) {
     var class_id = req.body.class_id;
     var course_id = req.body.course_id;
     for (var i = 0; i < quiz.questions.length; i++) {
-        if (req.body.quiz.questions[i].title == null || req.body.quiz.questions[i].title == '') {
+        if (req.body.quiz.questions[i].text == null || req.body.quiz.questions[i].text == '') {
             _global.sendError(res, null, "Title of question " + (i + 1) + " are required");
             throw "Title of question " + (i + 1) + " are required";
         }
     }
     var class_has_course_id = 0;
     var quiz_id = 0;
-    var quiz_code = '';
+    var quiz_code = randomstring.generate({
+        length: 5,
+        capitalization: 'uppercase',
+        charset: 'numeric'
+    });
     pool.getConnection(function(error, connection) {
-        async.series([
-            //Start transaction
-            function(callback) {
-                connection.beginTransaction(function(error) {
-                    if (error) callback(error);
-                    else callback();
-                });
-            },
-            //get class_has_course id
-            function(callback) {
-                connection.query(`SELECT id FROM class_has_course WHERE class_id = ? AND course_id = ?`, [class_id, course_id], function(error, results, fields) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        class_has_course_id = results[0].id;
-                        callback();
-                    }
-                });
-            },
-            //insert quiz
-            function(callback) {
-                quiz_code = randomstring.generate({
-                    length: 5,
-                    capitalization: 'uppercase',
-                    charset: 'numeric'
-                });
-                var new_quiz = {};
-                if (quiz.is_use_timer) {
-                    var temp = quiz.timer.split(':');
-                    var seconds = (+temp[0] * 60 + (+temp[1])) * 1000;
-                    new_quiz = {
-                        title: quiz.title,
-                        class_has_course_id: class_has_course_id,
-                        closed: 0,
-                        started_at: new Date(),
-                        ended_at: new Date(new Date().getTime() + seconds),
-                        timer: quiz.timer,
-                        is_use_timer: quiz.is_use_timer,
-                        code: quiz_code
-                    };
+        if (quiz.code == null) {
+            var temp = quiz.timer.split(':');
+            var seconds = (+temp[0] * 60 + (+temp[1])) * 1000;
+            connection.query(`UPDATE quiz SET closed = 0, code = ?,started_at = ? , ended_at = ? WHERE id = ?`, [quiz_code, new Date(), new Date(new Date().getTime() + seconds), quiz.id], function(error, results, fields) {
+                if (error) {
+                    _global.sendError(res, error.message);
+                    return console.log(error);
                 } else {
-                    new_quiz = {
-                        title: quiz.title,
-                        class_has_course_id: class_has_course_id,
-                        closed: 0,
-                        started_at: new Date(),
-                        timer: quiz.timer,
-                        is_use_timer: quiz.is_use_timer,
-                        code: quiz_code
-                    };
+                    console.log('success start quiz---------------------------------------1');
+                    res.send({ result: 'success', quiz_id: quiz.id, code: quiz_code, message: 'Start quiz successfully' });
+                    return;
                 }
-                connection.query(`INSERT INTO quiz SET ?`, new_quiz, function(error, results, fields) {
-                    if (error) {
-                        callback(error);
+            });
+        } else {
+            async.series([
+                //Start transaction
+                function(callback) {
+                    connection.beginTransaction(function(error) {
+                        if (error) callback(error);
+                        else callback();
+                    });
+                },
+                //get class_has_course id
+                function(callback) {
+                    connection.query(`SELECT id FROM class_has_course WHERE class_id = ? AND course_id = ?`, [class_id, course_id], function(error, results, fields) {
+                        if (error) {
+                            callback(error);
+                        } else {
+                            class_has_course_id = results[0].id;
+                            callback();
+                        }
+                    });
+                },
+                //insert quiz
+                function(callback) {
+                    var new_quiz = {};
+                    if (quiz.is_use_timer) {
+                        var temp = quiz.timer.split(':');
+                        var seconds = (+temp[0] * 60 + (+temp[1])) * 1000;
+                        new_quiz = {
+                            title: quiz.title,
+                            class_has_course_id: class_has_course_id,
+                            closed: 0,
+                            started_at: new Date(),
+                            ended_at: new Date(new Date().getTime() + seconds),
+                            timer: quiz.timer,
+                            is_use_timer: quiz.is_use_timer,
+                            code: quiz_code
+                        };
                     } else {
-                        quiz_id = results.insertId;
-                        callback();
+                        new_quiz = {
+                            title: quiz.title,
+                            class_has_course_id: class_has_course_id,
+                            closed: 0,
+                            started_at: new Date(),
+                            timer: quiz.timer,
+                            is_use_timer: quiz.is_use_timer,
+                            code: quiz_code
+                        };
                     }
-                });
-            },
-            //insert questions
-            function(callback) {
-                var new_questions = [];
-                for (var i = 0; i < quiz.questions.length; i++) {
-                    new_questions.push([quiz_id, quiz.questions[i].title]);
+                    connection.query(`INSERT INTO quiz SET ?`, new_quiz, function(error, results, fields) {
+                        if (error) {
+                            callback(error);
+                        } else {
+                            quiz_id = results.insertId;
+                            callback();
+                        }
+                    });
+                },
+                //insert questions
+                function(callback) {
+                    var new_questions = [];
+                    for (var i = 0; i < quiz.questions.length; i++) {
+                        new_questions.push([quiz_id, quiz.questions[i].text]);
+                    }
+                    connection.query(`INSERT INTO quiz_questions (quiz_id,text) VALUES ?`, [new_questions], function(error, results, fields) {
+                        if (error) {
+                            callback(error);
+                        } else {
+                            callback();
+                        }
+                    });
+                },
+                //Commit transaction
+                function(callback) {
+                    connection.commit(function(error) {
+                        if (error) callback(error);
+                        else callback();
+                    });
+                },
+            ], function(error) {
+                if (error) {
+                    _global.sendError(res, error.message);
+                    connection.rollback(function() {
+                        return console.log(error);
+                    });
+                    return console.log(error);
+                } else {
+                    console.log('success start quiz---------------------------------------2');
+                    res.send({ result: 'success', quiz_id: quiz_id, code: quiz_code, message: 'Start quiz successfully' });
                 }
-                connection.query(`INSERT INTO quiz_questions (quiz_id,text) VALUES ?`, [new_questions], function(error, results, fields) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        callback();
-                    }
-                });
-            },
-            //Commit transaction
-            function(callback) {
-                connection.commit(function(error) {
-                    if (error) callback(error);
-                    else callback();
-                });
-            },
-        ], function(error) {
-            if (error) {
-                _global.sendError(res, error.message);
-                connection.rollback(function() {
-                    throw error;
-                });
-                throw error;
-            } else {
-                console.log('success start quiz---------------------------------------');
-                res.send({ result: 'success', quiz_id: quiz_id, code: quiz_code, message: 'Start quiz successfully' });
-            }
-        });
+            });
+        }
     });
 });
 router.post('/stop', function(req, res, next) {
@@ -449,7 +463,7 @@ router.post('/submit', function(req, res, next) {
             //insert attendance_detail
             function(callback) {
                 if (check_attendance_exist) {
-                    connection.query(`UPDATE attendance_detail SET attendance_type = ? WHERE attendance_id = ? AND student_id = ?`, [_global.attendance_type.quiz,attendance_id,student_id], function(error, results, fields) {
+                    connection.query(`UPDATE attendance_detail SET attendance_type = ? WHERE attendance_id = ? AND student_id = ?`, [_global.attendance_type.quiz, attendance_id, student_id], function(error, results, fields) {
                         if (error) {
                             callback(error);
                         } else {
@@ -489,6 +503,192 @@ router.post('/submit', function(req, res, next) {
             } else {
                 console.log('success submit quiz---------------------------------------');
                 res.send({ result: 'success', message: 'Submit quiz successfully' });
+            }
+        });
+    });
+});
+router.post('/delete', function(req, res, next) {
+    if (req.body.quiz_id == null || req.body.quiz_id == 0) {
+        _global.sendError(res, null, "quiz_id is required");
+        throw "quiz_id is required";
+    }
+    var quiz_id = req.body.quiz_id;
+    pool.getConnection(function(error, connection) {
+        async.series([
+            //Start transaction
+            function(callback) {
+                connection.beginTransaction(function(error) {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+            //delete Answers
+            function(callback) {
+                connection.query(`SELECT id FROM quiz_questions WHERE quiz_id = ?`, quiz_id, function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        async.each(results, function(question, callback) {
+                            connection.query(`DELETE FROM quiz_answers WHERE quiz_question_id = ?`, question.id, function(error, results, fields) {
+                                if (error) {
+                                    callback(error.message);
+                                } else {
+                                    callback();
+                                }
+                            });
+                        }, function(error) {
+                            if (error) {
+                                callback(error);
+                            } else {
+                                callback();
+                            }
+                        });
+                    }
+                });
+            },
+            //delete Questions
+            function(callback) {
+                connection.query(`DELETE FROM quiz_questions WHERE quiz_id = ?`, quiz_id, function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            //Delete quiz
+            function(callback) {
+                connection.query(`DELETE FROM quiz WHERE id = ?`, quiz_id, function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            //Commit transaction
+            function(callback) {
+                connection.commit(function(error) {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+        ], function(error) {
+            if (error) {
+                _global.sendError(res, error.message);
+                connection.rollback(function() {
+                    return console.log(error);
+                });
+                return console.log(error);
+                connection.release();
+            } else {
+                console.log('success delete quiz---------------------------------------');
+                res.send({ result: 'success', message: 'Delete quiz successfully' });
+                connection.release();
+            }
+        });
+    });
+});
+router.post('/add', function(req, res, next) {
+    if (req.body.course_id == null || req.body.course_id == 0) {
+        _global.sendError(res, null, "Course_id is required");
+        throw "Course_id is required";
+    }
+    if (req.body.class_id == null || req.body.class_id == 0) {
+        _global.sendError(res, null, "Classes id is required");
+        throw "Classes id is required";
+    }
+    if (req.body.quiz == null || req.body.quiz.length == 0) {
+        _global.sendError(res, null, "Quiz is required");
+        throw "Quiz is required";
+    }
+    if (req.body.quiz.title == null || req.body.quiz.title == '') {
+        _global.sendError(res, null, "Quiz title id is required");
+        throw "Quiz title id is required";
+    }
+    if (req.body.quiz.questions == null || req.body.quiz.questions.length == 0) {
+        _global.sendError(res, null, "Quiz questions are required");
+        throw "Quiz questions are required";
+    }
+    var quiz = req.body.quiz;
+    var class_id = req.body.class_id;
+    var course_id = req.body.course_id;
+    for (var i = 0; i < quiz.questions.length; i++) {
+        if (req.body.quiz.questions[i].text == null || req.body.quiz.questions[i].text == '') {
+            _global.sendError(res, null, "Title of question " + (i + 1) + " are required");
+            throw "Title of question " + (i + 1) + " are required";
+        }
+    }
+    var class_has_course_id = 0;
+    var quiz_id = 0;
+    var quiz_code = '';
+    pool.getConnection(function(error, connection) {
+        async.series([
+            //Start transaction
+            function(callback) {
+                connection.beginTransaction(function(error) {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+            //get class_has_course id
+            function(callback) {
+                connection.query(`SELECT id FROM class_has_course WHERE class_id = ? AND course_id = ?`, [class_id, course_id], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        class_has_course_id = results[0].id;
+                        callback();
+                    }
+                });
+            },
+            //insert quiz
+            function(callback) {
+                var new_quiz = {
+                    title: quiz.title,
+                    class_has_course_id: class_has_course_id,
+                    closed: 1,
+                };
+                connection.query(`INSERT INTO quiz SET ?`, new_quiz, function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        quiz_id = results.insertId;
+                        callback();
+                    }
+                });
+            },
+            //insert questions
+            function(callback) {
+                var new_questions = [];
+                for (var i = 0; i < quiz.questions.length; i++) {
+                    new_questions.push([quiz_id, quiz.questions[i].text]);
+                }
+                connection.query(`INSERT INTO quiz_questions (quiz_id,text) VALUES ?`, [new_questions], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            //Commit transaction
+            function(callback) {
+                connection.commit(function(error) {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+        ], function(error) {
+            if (error) {
+                _global.sendError(res, error.message);
+                connection.rollback(function() {
+                    throw error;
+                });
+                throw error;
+            } else {
+                console.log('success add quiz---------------------------------------');
+                res.send({ result: 'success', message: 'Add quiz successfully' });
             }
         });
     });

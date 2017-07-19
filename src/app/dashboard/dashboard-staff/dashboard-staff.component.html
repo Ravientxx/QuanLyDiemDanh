@@ -46,7 +46,7 @@
                     </button>
                     <button type="button" class="btn btn-primary" (click)="onExportExamineesList()">
                         <i class="fa fa-address-book-o fa-3x"></i>
-                        <h5>Export Examinees List</h5>
+                        <h5>Export Examinees</h5>
                     </button>
                     <button type="button" class="btn btn-primary" (click)="onChangePassword()">
                         <i class="fa fa-cogs fa-3x"></i>
@@ -76,7 +76,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="control-label col-md-3 col-sm-3 col-xs-12"> From - To* </label>
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12"> Study time* </label>
                                 <div class="col-md-6 col-sm-6 col-xs-12">
                                     <div class="input-prepend input-group">
                                         <span class="add-on input-group-addon"><i class="fa fa-calendar"></i></span>
@@ -189,3 +189,4 @@
         </div>
     </div>
 </div>
+<export-modal [export_type]="appService.import_export_type.examinees" [title]="'Export Examinees'"></export-modal>

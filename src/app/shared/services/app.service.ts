@@ -38,7 +38,7 @@ export class AppService {
             title: 'Rejected'
         },
     }
-    public import_export_type = { student: 0, teacher: 1, course: 2, schedule: 3 };
+    public import_export_type = { student: 0, teacher: 1, course: 2, schedule: 3, examinees: 4 };
     public enrollment_status = { compulsory: 0, elective: 1 };
     public attendance_status = { normal: 0, exemption: 1 };
     public userType = { admin: 0, student: 1, teacher: 2, staff: 3 };

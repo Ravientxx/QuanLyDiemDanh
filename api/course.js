@@ -726,7 +726,7 @@ router.post('/import', function(req, res, next) {
                         function(callback) {
                             var teacher_list = [];
                             for (var i = 0; i < course.lecturers.length; i++) {
-                                if(course.lecturers[i] == undefined) continue;
+                                if (course.lecturers[i] == undefined) continue;
                                 var name = _global.removeExtraFromTeacherName(course.lecturers[i]);
                                 teacher_list.push({
                                     first_name: _global.getFirstName(name),
@@ -734,9 +734,9 @@ router.post('/import', function(req, res, next) {
                                     role: 0
                                 });
                             }
-                            if(course.TAs != undefined){
+                            if (course.TAs != undefined) {
                                 for (var i = 0; i < course.TAs.length; i++) {
-                                    if(course.TAs[i] == undefined) continue;
+                                    if (course.TAs[i] == undefined) continue;
                                     var name = _global.removeExtraFromTeacherName(course.TAs[i]);
                                     teacher_list.push({
                                         first_name: _global.getFirstName(name),
@@ -755,9 +755,9 @@ router.post('/import', function(req, res, next) {
                                             callback('Teacher' + teacher.first_name + ' ' + teacher.last_name + ' not found');
                                         } else {
                                             var new_teacher_teach_course = {
-                                                teacher_id : results[0].id,
-                                                teacher_role : teacher.role,
-                                                course_id : new_course_id
+                                                teacher_id: results[0].id,
+                                                teacher_role: teacher.role,
+                                                course_id: new_course_id
                                             }
                                             connection.query(`INSERT INTO teacher_teach_course SET ?`, new_teacher_teach_course, function(error, results, fields) {
                                                 if (error) {
@@ -891,12 +891,34 @@ router.post('/export', function(req, res, next) {
     });
 });
 
+router.post('/class-has-course', function(req, res, next) {
+    pool.getConnection(function(error, connection) {
+        if (error) {
+            _global.sendError(res, error.message);
+            throw error;
+        }
+        connection.query(`SELECT class_has_course.id,courses.code,courses.name,classes.name as class_name 
+                        FROM courses, class_has_course, classes
+                        WHERE class_has_course.course_id = courses.id AND classes.id = class_has_course.class_id`, function(error, rows, fields) {
+            if (error) {
+                _global.sendError(res, error.message);
+                throw error;
+            }
+            res.send({
+                result: 'success',
+                class_has_course: rows
+            });
+            connection.release();
+        });
+    });
+});
+
 //API mobile
 
-router.post('/teaching', function(req, res, next){
+router.post('/teaching', function(req, res, next) {
     var teacher_id = req.decoded.id;
 
-    if(teacher_id){
+    if (teacher_id) {
         pool.getConnection(function(error, connection) {
             if (error) {
                 _global.sendError(res, error.message);
@@ -924,11 +946,9 @@ router.post('/teaching', function(req, res, next){
                                     JOIN class_has_course on class_has_course.course_id = courses.id
                                     JOIN classes on class_has_course.class_id = classes.id
                                 WHERE teacher_id = ? AND
-                                    courses.semester_id = (SELECT MAX(ID) FROM semesters)`,
-                [teacher_id], return_function);
+                                    courses.semester_id = (SELECT MAX(ID) FROM semesters)`, [teacher_id], return_function);
         });
-    }
-    else {
+    } else {
         return res.status(401).send({
             result: 'failure',
             message: 'teacher_id is required'
@@ -939,7 +959,7 @@ router.post('/teaching', function(req, res, next){
 router.post('/studying', function(req, res, next) {
     var student_id = req.decoded.id;
 
-    if (student_id){
+    if (student_id) {
         pool.getConnection(function(error, connection) {
             if (error) {
                 _global.sendError(res, error.message);
@@ -969,11 +989,9 @@ router.post('/studying', function(req, res, next) {
                                     JOIN classes ON class_has_course.class_id = classes.id
                                     JOIN student_enroll_course ON class_has_course.id = student_enroll_course.class_has_course_id
                                 WHERE student_id = ? AND
-                                    courses.semester_id = (SELECT MAX(ID) FROM semesters)`,
-                [student_id], return_function);
+                                    courses.semester_id = (SELECT MAX(ID) FROM semesters)`, [student_id], return_function);
         });
-    }
-    else {
+    } else {
         return res.status(401).send({
             result: 'failure',
             message: 'student_id is required'

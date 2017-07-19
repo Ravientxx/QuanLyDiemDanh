@@ -3,6 +3,7 @@ import { CommonModule }   from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 import { CollapseModule } from 'ngx-bootstrap';
+import { TextMaskModule } from 'angular2-text-mask';
 import { SettingComponent }    from './setting.component';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
@@ -21,6 +22,7 @@ const Routes: Routes = [
     PaginationModule.forRoot(),
     TabsModule,
     FileUploadModule,
+    TextMaskModule
   ],
   declarations: [
     SettingComponent,

@@ -22,6 +22,7 @@ export class QuizTeacherComponent implements OnInit {
             answers: []
         }]
     };
+    public deleting_quiz_id = 0;
 
     public constructor(public authService: AuthService, public courseService: CourseService, public  appService: AppService,
     public quizService: QuizService, public  studentService: StudentService, public  router: Router) {}
@@ -40,7 +41,6 @@ export class QuizTeacherComponent implements OnInit {
     }
 
     public onChangeCourse() {
-        console.log(this.selected_course);
         this.loadQuiz();
     }
 
@@ -62,7 +62,17 @@ export class QuizTeacherComponent implements OnInit {
         jQuery('#addQuizModal').modal('show');
     }
     public addQuiz(){
-
+        this.quizService.addQuiz(this.selected_course['id'],this.selected_course['class_id'],this.quiz).subscribe(result=>{
+            this.apiResult = result.result;
+            this.apiResultMessage = result.message;
+            if(this.apiResult == 'failure'){
+                this.appService.showPNotify(this.apiResult,this.apiResultMessage,'error');
+            }else{
+                this.loadQuiz();
+                this.appService.showPNotify(this.apiResult,this.apiResultMessage,'success');
+                jQuery('#addQuizModal').modal('hide');
+            }
+        },error=>{this.appService.showPNotify('failure',"Server Error! Can't add quiz",'error');});
     }
     public onAddQuestion() {
         this.quiz.questions.push({
@@ -76,10 +86,20 @@ export class QuizTeacherComponent implements OnInit {
         }
         this.quiz.questions.pop();
     }
-    public onDeleteQuiz(){
+    public onDeleteQuiz(quiz_id){
+        this.deleting_quiz_id = quiz_id;
         jQuery('#deleteQuizModal').modal('show');
     }
     public deleteQuiz(){
-
+        this.quizService.deleteQuiz(this.deleting_quiz_id).subscribe(result=>{
+            this.apiResult = result.result;
+            this.apiResultMessage = result.message;
+            if(this.apiResult == 'failure'){
+                this.appService.showPNotify(this.apiResult,this.apiResultMessage,'error');
+            }else{
+                this.loadQuiz();
+                this.appService.showPNotify(this.apiResult,this.apiResultMessage,'success');
+            }
+        },error=>{this.appService.showPNotify('failure',"Server Error! Can't delete quiz",'error');});
     }
 }

@@ -21,16 +21,21 @@ export class StudentDetailComponent implements OnInit {
         first_name: '',
         last_name: '',
         class_name: '',
+        class_id: 0,
         status: 0,
         email: '',
         phone: '',
         code: ''
     };
     public current_courses = [];
+    public current_course_id = 0;
     public absence_requests = [];
     public ngOnInit(): void {
         this.route.params.subscribe(params => { this.student_id = params['id'] });
         //get Student from database
+        this.getStudentrDetail();
+    }
+    public getStudentrDetail(){
         this.studentService.getStudentrDetail(this.student_id).subscribe(result => {
             this.student = result.student;
             if(this.student == undefined || this.student==null){
@@ -96,7 +101,7 @@ export class StudentDetailComponent implements OnInit {
     }
     public apiResult: string;
     public apiResultMessage: string;
-    onSaveEditStudent() {
+    public onSaveEditStudent() {
         this.studentService.updateStudent(this.student.id, this.editing_name, this.editing_mail, this.editing_phone, this.editing_status)
             .subscribe(result => {
                 this.apiResult = result.result;
@@ -110,5 +115,28 @@ export class StudentDetailComponent implements OnInit {
                 //this.resultMessageModal.onOpenModal();
                 this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
             }, error => { this.appService.showPNotify('failure', "Server Error! Can't update profile", 'error'); });
+    }
+
+    public current_attendance_status = 0;
+    public onChangeAttendanceStatus(course_id, status){
+        jQuery('#confirmChangeAttendanceStatusModal').modal("show");
+        if(this.appService.attendance_status.exemption == status){
+            this.confirm_modal_title = 'Change attendance status to Exemption?';
+        }else{
+            this.confirm_modal_title = 'Change attendance status to Normal?';
+        }
+        this.current_attendance_status = status;
+        this.current_course_id = course_id;
+    }
+    public confirmChangeAttendanceStatus(){
+        this.studentService.changeAttendanceStatus(this.student_id,this.current_course_id,this.student.class_id,this.current_attendance_status).subscribe(result=>{
+            this.apiResult = result.result;
+            this.apiResultMessage = result.message;
+            if (result.result == 'success') {
+                jQuery('#confirmChangeAttendanceStatusModal').modal("hide");
+                this.getStudentrDetail();
+            }
+            this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
+        },error=>{this.appService.showPNotify('failure', "Server Error! Can't change attendance status", 'error');});
     }
 }

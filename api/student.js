@@ -42,14 +42,14 @@ router.post('/list', function(req, res, next) {
             if (sort != 'none') {
                 _global.sortListByKey(sort, search_list, 'last_name');
             }
-            if(limit == -1){
+            if (limit == -1) {
                 //all
                 res.send({
                     result: 'success',
                     total_items: search_list.length,
                     student_list: search_list
                 });
-            }else{
+            } else {
                 res.send({
                     result: 'success',
                     total_items: search_list.length,
@@ -199,7 +199,7 @@ router.post('/add', function(req, res, next) {
 router.get('/detail/:id', function(req, res, next) {
     var id = req.params['id'];
     pool.getConnection(function(error, connection) {
-        connection.query(`SELECT users.*,students.stud_id AS code, students.status, classes.name AS class_name FROM users,students,classes WHERE users.id = ? AND users.id = students.id AND students.class_id = classes.id  LIMIT 1`, id, function(error, rows, fields) {
+        connection.query(`SELECT users.*,students.stud_id AS code, students.status,classes.id AS class_id ,classes.name AS class_name FROM users,students,classes WHERE users.id = ? AND users.id = students.id AND students.class_id = classes.id  LIMIT 1`, id, function(error, rows, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 throw error;
@@ -511,7 +511,123 @@ router.post('/export', function(req, res, next) {
                 console.log(error);
             } else {
                 console.log('success export students!---------------------------------------');
-                res.send({ result: 'success', message: 'Students exported successfully' ,student_lists: student_lists});
+                res.send({ result: 'success', message: 'Students exported successfully', student_lists: student_lists });
+            }
+            connection.release();
+        });
+    });
+});
+
+router.post('/export-examinees', function(req, res, next) {
+    if (req.body.class_has_course_id == undefined || req.body.class_has_course_id.length == 0) {
+        _global.sendError(res, null, "class_has_course_id is required");
+        return;
+    }
+    var class_has_course_ids = req.body.class_has_course_id;
+    var student_lists = [];
+    var examinees_lists = [];
+    pool.getConnection(function(error, connection) {
+        if (error) {
+            _global.sendError(res, error.message);
+            throw error;
+        }
+        async.series([
+            //Start transaction
+            function(callback) {
+                connection.beginTransaction(function(error) {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+            //get student from each class_has_course
+            function(callback) {
+                async.each(class_has_course_ids, function(class_has_course_id, callback) {
+                    connection.query(`SELECT student_enroll_course.*,users.last_name,users.first_name, students.stud_id as student_code, students.id,
+                                    class_has_course.class_id, class_has_course.course_id, class_has_course.attendance_count 
+                        FROM student_enroll_course,users, students, class_has_course 
+                        WHERE class_has_course.id = class_has_course_id AND users.id = student_enroll_course.student_id AND users.id = students.id AND class_has_course_id = ?`, class_has_course_id, function(error, results, fields) {
+                        if (error) {
+                            console.log(error.message + ' at get student by class_has_course');
+                            callback(error);
+                        } else {
+                            student_lists.push(results);
+                            callback();
+                        }
+                    });
+                }, function(error) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            //check student attendance progression from each list
+            function(callback) {
+                async.eachOf(student_lists, function(student_list, student_list_index, callback) {
+                    var examinees_list = [];
+                    async.eachOf(student_list, function(student, student_index, callback) {
+                        if (student.attendance_status == _global.attendance_status.exemption) {
+                            //Sinh viên được miễn điểm danh
+                            examinees_list.push(student);
+                            callback();
+                        } else {
+                            //Sinh viên ko được miễn điểm danh
+                            //count absences and total attendance
+                            connection.query(`SELECT COUNT(*) as count, attendance_type FROM attendance,attendance_detail 
+                                WHERE attendance.closed = 1 AND id = attendance_id AND student_id = ? AND course_id = ? AND class_id = ? 
+                                GROUP BY attendance_type`, [student.id, student.course_id, student.class_id], function(error, results, fields) {
+                                if (error) {
+                                    console.log(error.message + ' at count attendance_details');
+                                    callback(error);
+                                } else {
+                                    var total = 0;
+                                    var absence = 0;
+                                    for (var i = 0; i < results.length; i++) {
+                                        if (results[i].attendance_type == _global.attendance_type.absent) absence = results[i].count;
+                                        total += results[i].count;
+                                    }
+                                    console.log(student.student_code + ' ' + absence + ' ' + total);
+                                    if(Math.floor(100 * absence / total) <= 30){
+                                        examinees_list.push(student);
+                                    }
+                                    callback();
+                                }
+                            });
+                        }
+                    }, function(error) {
+                        if (error) {
+                            callback(error);
+                        } else {
+                            examinees_lists.push(examinees_list);
+                            callback();
+                        }
+                    });
+                }, function(error) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            //Commit transaction
+            function(callback) {
+                connection.commit(function(error) {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+        ], function(error) {
+            if (error) {
+                _global.sendError(res, null, error.message);
+                connection.rollback(function() {
+                    console.log(error);
+                });
+                console.log(error);
+            } else {
+                console.log('success export examinees!---------------------------------------');
+                res.send({ result: 'success', message: 'Examinees exported successfully', examinees_lists: examinees_lists });
             }
             connection.release();
         });
@@ -531,12 +647,58 @@ router.post('/detail-by-code', function(req, res, next) {
                 _global.sendError(res, error.message);
                 throw error;
             }
-            if(rows.length == 0){
-                res.send({ result: 'failure',message:'Student not found'});
-            }else{
-                res.send({ result: 'success', student: rows[0]});
+            if (rows.length == 0) {
+                res.send({ result: 'failure', message: 'Student not found' });
+            } else {
+                res.send({ result: 'success', student: rows[0] });
             }
             connection.release();
+        });
+    });
+});
+
+router.post('/change-attendance-status', function(req, res, next) {
+    if (req.body.student_id == undefined || req.body.student_id == 0) {
+        _global.sendError(res, null, "Student id is required");
+        return;
+    }
+    if (req.body.course_id == undefined || req.body.course_id == 0) {
+        _global.sendError(res, null, "course id is required");
+        return;
+    }
+    if (req.body.class_id == undefined || req.body.class_id == 0) {
+        _global.sendError(res, null, "class id is required");
+        return;
+    }
+    if (req.body.status == undefined) {
+        _global.sendError(res, null, "status is required");
+        return;
+    }
+    var student_id = req.body.student_id;
+    var course_id = req.body.course_id;
+    var class_id = req.body.class_id;
+    var status = req.body.status;
+    pool.getConnection(function(error, connection) {
+        connection.query(`SELECT id FROM class_has_course WHERE class_id = ? AND course_id = ? LIMIT 1`, [class_id, course_id], function(error, rows, fields) {
+            if (error) {
+                _global.sendError(res, error.message);
+                return console.log(error);
+            }
+            if (rows.length == 0) {
+                res.send({ result: 'failure', message: 'class_has_course not found' });
+                connection.release();
+                return;
+            } else {
+                connection.query(`UPDATE student_enroll_course SET attendance_status = ? 
+                    WHERE student_id = ? AND class_has_course_id = ?`, [status, student_id, rows[0].id], function(error, rows, fields) {
+                    if (error) {
+                        _global.sendError(res, error.message);
+                        return console.log(error);
+                    }
+                    res.send({ result: 'success', message: 'Change attendance status successfully' });
+                    connection.release();
+                });
+            }
         });
     });
 });

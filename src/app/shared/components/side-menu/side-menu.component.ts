@@ -59,6 +59,7 @@ export class SideMenuComponent implements OnInit {
         { title: 'Dashboard', url: '/', icon: 'fa-home' },
         { title: 'Check Attendance',url: '/check-attendance',icon: 'fa-check-square-o' },
         { title: 'Quiz',url: '/quiz',icon: 'fa-question-circle' },
+        { title: 'Schedule', url: '/schedule', icon: 'fa-calendar' },
         { title: 'Logout', url: '/logout', icon: 'fa-sign-out' }
     ];
 }

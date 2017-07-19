@@ -134,7 +134,17 @@ router.get('/schedules-and-courses-by-student/', function(req, res, next) {
 router.get('/schedules-and-courses-by-teacher/', function(req, res, next) {
     var teacher_id = req.decoded.id;
     pool.getConnection(function(error, connection) {
-        connection.query(`SELECT courses.*,class_has_course.schedules,classes.name as class_name 
+        connection.query(`SELECT courses.*,class_has_course.schedules,classes.name as class_name,
+                            (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
+                            FROM teacher_teach_course,users 
+                            WHERE users.id = teacher_teach_course.teacher_id AND 
+                            courses.id = teacher_teach_course.course_id AND 
+                            teacher_teach_course.teacher_role = 0) as lecturers,
+                            (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
+                            FROM teacher_teach_course,users 
+                            WHERE users.id = teacher_teach_course.teacher_id AND 
+                            courses.id = teacher_teach_course.course_id AND 
+                            teacher_teach_course.teacher_role = 1) as TAs 
             FROM courses, class_has_course, classes , teacher_teach_course 
             WHERE class_has_course.class_id = classes.id AND class_has_course.course_id = courses.id AND
              teacher_teach_course.course_id = class_has_course.course_id 

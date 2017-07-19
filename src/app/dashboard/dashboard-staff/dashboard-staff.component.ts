@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import {  AppService, AuthService ,TeacherService,ExcelService } from '../../shared/shared.module';
+import { Component, OnInit,ViewChild } from '@angular/core';
+import {  AppService, AuthService ,TeacherService,ExcelService,ExportModalComponent } from '../../shared/shared.module';
 import { Router } from '@angular/router';
 declare var jQuery: any;
 @Component({
@@ -147,9 +147,15 @@ export class DashboardStaffComponent implements OnInit {
             }
         }, error => {this.appService.showPNotify('failure',"Server Error! Can't read student list file",'error');});
 	}
+
+
+	@ViewChild(ExportModalComponent)
+    public  exportModal: ExportModalComponent;
 	public onExportExamineesList(){
-		
+		this.exportModal.onOpenModal();
 	}
+
+	
 	public keyDownFunction(event) {
       if(event.keyCode == 13) {
         this.onSaveEditProfile();

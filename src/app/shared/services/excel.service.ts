@@ -128,6 +128,39 @@ export class ExcelService {
             });
     }
 
+    public writeExamineesLists(student_lists: any, class_has_courses: any) {
+        var zip = new JSZip();
+        for (var j = 0; j < student_lists.length; j++) {
+            var student_list = student_lists[j];
+            var class_has_course = class_has_courses[j];
+
+            var ws_name = "Sheet1";
+            var wb = { SheetNames: [], Sheets: {} };
+            wb.SheetNames.push(ws_name);
+            var ws = {};
+            ws[XLSX.utils.encode_cell({ c: 0, r: 0 })] = { v: 'STT' };
+            ws[XLSX.utils.encode_cell({ c: 1, r: 0 })] = { v: 'MSSV' };
+            ws[XLSX.utils.encode_cell({ c: 2, r: 0 })] = { v: 'Họ' };
+            ws[XLSX.utils.encode_cell({ c: 3, r: 0 })] = { v: 'Tên' };
+            for (var i = 1; i <= student_list.length; i++) {
+                ws[XLSX.utils.encode_cell({ c: 0, r: i })] = { v: i };
+                ws[XLSX.utils.encode_cell({ c: 1, r: i })] = { v: student_list[i - 1].student_code };
+                ws[XLSX.utils.encode_cell({ c: 2, r: i })] = { v: student_list[i - 1].first_name };
+                ws[XLSX.utils.encode_cell({ c: 3, r: i })] = { v: student_list[i - 1].last_name };
+            }
+            ws['!ref'] = XLSX.utils.encode_range({ s: { c: 0, r: 0 }, e: { c: 4, r: student_list.length } });
+            wb.Sheets[ws_name] = ws;
+
+            var wbout = XLSX.write(wb, { bookType: 'xlsx', bookSST: false, type: 'binary' });
+            zip.file(class_has_course.code + ' - ' + class_has_course.name + ' - ' + class_has_course.class_name + ".xlsx", new Blob([this.s2ab(wbout)]));
+        }
+        zip.generateAsync({ type: "blob" })
+            .then(function(content) {
+                // see FileSaver.js
+                FileSaver.saveAs(content, "examinees.zip");
+            });
+    }
+
     public readTeacherListFile(file: any): Observable < { result: string, teacher_list: Array < any > , message: string } > {
         return new Observable < any > ((observer) => {
                 let reader: FileReader = new FileReader();

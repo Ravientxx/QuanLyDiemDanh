@@ -25,6 +25,10 @@ module.exports = {
         quiz: 3,
         face: 4
     },
+    attendance_status:{
+        normal: 0,
+        exemption: 1,
+    },
     role: {
         admin: 0,
         student: 1,

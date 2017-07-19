@@ -3,13 +3,12 @@
         <div class="x_title">
             <h3>Quiz</h3>
             <div class="navbar-btn">
-                <button class="btn btn-round btn-primary" (click)="onAddQuiz()"><i class="fa fa-plus"></i> Add</button>
                 <div class="pull-right">
                     <select class="form-control" [(ngModel)]="selected_course" (ngModelChange)="onChangeCourse()">
-                    <option *ngFor="let course of courses" [ngValue]="course">{{course.name}}-{{course.class_name}}</option>
-                </select>
+                        <option *ngFor="let course of courses" [ngValue]="course">{{course.name}}-{{course.class_name}}</option>
+                    </select>
                 </div>
-                
+                <button class="btn btn-round btn-primary pull-right" (click)="onAddQuiz()"><i class="fa fa-plus"></i> Add</button>
             </div>
             <div class="clearfix"></div>
         </div>
@@ -21,7 +20,7 @@
                             {{quiz.title}} - {{quiz.created_at | date:'short'}} - {{quiz.questions.length}} questions
                             <i class="pull-right float-xs-right fa" [ngClass]="{'fa-chevron-down': group?.isOpen, 'fa-chevron-right': !group?.isOpen}"></i>
                         </h4>
-                        <button class="btn btn-danger" (click)="onDeleteQuiz(i)"><i class="fa fa-times"></i> Delete</button>
+                        <button class="btn btn-danger" (click)="onDeleteQuiz(quiz.id)"><i class="fa fa-times"></i> Delete</button>
                         <ng-container *ngFor="let question of quiz.questions">
                             <h4 class="underline">Q: {{question.text}} <small> ({{question.answers.length}} answers)</small></h4>
                             <div style="overflow:auto; max-height:300px;">

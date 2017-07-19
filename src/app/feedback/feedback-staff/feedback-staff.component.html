@@ -20,17 +20,17 @@
                 <thead>
                     <tr>
                         <th>From</th>
-                        <!-- <th>To</th> -->
                         <th>Title</th>
                         <th>Submited At</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngFor="let feedback of feedbacks; let i = index" (click)="onClickFeedback(i)" [ngClass]="{'new_feedback':!feedback.read}">
                         <td>{{feedback._from}}</td>
-                        <!-- <td>{{feedback._to}}</td> -->
                         <td>{{feedback.title}}</td>
                         <td>{{feedback.created_at | date: 'dd/MM/yyyy'}}</td>
+                        <td><button *ngIf="feedbacks._from == 'Anonymous'" class="btn btn-primary" (click)="replyFeeback()">Reply</button></td>
                     </tr>
                 </tbody>
             </table>

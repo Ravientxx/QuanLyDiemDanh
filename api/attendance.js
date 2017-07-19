@@ -568,7 +568,7 @@ router.post('/close', function(req, res, next) {
                                                 total += results[i].count;
                                             }
                                             let mailOptions = {
-                                                from: '"Giáo vụ"', // sender address
+                                                from: '"Giáo vụ" <giaovu.clc@fit.hcmus.edu.vn>', // sender address
                                                 to: student.email, // list of receivers
                                                 subject: 'Update on your absence from ' + student.course_code + '-' + student.course_name, // Subject line
                                                 text: `Hi ` + student.last_name + `,\r\n\r\n Today, you were absent from the class ` + student.course_code + '-' + student.course_name + `.Currently, your absence/total is ` + absence + `/` + total + ` (` + Math.floor(100 * absence / total) + `%).` + `Please be aware that if you exceed 30% of the total attendance, you won't be able to attend the final exam.\r\n\r\n If you need help, please contact giaovu.clc@fit.hcmus.edu.vn`,

@@ -84,8 +84,8 @@
                                     <td><a routerLink="/courses/{{course.id}}" routerLinkActive="active"><strong>{{course.code}} - {{course.name}}</strong></a></td>
                                     <td>{{course.lecturers}}</td>
                                     <td>{{course.absence_count}}</td>
-                                    <td *ngIf="course.attendance_status == appService.attendance_status.normal">Normal</td>
-                                    <td *ngIf="course.attendance_status == appService.attendance_status.exemption">Exemption</td>
+                                    <td *ngIf="course.attendance_status == appService.attendance_status.normal"><button class="btn btn-primary" (click)="onChangeAttendanceStatus(course.id,appService.attendance_status.exemption)">Normal</button></td>
+                                    <td *ngIf="course.attendance_status == appService.attendance_status.exemption"><button class="btn btn-primary" (click)="onChangeAttendanceStatus(course.id,appService.attendance_status.normal)">Exemption</button></td>
                                     <td *ngIf="course.enrollment_status == appService.enrollment_status.compulsory">Compulsory</td>
                                     <td *ngIf="course.enrollment_status == appService.enrollment_status.elective">Elective</td>
                                 </tr>
@@ -141,6 +141,23 @@
                 <div class="modal-body">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-default btn-success" (click)="confirmAction()" data-dismiss="modal">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="confirmChangeAttendanceStatusModal" role="dialog">
+    <div class="vertical-alignment-helper">
+        <div class="modal-dialog modal-sm vertical-align-center">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">{{confirm_modal_title}}</h4>
+                </div>
+                <div class="modal-body">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-default btn-success" (click)="confirmChangeAttendanceStatus()" data-dismiss="modal">Confirm</button>
                 </div>
             </div>
         </div>

@@ -146,7 +146,9 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
         for(var i = 0 ; i < this.quizzes.length; i++){
             if(this.selected_quiz == this.quizzes[i].id){
                 this.quiz.questions = [];
+                this.quiz.id = this.quizzes[i].id;
                 this.quiz.title = this.quizzes[i].title;
+                this.quiz.code = this.quizzes[i].code;
                 for(var j = 0; j < this.quizzes[i].questions.length; j++){
                     this.quiz.questions.push({
                         text : this.quizzes[i].questions[j].text,

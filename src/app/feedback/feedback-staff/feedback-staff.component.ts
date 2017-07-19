@@ -71,4 +71,7 @@ export class FeedbackStaffComponent implements OnInit {
             this.getFeedbacks();
         }
     }
+    public replyFeedback(){
+        
+    }
 }
