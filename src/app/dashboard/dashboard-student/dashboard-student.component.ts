@@ -1,6 +1,8 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import {  AppService, AuthService , CreateAbsenceRequestModalComponent , SendFeedbackModalComponent, StudentService, AttendanceService} from '../../shared/shared.module';
 import { Router, ActivatedRoute, Params } from '@angular/router';
+declare var $: any;
+declare var uploadToImgur: any;
 @Component({
 	selector: 'app-dashboard-student',
 	templateUrl: './dashboard-student.component.html'
@@ -51,6 +53,7 @@ export class DashboardStudentComponent implements OnInit {
 		this.isEditingProfile = false;
 	}
 	public onSaveEditProfile(){
+		uploadToImgur();
 		this.studentService.updateStudent(this.authService.current_user.id, this.editing_name, this.editing_mail, this.editing_phone,null)
             .subscribe(result => {
                 this.apiResult = result.result;
