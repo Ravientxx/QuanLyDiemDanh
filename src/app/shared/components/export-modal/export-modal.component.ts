@@ -29,6 +29,7 @@ export class ExportModalComponent implements OnInit {
     public select_all_program = 0;
     public file_name = '';
     public onOpenModal() {
+        this.file_name = '';
         this.export_progress = 0;
         this.export_on_search = 1;
         switch (this.export_type) {
@@ -166,7 +167,6 @@ export class ExportModalComponent implements OnInit {
         }
     }
     public exportSchedule(){
-        console.log(this.export_on_search);
         if (!this.export_on_search) {
             var selected_classes = [];
             var selected_programs = [];
@@ -183,10 +183,6 @@ export class ExportModalComponent implements OnInit {
             if (selected_classes.length == 0 && selected_programs.length == 0) {
                 return;
             } else {
-                this.courseService.exportCourse(selected_classes).subscribe(result => {
-                    var course_lists = result.course_lists;
-                    this.excelService.writeCourseLists(course_lists);
-                }, error => { this.appService.showPNotify('failure', "Server Error! Can't get course lists", 'error') });
             }
         } else {
             this.scheduleService.getSchedulesAndCourses(this.search_data['program_id'],this.search_data['class_id'],this.search_data['semester_id'])

@@ -6,6 +6,9 @@ var mysql = require('mysql');
 var pool = mysql.createPool(_global.db);
 var jwt = require('jsonwebtoken');
 var async = require("async");
+var pg = require('pg');
+var format = require('pg-format');
+const pool_postgres = new pg.Pool(_global.db_postgres);
 
 router.use(function(req, res, next) {
     // check header or url parameters or post parameters for token
@@ -56,23 +59,33 @@ router.get('/semesters-programs-classes', function(req, res, next) {
     var program_id = req.body.program_id;
     var class_id = req.body.class_id;
     var semester_id = req.body.semester_id;
-    pool.getConnection(function(error, connection) {
-        connection.query(`SELECT * FROM semesters`, function(error, rows, fields) {
-            var semesters = rows;
-            connection.query(`SELECT * FROM programs`, function(error, rows, fields) {
-                var programs = rows;
-                connection.query(`SELECT * FROM classes`, function(error, rows, fields) {
-                    var classes = rows;
+    pool_postgres.connect(function(error, connection, done) {
+        connection.query(`SELECT * FROM semesters`, function(error, result, fields) {         
+            if (error){
+                done(error);
+                return console.log(error);
+            }
+            var semesters = result.rows;
+            connection.query(`SELECT * FROM programs`, function(error, result, fields) {
+                if (error) {
+                    done(error);
+                    return console.log(error);
+                }
+                var programs = result.rows;
+                connection.query(`SELECT * FROM classes`, function(error, result, fields) {
+                    if (error) {
+                        done(error);
+                        return console.log(error);
+                    }
+                    var classes = result.rows;
                     res.send({ result: 'success', semesters: semesters, programs: programs, classes: classes });
-                    connection.release();
-                    if (error) throw error;
+                    done();
                 });
-                if (error) throw error;
             });
-            if (error) throw error;
         });
     });
 });
+
 router.post('/semester/create', function(req, res, next) {
     if (req.body.name == undefined || req.body.name == '') {
         _global.sendError(res, null, "Name is required");
@@ -86,39 +99,43 @@ router.post('/semester/create', function(req, res, next) {
         _global.sendError(res, null, "End date is required");
         return;
     }
-    var semester = {
-        name: req.body.name,
-        start_date: req.body.start_date,
-        end_date : req.body.end_date,
-        vacation_time : req.body.vacation_time,
-    };
-    pool.getConnection(function(error, connection) {
+    var semester = [
+        req.body.name,
+        req.body.start_date,
+        req.body.end_date,
+        req.body.vacation_time,
+    ];
+    pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
-            throw error;
+            done(error);
+            return console.log(error);
         }
-        connection.query(`SELECT * FROM semesters WHERE name = ?`,semester.name,function(error, rows, fields) {
+        connection.query(format(`SELECT * FROM semesters WHERE name = %L`,req.body.name),function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
-                throw error;
+                done(error);
+                return console.log(error);
             }
-            if(rows.length > 0){
+            if(result.rowCount > 0){
                 _global.sendError(res, null, "Semester's existed");
-                throw error;
+                done();
+                return console.log("Semester's existed");
             }else{
-                connection.query(`INSERT INTO semesters SET ?`,semester,function(error, rows, fields) {
+                connection.query(format(`INSERT INTO semesters (name,start_date,end_date,vacation_time) VALUES %L`,semester),function(error, rows, fields) {
                     if (error) {
                         _global.sendError(res, error.message);
-                        throw error;
+                        done(error);
+                        return console.log(error);
                     }
                     res.send({ result: 'success', message: 'Semester added successfully'});
-                    connection.release();
+                    done();
                 });
             }
         });
     });
 });
-//Chưa có add file student
+
 router.post('/class/create', function(req, res, next) {
     if (req.body.name == undefined || req.body.name == '') {
         _global.sendError(res, null, "Name is required");
@@ -132,63 +149,68 @@ router.post('/class/create', function(req, res, next) {
         _global.sendError(res, null, "Invalid Email");
         return;
     }
-    var _class = {
-        name: req.body.name,
-        email: req.body.email,
-        program_id : req.body.program_id
-    };
+    var _class = [
+        req.body.name,
+        req.body.email,
+        req.body.program_id
+    ];
     var student_list = req.body.student_list;
-    pool.getConnection(function(error, connection) {
+    pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
-            throw error;
+            done(error);
+            return console.log(error);
         }
-        connection.query(`SELECT * FROM classes WHERE name = ?`,_class.name,function(error, rows, fields) {
+        connection.query(format(`SELECT * FROM classes WHERE name = %L`,req.body.name),function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
-                throw error;
+                done(error);
+                return console.log(error);
             }
-            if(rows.length > 0){
+            if(result.rowCount > 0){
                 _global.sendError(res, null, "Class's existed");
-                throw error;
+                done(error);
+                return console.log("Class's existed");
             }else{
-                connection.query(`INSERT INTO classes SET ?`,_class,function(error, rows, fields) {
+                connection.query(format(`INSERT INTO classes (name,email,program_id) VALUES %L`,_class),function(error, result, fields) {
                     if (error) {
                         _global.sendError(res, error.message);
-                        throw error;
+                        done(error);
+                        return console.log(error);
                     }
-                    var class_id = rows.insertId;
+                    var class_id = result.rows[0].id;
                     if(student_list == undefined || student_list == []){
                         res.send({ result: 'success', message: 'Class added successfully'});
-                        connection.release();
+                        done();
+                        return;
                     }else{
                         async.each(student_list, function(student, callback) {
-                            connection.query(`SELECT id FROM students WHERE stud_id = ? LIMIT 1`, student.stud_id, function(error, results, fields) {
+                            connection.query(format(`SELECT id FROM students WHERE stud_id = %L LIMIT 1`, student.stud_id), function(error, result, fields) {
                                 if (error) {
                                     console.log(error.message + ' at get student_id from datbase (file)');
                                     callback(error);
                                 } else {
-                                    if(results.length == 0){
+                                    if(result.rowCount == 0){
                                         //new student to system
-                                        var new_user = {
-                                            first_name: _global.getFirstName(student.name),
-                                            last_name: _global.getLastName(student.name),
-                                            email: student.stud_id + '@student.hcmus.edu.vn',
-                                            phone: student.phone,
-                                            role_id: 1,
-                                            password: bcrypt.hashSync(student.stud_id.toString(), 10),
-                                        };
-                                        connection.query(`INSERT INTO users SET ?`, new_user, function(error, results, fields) {
+                                        var new_user = [
+                                            _global.getFirstName(student.name),
+                                            _global.getLastName(student.name),
+                                            student.stud_id + '@student.hcmus.edu.vn',
+                                            student.phone,
+                                            _global.role.student,
+                                            bcrypt.hashSync(student.stud_id.toString(), 10),
+                                        ];
+                                        connection.query(format(`INSERT INTO users (first_name,last_name,email,phone,role_id,password) VALUES %L`, new_user), function(error, results, fields) {
                                             if (error) {
                                                 callback(error);
                                             } else {
-                                                var student_id = results.insertId;
-                                                var new_student = {
-                                                    id: student_id,
-                                                    stud_id: student.stud_id,
-                                                    class_id: class_id,
-                                                }
-                                                connection.query(`INSERT INTO students SET ?`, new_student, function(error, results, fields) {
+                                                var student_id = results.rows[0].id;
+                                                var new_student = [
+                                                    student_id,
+                                                    student.stud_id,
+                                                    class_id,
+                                                ];
+                                                connection.query(format(`INSERT INTO students (id,stud_id,class_id) VALUES %L`, new_student), function(error, results, fields) {
                                                     if (error) {
                                                         callback(error);
                                                     } else {
@@ -206,11 +228,12 @@ router.post('/class/create', function(req, res, next) {
                         }, function(error) {
                             if (error) {
                                 _global.sendError(res, error.message,'Error at add student to class from file');
-                                throw error;
+                                done(error);
+                                return console.log(error);
                             }
                             else {
                                 res.send({ result: 'success', message: 'Class added successfully'});
-                                connection.release();
+                                done();
                             }
                         });
                     }
@@ -219,6 +242,7 @@ router.post('/class/create', function(req, res, next) {
         });
     });
 });
+
 router.post('/program/create', function(req, res, next) {
     if (req.body.name == undefined || req.body.name == '') {
         _global.sendError(res, null, "Name is required");
@@ -228,31 +252,35 @@ router.post('/program/create', function(req, res, next) {
         _global.sendError(res, null, "Code is required");
         return;
     }
-    var program = {
-        name: req.body.name,
-        code: req.body.code
-    };
+    var program = [
+        req.body.name,
+        req.body.code
+    ];
     pool.getConnection(function(error, connection) {
         if (error) {
             _global.sendError(res, error.message);
-            throw error;
+            done();
+            return console.log(error);
         }
-        connection.query(`SELECT * FROM programs WHERE code = ? OR name = ?`,[program.code,program.name],function(error, rows, fields) {
+        connection.query(format(`SELECT * FROM programs WHERE code = %L OR name = %L`,program[0],program[1]),function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
-                throw error;
+                done();
+                return console.log(error);
             }
-            if(rows.length > 0){
+            if(result.rowCount > 0){
                 _global.sendError(res, null, "Program's existed");
-                throw error;
+                done();
+                return console.log("Program's existed");
             }else{
-                connection.query(`INSERT INTO programs SET ?`,program,function(error, rows, fields) {
+                connection.query(format(`INSERT INTO programs (name,code) VALUES %L`,program),function(error, rows, fields) {
                     if (error) {
                         _global.sendError(res, error.message);
-                        throw error;
+                        done();
+                        return console.log(error);
                     }
                     res.send({ result: 'success', message: 'Program added successfully'});
-                    connection.release();
+                    done();
                 });
             }
         });

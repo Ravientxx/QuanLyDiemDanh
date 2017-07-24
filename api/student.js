@@ -6,6 +6,9 @@ var async = require("async");
 var connection = mysql.createConnection(_global.db);
 var pool = mysql.createPool(_global.db);
 var bcrypt = require('bcrypt');
+var pg = require('pg');
+var format = require('pg-format');
+const pool_postgres = new pg.Pool(_global.db_postgres);
 
 router.post('/list', function(req, res, next) {
     var searchText = req.body.searchText;
@@ -16,18 +19,20 @@ router.post('/list', function(req, res, next) {
     var program_id = req.body.program_id != null ? req.body.program_id : 1;
     var class_id = req.body.class_id != null ? req.body.class_id : 0;
     var status = req.body.status != null ? req.body.status : 0;
-    pool.getConnection(function(error, connection) {
+    pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
-            throw error;
+            done();
+            return console.log(error);
         }
-        var return_function = function(error, rows, fields) {
+        var return_function = function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
-                throw error;
+                done();
+                return console.log(error);
             }
 
-            student_list = rows;
+            student_list = result.rows;
             var search_list = [];
             if (searchText == null) {
                 search_list = student_list;
@@ -56,17 +61,16 @@ router.post('/list', function(req, res, next) {
                     student_list: _global.filterListByPage(page, limit, search_list)
                 });
             }
-
-            connection.release();
+            done();
         };
         if (class_id == 0) {
-            connection.query(`SELECT users.id, students.stud_id as code, CONCAT(users.first_name,' ',users.last_name) as name, users.phone, students.status, students.current_courses as enroll_course, classes.name as class_name
+            connection.query(format(`SELECT users.id, students.stud_id as code, CONCAT(users.first_name,' ',users.last_name) as name, users.phone, students.status, students.current_courses as enroll_course, classes.name as class_name
                                 FROM users,students,classes
-                                WHERE users.id = students.id AND classes.id = students.class_id AND classes.program_id = ? AND students.status = ?`, [program_id, status], return_function);
+                                WHERE users.id = students.id AND classes.id = students.class_id AND classes.program_id = %L AND students.status = %L`, program_id, status), return_function);
         } else {
-            connection.query(`SELECT users.id, students.stud_id as code, CONCAT(users.first_name,' ',users.last_name) as name, users.phone, students.status, students.current_courses as enroll_course, classes.name as class_name
+            connection.query(format(`SELECT users.id, students.stud_id as code, CONCAT(users.first_name,' ',users.last_name) as name, users.phone, students.status, students.current_courses as enroll_course, classes.name as class_name
                                 FROM users,students,classes
-                                WHERE users.id = students.id AND classes.id = students.class_id AND classes.id = ? AND classes.program_id = ? AND students.status = ?`, [class_id, program_id, status], return_function);
+                                WHERE users.id = students.id AND classes.id = students.class_id AND classes.id = %L AND classes.program_id = %L AND students.status = %L`, class_id, program_id, status), return_function);
         }
     });
 });
@@ -112,100 +116,121 @@ router.post('/add', function(req, res, next) {
     var new_email = req.body.email;
     var new_phone = req.body.phone;
     var new_note = req.body.note;
-    pool.getConnection(function(error, connection) {
+    pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
-            throw error;
+            done();
+            return console.log(error);
         }
 
-        connection.query(`SELECT stud_id FROM students WHERE stud_id = ? LIMIT 1`, new_code, function(error, rows, fields) {
+        connection.query(`SELECT stud_id FROM students WHERE stud_id = %L LIMIT 1`, new_code, function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
-                throw error;
+                done();
+                return console.log(error);
             }
             //check email exist
-            if (rows.length > 0) {
+            if (result.rowCount > 0) {
                 _global.sendError(res, null, "Student code already existed");
-                throw "Student code already existed";
+                done();
+                return console.log("Student code already existed");
             }
-            connection.query(`SELECT email FROM users WHERE email=? LIMIT 1`, new_email, function(error, rows, fields) {
+            connection.query(format(`SELECT email FROM users WHERE email = %L LIMIT 1`, new_email), function(error, result, fields) {
                 if (error) {
                     _global.sendError(res, error.message);
-                    throw error;
+                    done();
+                    return console.log(error);
                 }
                 //check email exist
-                if (rows.length > 0) {
-                    _global.sendError(res, "Email already existed")
-                    throw "Email already existed";
+                if (result.rowCount > 0) {
+                    _global.sendError(res, "Email already existed");
+                    done();
+                    return console.log("Email already existed");
                 }
                 //new data to users table
                 var new_password = new_email.split('@')[0];
-                var new_user = {
-                    first_name: new_first_name,
-                    last_name: new_last_name,
-                    email: new_email,
-                    phone: new_phone,
-                    password: bcrypt.hashSync(new_password, 10),
-                    role_id: 1
-                };
-
-                //begin adding user
-                connection.beginTransaction(function(error) {
+                var new_user = [
+                    new_first_name,
+                    new_last_name,
+                    new_email,
+                    new_phone,
+                    bcrypt.hashSync(new_password, 10),
+                    _global.role.student
+                ];
+                var new_student = [];
+                async.series([
+                    //Start transaction
+                    function(callback) {
+                        connection.query('BEGIN', (error) => {
+                            if (error) callback(error);
+                            else callback();
+                        });
+                    },
+                    //add data to user table
+                    function(callback) {
+                        connection.query('INSERT INTO users (first_name,last_name,email,phone,password,role_id) VALUES %L', new_user, function(error, result, fields) {
+                            if (error) {
+                                callback(error);
+                            }else{
+                                new_student = [
+                                    result.rows[0].id,
+                                    new_code,
+                                    new_class_id,
+                                    new_note
+                                ];
+                                callback();
+                            }
+                        });
+                    },
+                    //insert student
+                    function(callback) {
+                        connection.query(format('INSERT INTO students VALUES %L', new_student), function(error, result, fields) {
+                            if (error) {
+                                callback(error);
+                            }else{
+                                callback();
+                            }
+                        });
+                    },
+                    //Commit transaction
+                    function(callback) {
+                        connection.query('COMMIT', (error) => {
+                            if (error) callback(error);
+                            else callback();
+                        });
+                    },
+                ], function(error) {
                     if (error) {
                         _global.sendError(res, error.message);
-                        throw error;
-                    }
-                    //add data to user table
-                    connection.query('INSERT INTO users SET ?', new_user, function(error, results, fields) {
-                        if (error) {
-                            _global.sendError(res.error.message);
-                            return connection.rollback(function() {
-                                throw error;
-                            });
-                        }
-                        //add data to student table
-                        var new_student = {
-                            id: results.insertId,
-                            stud_id: new_code,
-                            class_id: new_class_id,
-                            note: new_note
-                        };
-                        connection.query('INSERT INTO students SET ?', new_student, function(error, results, fields) {
-                            if (error) {
-                                _global.sendError(res.error.message);
-                                return connection.rollback(function() {
-                                    throw error;
-                                });
-                            }
-                            connection.commit(function(error) {
-                                if (error) {
-                                    _global.sendError(res.error.message);
-                                    return connection.rollback(function() {
-                                        throw error;
-                                    });
-                                }
-                                console.log('success adding student!');
-                                res.send({ result: 'success', message: 'Student Added Successfully' });
-                            });
+                        connection.query('ROLLBACK', (error) => {
+                            if (error) return console.log(error);
                         });
-                    });
+                        done();
+                        return console.log(error);
+                    } else {
+                        console.log('success adding student!');
+                        res.send({ result: 'success', message: 'Student Added Successfully' });
+                        done();
+                    }
                 });
-                connection.release();
-            })
+            });
         });
     });
 });
 
 router.get('/detail/:id', function(req, res, next) {
     var id = req.params['id'];
-    pool.getConnection(function(error, connection) {
-        connection.query(`SELECT users.*,students.stud_id AS code, students.status,classes.id AS class_id ,classes.name AS class_name FROM users,students,classes WHERE users.id = ? AND users.id = students.id AND students.class_id = classes.id  LIMIT 1`, id, function(error, rows, fields) {
+    pool_postgres.connect(function(error, connection, done) {
+        connection.query(format(`SELECT users.*,students.stud_id AS code, students.status,classes.id AS class_id ,classes.name AS class_name 
+            FROM users,students,classes 
+            WHERE users.id = %L AND users.id = students.id AND students.class_id = classes.id  LIMIT 1`, id), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
-                throw error;
+                done();
+                return console.log(error);
             }
-            var student = rows[0];
-            connection.query(`SELECT courses.id, code, name, attendance_status, enrollment_status,
+            var student = result.rows[0];
+            connection.query(format(`SELECT courses.id, code, name, attendance_status, enrollment_status,
                                 (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
                                 FROM teacher_teach_course,users 
                                 WHERE users.id = teacher_teach_course.teacher_id AND 
@@ -215,13 +240,14 @@ router.get('/detail/:id', function(req, res, next) {
                                 FROM attendance,attendance_detail 
                                 WHERE attendance_detail.student_id = student_enroll_course.student_id AND attendance_detail.attendance_type = -1 AND attendance.course_id = courses.id AND attendance.id = attendance_detail.attendance_id ) as absence_count 
                 FROM student_enroll_course,courses,class_has_course
-                WHERE student_enroll_course.class_has_course_id = class_has_course.id AND class_has_course.course_id = courses.id AND student_enroll_course.student_id = ?`, id, function(error, rows, fields) {
+                WHERE student_enroll_course.class_has_course_id = class_has_course.id AND class_has_course.course_id = courses.id AND student_enroll_course.student_id = %L`, id), function(error, result, fields) {
                 if (error) {
                     _global.sendError(res, error.message);
-                    throw error;
+                    done();
+                    return console.log(error);
                 }
-                res.send({ result: 'success', student: student, current_courses: rows });
-                connection.release();
+                res.send({ result: 'success', student: student, current_courses: result.rows });
+                done();
             });
         });
     });
@@ -254,23 +280,24 @@ router.put('/update', function(req, res, next) {
     var new_email = req.body.email;
     var new_phone = req.body.phone;
     var new_status = req.body.status ? req.body.status : 0;
-    pool.getConnection(function(error, connection) {
+    pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
-            throw error;
+            done();
+            return console.log(error);
         }
 
         async.series([
             //Start transaction
             function(callback) {
-                connection.beginTransaction(function(error) {
-                    if (error) callback(error);
+                connection.query('BEGIN', (error) => {
+                    if(error) callback(error);
                     else callback();
                 });
             },
             //update Student table
             function(callback) {
-                connection.query(`UPDATE students SET status = ? WHERE id = ?`, [new_status, user_id], function(error, results, fields) {
+                connection.query(format(`UPDATE students SET status = %L WHERE id = %L`, new_status, user_id), function(error, result, fields) {
                     if (error) {
                         console.log(error.message + "at Update student's status");
                         callback(error);
@@ -281,7 +308,7 @@ router.put('/update', function(req, res, next) {
             },
             //update user table
             function(callback) {
-                connection.query(`UPDATE users SET first_name = ?, last_name = ?, email = ?, phone = ? WHERE id = ?`, [new_first_name, new_last_name, new_email, new_phone, user_id], function(error, results, fields) {
+                connection.query(format(`UPDATE users SET first_name = %L, last_name = %L, email = %L, phone = %L WHERE id = %L`, new_first_name, new_last_name, new_email, new_phone, user_id), function(error, result, fields) {
                     if (error) {
                         console.log(error.message + ' at Update Users info');
                         callback(error);
@@ -292,7 +319,7 @@ router.put('/update', function(req, res, next) {
             },
             //Commit transaction
             function(callback) {
-                connection.commit(function(error) {
+                connection.query('COMMIT', (error) => {
                     if (error) callback(error);
                     else callback();
                 });
@@ -300,15 +327,16 @@ router.put('/update', function(req, res, next) {
         ], function(error) {
             if (error) {
                 _global.sendError(res, error.message);
-                connection.rollback(function() {
-                    throw error;
+                connection.query('ROLLBACK', (error) => {
+                    if (error) return console.log(error);
                 });
-                throw error;
+                done(error);
+                return console.log(error);
             } else {
                 console.log('success updating student!---------------------------------------');
                 res.send({ result: 'success', message: 'Student Updated Successfully' });
+                done();
             }
-            connection.release();
         });
     });
 });
@@ -324,48 +352,49 @@ router.post('/import', function(req, res, next) {
     }
     var class_name = req.body.class_name;
     var student_list = req.body.student_list;
-    pool.getConnection(function(error, connection) {
+    pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
-            throw error;
+            done();
+            return console.log(error);
         }
         var class_id = 0;
         async.series([
             //Start transaction
             function(callback) {
-                connection.beginTransaction(function(error) {
-                    if (error) callback(error);
+                connection.query('BEGIN', (error) => {
+                    if(error) callback(error);
                     else callback();
                 });
             },
             //Get class id
             function(callback) {
-                connection.query(`SELECT id FROM classes WHERE UPPER(name) = UPPER(?) LIMIT 1`, class_name, function(error, results, fields) {
+                connection.query(format(`SELECT id FROM classes WHERE UPPER(name) = UPPER(%L) LIMIT 1`, class_name), function(error, result, fields) {
                     if (error) {
                         callback(error);
                     } else {
-                        if (results.length == 0) {
+                        if (result.rowCount == 0) {
                             //new class => insert
                             var program_code = _global.getProgramCodeFromClassName(class_name);
-                            connection.query(`SELECT id FROM programs WHERE UPPER(code) = UPPER(?) LIMIT 1`, program_code, function(error, results, fields) {
+                            connection.query(format(`SELECT id FROM programs WHERE UPPER(code) = UPPER(%L) LIMIT 1`, program_code), function(error, result, fields) {
                                 if (error) {
                                     callback(error);
                                 } else {
-                                    if (results.length == 0) {
+                                    if (result.rowCount == 0) {
                                         //program not found
                                         callback({ message: 'Program not found' });
                                     } else {
                                         var email = class_name.toLowerCase() + '@student.hcmus.edu.vn';
-                                        var new_class = {
-                                            name: class_name,
-                                            email: email,
-                                            program_id: results[0].id
-                                        }
-                                        connection.query(`INSERT INTO classes SET ?`, new_class, function(error, results, fields) {
+                                        var new_class = [
+                                            class_name,
+                                            email,
+                                            result.rows[0].id
+                                        ];
+                                        connection.query(format(`INSERT INTO classes VALUES %L`, new_class), function(error, result, fields) {
                                             if (error) {
                                                 callback(error);
                                             } else {
-                                                class_id = results.insertId;
+                                                class_id = result.rows[0].id;
                                                 callback();
                                             }
                                         });
@@ -373,7 +402,7 @@ router.post('/import', function(req, res, next) {
                                 }
                             });
                         } else {
-                            class_id = results[0].id;
+                            class_id = result.rows[0].id;
                             callback();
                         }
                     }
@@ -382,32 +411,32 @@ router.post('/import', function(req, res, next) {
             //Insert student into class
             function(callback) {
                 async.each(student_list, function(student, callback) {
-                    connection.query(`SELECT id FROM students WHERE stud_id = ? LIMIT 1`, student.stud_id, function(error, results, fields) {
+                    connection.query(format(`SELECT id FROM students WHERE stud_id = %L LIMIT 1`, student.stud_id), function(error, result, fields) {
                         if (error) {
                             console.log(error.message + ' at get student_id from datbase (file)');
                             callback(error);
                         } else {
-                            if (results.length == 0) {
+                            if (result.rowCount == 0) {
                                 //new student to system
-                                var new_user = {
-                                    first_name: _global.getFirstName(student.name),
-                                    last_name: _global.getLastName(student.name),
-                                    email: student.stud_id + '@student.hcmus.edu.vn',
-                                    phone: student.phone,
-                                    role_id: 1,
-                                    password: bcrypt.hashSync(student.stud_id.toString(), 10),
-                                };
-                                connection.query(`INSERT INTO users SET ?`, new_user, function(error, results, fields) {
+                                var new_user = [
+                                    _global.getFirstName(student.name),
+                                    _global.getLastName(student.name),
+                                    student.stud_id + '@student.hcmus.edu.vn',
+                                    student.phone,
+                                    _global.role.student,
+                                    bcrypt.hashSync(student.stud_id.toString(), 10),
+                                ];
+                                connection.query(format(`INSERT INTO users (first_name,last_name,email,phone,role_id,password) VALUES %L`, new_user), function(error, result, fields) {
                                     if (error) {
                                         callback(error);
                                     } else {
-                                        var student_id = results.insertId;
-                                        var new_student = {
-                                            id: student_id,
-                                            stud_id: student.stud_id,
-                                            class_id: class_id,
-                                        }
-                                        connection.query(`INSERT INTO students SET ?`, new_student, function(error, results, fields) {
+                                        var student_id = result.rows[0].id;
+                                        var new_student = [
+                                            student_id,
+                                            student.stud_id,
+                                            class_id,
+                                        ];
+                                        connection.query(format(`INSERT INTO students (id,stud_id,class_id) VALUES %L`, new_student), function(error, result, fields) {
                                             if (error) {
                                                 callback(error);
                                             } else {
@@ -432,23 +461,24 @@ router.post('/import', function(req, res, next) {
             },
             //Commit transaction
             function(callback) {
-                connection.commit(function(error) {
+                connection.query('COMMIT', (error) => {
                     if (error) callback(error);
                     else callback();
                 });
             },
         ], function(error) {
             if (error) {
-                _global.sendError(res, null, error.message);
-                connection.rollback(function() {
-                    console.log(error);
+                _global.sendError(res, error.message);
+                connection.query('ROLLBACK', (error) => {
+                    if (error) return console.log(error);
                 });
-                console.log(error);
+                done(error);
+                return console.log(error);
             } else {
                 console.log('success import students!---------------------------------------');
                 res.send({ result: 'success', message: 'Students imported successfully' });
+                done();
             }
-            connection.release();
         });
     });
 });
@@ -460,30 +490,31 @@ router.post('/export', function(req, res, next) {
     }
     var classes_id = req.body.classes_id;
     var student_lists = [];
-    pool.getConnection(function(error, connection) {
+    pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
-            throw error;
+            done();
+            return console.log(error);
         }
         async.series([
             //Start transaction
             function(callback) {
-                connection.beginTransaction(function(error) {
-                    if (error) callback(error);
+                connection.query('BEGIN', (error) => {
+                    if(error) callback(error);
                     else callback();
                 });
             },
             //get student from each class
             function(callback) {
                 async.each(classes_id, function(class_id, callback) {
-                    connection.query(`SELECT users.id, students.stud_id as code, CONCAT(users.first_name,' ',users.last_name) as name, users.phone, classes.name as class_name
+                    connection.query(format(`SELECT users.id, students.stud_id as code, CONCAT(users.first_name,' ',users.last_name) as name, users.phone, classes.name as class_name
                                 FROM users,students,classes
-                                WHERE users.id = students.id AND classes.id = students.class_id AND classes.id = ?`, class_id, function(error, results, fields) {
+                                WHERE users.id = students.id AND classes.id = students.class_id AND classes.id = %L`, class_id), function(error, result, fields) {
                         if (error) {
                             console.log(error.message + ' at get student by class');
                             callback(error);
                         } else {
-                            student_lists.push(results);
+                            student_lists.push(result);
                             callback();
                         }
                     });
@@ -497,23 +528,24 @@ router.post('/export', function(req, res, next) {
             },
             //Commit transaction
             function(callback) {
-                connection.commit(function(error) {
+                connection.query('COMMIT', (error) => {
                     if (error) callback(error);
                     else callback();
                 });
             },
         ], function(error) {
             if (error) {
-                _global.sendError(res, null, error.message);
-                connection.rollback(function() {
-                    console.log(error);
+                _global.sendError(res, error.message);
+                connection.query('ROLLBACK', (error) => {
+                    if (error) return console.log(error);
                 });
-                console.log(error);
+                done(error);
+                return console.log(error);
             } else {
                 console.log('success export students!---------------------------------------');
                 res.send({ result: 'success', message: 'Students exported successfully', student_lists: student_lists });
+                done();
             }
-            connection.release();
         });
     });
 });
@@ -526,16 +558,17 @@ router.post('/export-examinees', function(req, res, next) {
     var class_has_course_ids = req.body.class_has_course_id;
     var student_lists = [];
     var examinees_lists = [];
-    pool.getConnection(function(error, connection) {
+    pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
-            throw error;
+            done();
+            return console.log(error);
         }
         async.series([
             //Start transaction
             function(callback) {
-                connection.beginTransaction(function(error) {
-                    if (error) callback(error);
+                connection.query('BEGIN', (error) => {
+                    if(error) callback(error);
                     else callback();
                 });
             },
@@ -545,12 +578,12 @@ router.post('/export-examinees', function(req, res, next) {
                     connection.query(`SELECT student_enroll_course.*,users.last_name,users.first_name, students.stud_id as student_code, students.id,
                                     class_has_course.class_id, class_has_course.course_id, class_has_course.attendance_count 
                         FROM student_enroll_course,users, students, class_has_course 
-                        WHERE class_has_course.id = class_has_course_id AND users.id = student_enroll_course.student_id AND users.id = students.id AND class_has_course_id = ?`, class_has_course_id, function(error, results, fields) {
+                        WHERE class_has_course.id = class_has_course_id AND users.id = student_enroll_course.student_id AND users.id = students.id AND class_has_course_id = %L`, class_has_course_id, function(error, result, fields) {
                         if (error) {
                             console.log(error.message + ' at get student by class_has_course');
                             callback(error);
                         } else {
-                            student_lists.push(results);
+                            student_lists.push(result);
                             callback();
                         }
                     });
@@ -575,20 +608,20 @@ router.post('/export-examinees', function(req, res, next) {
                             //Sinh viên ko được miễn điểm danh
                             //count absences and total attendance
                             connection.query(`SELECT COUNT(*) as count, attendance_type FROM attendance,attendance_detail 
-                                WHERE attendance.closed = 1 AND id = attendance_id AND student_id = ? AND course_id = ? AND class_id = ? 
-                                GROUP BY attendance_type`, [student.id, student.course_id, student.class_id], function(error, results, fields) {
+                                WHERE attendance.closed = 1 AND id = attendance_id AND student_id = %L AND course_id = %L AND class_id = %L 
+                                GROUP BY attendance_type`, [student.id, student.course_id, student.class_id], function(error, result, fields) {
                                 if (error) {
                                     console.log(error.message + ' at count attendance_details');
                                     callback(error);
                                 } else {
                                     var total = 0;
                                     var absence = 0;
-                                    for (var i = 0; i < results.length; i++) {
-                                        if (results[i].attendance_type == _global.attendance_type.absent) absence = results[i].count;
-                                        total += results[i].count;
+                                    for (var i = 0; i < result.rowCount; i++) {
+                                        if (result[i].attendance_type == _global.attendance_type.absent) absence = result[i].count;
+                                        total += result[i].count;
                                     }
                                     console.log(student.student_code + ' ' + absence + ' ' + total);
-                                    if(Math.floor(100 * absence / total) <= 30){
+                                    if (Math.floor(100 * absence / total) <= 30) {
                                         examinees_list.push(student);
                                     }
                                     callback();
@@ -613,23 +646,24 @@ router.post('/export-examinees', function(req, res, next) {
             },
             //Commit transaction
             function(callback) {
-                connection.commit(function(error) {
+                connection.query('COMMIT', (error) => {
                     if (error) callback(error);
                     else callback();
                 });
             },
         ], function(error) {
             if (error) {
-                _global.sendError(res, null, error.message);
-                connection.rollback(function() {
-                    console.log(error);
+                _global.sendError(res, error.message);
+                connection.query('ROLLBACK', (error) => {
+                    if (error) return console.log(error);
                 });
-                console.log(error);
+                done(error);
+                return console.log(error);
             } else {
                 console.log('success export examinees!---------------------------------------');
                 res.send({ result: 'success', message: 'Examinees exported successfully', examinees_lists: examinees_lists });
+                done();
             }
-            connection.release();
         });
     });
 });
@@ -640,19 +674,20 @@ router.post('/detail-by-code', function(req, res, next) {
         return;
     }
     var student_code = req.body.code;
-    pool.getConnection(function(error, connection) {
-        connection.query(`SELECT * FROM users,students 
-            WHERE students.stud_id = ? AND users.id = students.id LIMIT 1`, student_code, function(error, rows, fields) {
+    pool_postgres.connect(function(error, connection, done) {
+        connection.query(format(`SELECT * FROM users,students 
+            WHERE students.stud_id = %L AND users.id = students.id LIMIT 1`, student_code), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
-                throw error;
+                done();
+                return console.log(error);
             }
-            if (rows.length == 0) {
+            if (result.rowCount == 0) {
                 res.send({ result: 'failure', message: 'Student not found' });
             } else {
-                res.send({ result: 'success', student: rows[0] });
+                res.send({ result: 'success', student: result.rows[0] });
             }
-            connection.release();
+            done();
         });
     });
 });
@@ -678,25 +713,26 @@ router.post('/change-attendance-status', function(req, res, next) {
     var course_id = req.body.course_id;
     var class_id = req.body.class_id;
     var status = req.body.status;
-    pool.getConnection(function(error, connection) {
-        connection.query(`SELECT id FROM class_has_course WHERE class_id = ? AND course_id = ? LIMIT 1`, [class_id, course_id], function(error, rows, fields) {
+    pool_postgres.connect(function(error, connection, done) {
+        connection.query(format(`SELECT id FROM class_has_course WHERE class_id = %L AND course_id = %L LIMIT 1`, class_id, course_id), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 return console.log(error);
             }
-            if (rows.length == 0) {
+            if (result.rowCount == 0) {
                 res.send({ result: 'failure', message: 'class_has_course not found' });
-                connection.release();
+                done();
                 return;
             } else {
-                connection.query(`UPDATE student_enroll_course SET attendance_status = ? 
-                    WHERE student_id = ? AND class_has_course_id = ?`, [status, student_id, rows[0].id], function(error, rows, fields) {
+                connection.query(format(`UPDATE student_enroll_course SET attendance_status = %L 
+                    WHERE student_id = %L AND class_has_course_id = %L`, status, student_id, result.rows[0].id), function(error, result, fields) {
                     if (error) {
                         _global.sendError(res, error.message);
+                        done();
                         return console.log(error);
                     }
                     res.send({ result: 'success', message: 'Change attendance status successfully' });
-                    connection.release();
+                    done();
                 });
             }
         });

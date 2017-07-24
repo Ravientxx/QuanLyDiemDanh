@@ -3,15 +3,17 @@ var router = express.Router();
 var _global = require('../global.js');
 var mysql = require('mysql');
 var async = require("async");
-
 var pool = mysql.createPool(_global.db);
+var pg = require('pg');
+var format = require('pg-format');
+const pool_postgres = new pg.Pool(_global.db_postgres);
 
 router.post('/list', function(req, res, next) {
     var role_id = req.body.role_id ? req.body.role_id : 0;
     var search_text = req.body.search_text ? req.body.search_text : '';
     var page = req.body.page != null ? req.body.page : _global.default_page;
     var limit = req.body.limit != null ? req.body.limit : _global.detail_limit;
-    pool.getConnection(function(error, connection) {
+    pool_postgres.connect(function(error, connection, done) {
         var query = `SELECT id, title, content, feedbacks.read, created_at , 
             (SELECT CONCAT(users.first_name,' ',users.last_name,'\r\n',users.email) FROM users WHERE users.id = feedbacks.from_id) as _from, 
             (SELECT CONCAT(first_name,' ',last_name) FROM users WHERE users.id = feedbacks.to_id) as _to 
@@ -20,12 +22,13 @@ router.post('/list', function(req, res, next) {
             query += ' WHERE type = ' + role_id;
         }
         query += ' ORDER BY feedbacks.read , feedbacks.created_at';
-        connection.query(query,function(error, rows, fields) {
+        connection.query(query,function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
-                throw error;
+                done();
+                return console.log(error);
             }
-            var feedbacks = rows;
+            var feedbacks = result.rows;
             for(var i = 0 ; i < feedbacks.length; i++){
                 if(feedbacks[i]._to == null){
                     feedbacks[i]._to = 'Giáo vụ';
@@ -59,7 +62,7 @@ router.post('/list', function(req, res, next) {
                     feedbacks: search_list
                 });
             }
-            connection.release();
+            done();
         });
     });
 });
@@ -70,18 +73,20 @@ router.put('/read', function(req, res, next) {
         return;
     }
     var feedback_id = req.body.feedback_id;
-    pool.getConnection(function(error, connection) {
+    pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
-            throw error;
+            done();
+                return console.log(error);
         }
-        connection.query(`UPDATE feedbacks SET feedbacks.read = 1 WHERE id = ?`,feedback_id,function(error, rows, fields) {
+        connection.query(format(`UPDATE feedbacks SET feedbacks.read = 1 WHERE id = %L`,feedback_id),function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
-                throw error;
+                done();
+                return console.log(error);
             }
             res.send({ result: 'success'});
-            connection.release();
+            done();
         });
     });
 });
@@ -95,25 +100,26 @@ router.post('/send', function(req, res, next) {
         _global.sendError(res, null, "content is required");
         return;
     }
-    var feedback = {
-        title: req.body.title,
-        content: req.body.content,
-        to_id : null,
-        from_id : (req.body.isAnonymous ? null : req.decoded.id),
-        type : (req.body.isAnonymous ? 3 : (req.decoded.role_id == _global.role.student ? 1 : 2)),
-    };
-    pool.getConnection(function(error, connection) {
+    var feedback = [
+        req.body.title,
+        req.body.content,
+        (req.body.isAnonymous ? null : req.decoded.id),
+        (req.body.isAnonymous ? 3 : (req.decoded.role_id == _global.role.student ? 1 : 2)),
+    ];
+    pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
-            throw error;
+            done();
+                return console.log(error);
         }
-        connection.query(`INSERT INTO feedbacks SET ?`,feedback,function(error, rows, fields) {
+        connection.query(format(`INSERT INTO feedbacks (title,content,from_id,type) VALUES %L`,feedback),function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
-                throw error;
+                done();
+                return console.log(error);
             }
             res.send({ result: 'success', message: 'Feedback sent successfully'});
-            connection.release();
+            done();
         });
     });
 });
@@ -121,18 +127,20 @@ router.post('/send', function(req, res, next) {
 router.post('/history', function(req, res, next) {
     var user_id = req.decoded.id;
 
-    pool.getConnection(function(error, connection) {
+    pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
-            throw error;
+            done();
+                return console.log(error);
         }
 
-        var query = `SELECT id, title, content, feedbacks.read, DATE_FORMAT(created_at, "%d-%m-%Y %H:%i") as time FROM feedbacks WHERE from_id = ? ORDER BY feedbacks.read, feedbacks.created_at DESC LIMIT 10`;
+        var query = `SELECT id, title, content, feedbacks.read, DATE_FORMAT(created_at, "%d-%m-%Y %H:%i") as time FROM feedbacks WHERE from_id = %L ORDER BY feedbacks.read, feedbacks.created_at DESC LIMIT 10`;
 
-        connection.query(query, user_id, function(error, rows, fields) {
+        connection.query(format(query, user_id), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
-                throw error;
+                done();
+                return console.log(error);
             }
 
             res.send({ 
@@ -140,7 +148,7 @@ router.post('/history', function(req, res, next) {
                 total_items: rows.length,
                 list: rows
             });
-            connection.release();
+            done();
         });
     });
 });

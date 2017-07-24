@@ -6,6 +6,10 @@ var mysql = require('mysql');
 var pool = mysql.createPool(_global.db);
 var async = require("async");
 
+var pg = require('pg');
+var format = require('pg-format');
+const pool_postgres = new pg.Pool(_global.db_postgres);
+
 //[name]
 var insert_roles = [
     ['Student'],
@@ -1132,25 +1136,25 @@ var insert_feeback = [
 ];
 //[title, class_has_course_id, closed, created_by]
 var insert_quiz = [
-    ['Angular', 20, 1, 1],//1
-    ['Window', 20, 1, 1],//2
+    ['Angular', 20, 1, 1], //1
+    ['Window', 20, 1, 1], //2
 ];
 //[quiz_id, text]
 var insert_quiz_question = [
-    [1, `Service trong Angular hoạt động thế nào?`],//1
-    [1, `Routing thực hiện thế nào?`],//2
-    [2, `Win32 và Win64 khác nhau gì?`],//3
-    [2, `Window ra mắt lần đầu khi nào ?`],//4
+    [1, `Service trong Angular hoạt động thế nào?`], //1
+    [1, `Routing thực hiện thế nào?`], //2
+    [2, `Win32 và Win64 khác nhau gì?`], //3
+    [2, `Window ra mắt lần đầu khi nào ?`], //4
 ];
 //[quiz_question_id, text,answered_by]
 var insert_quiz_answer = [
-    [1, `Service 1`,114],//1
-    [1, `Service 2`,115],//2
-    [2, `Win 1`,114],//3
-    [2, `Window 2`,115],//4
+    [1, `Service 1`, 114], //1
+    [1, `Service 2`, 115], //2
+    [2, `Win 1`, 114], //3
+    [2, `Window 2`, 115], //4
 ];
 
-router.get('/', function(req, res, next) {
+var seeding_mysql = function(res) {
     pool.getConnection(function(error, connection) {
         async.series([
             //Start transaction
@@ -1324,16 +1328,205 @@ router.get('/', function(req, res, next) {
             if (error) {
                 _global.sendError(res, error.message);
                 connection.rollback(function() {
-                    throw error;
+                    return console.log(error);
                 });
-                throw error;
+                return console.log(error);
             } else {
                 console.log('success seeding!---------------------------------------');
                 res.send({ result: 'success', message: 'success seeding' });
             }
             connection.release();
         });
-        
     });
+}
+var seeding_postgres = function(res) {
+    pool_postgres.connect(function(error, connection, done) {
+        async.series([
+            //Start transaction
+            function(callback) {
+                connection.query('BEGIN', (error) => {
+                    if(error) callback(error);
+                    else callback();
+                });
+            },
+            function(callback) {
+                connection.query(format('INSERT INTO roles (name) VALUES %L', insert_roles), function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query(format('INSERT INTO semesters (name,start_date,end_date,vacation_time) VALUES %L', insert_semesters), function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query(format('INSERT INTO programs (name,code) VALUES %L', insert_programs), function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query(format('INSERT INTO classes (name,email,program_id) VALUES %L', insert_classes), function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query(format('INSERT INTO courses (code,name,semester_id,program_id,office_hour,note) VALUES %L', insert_courses), function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query(format('INSERT INTO class_has_course (class_id,course_id,schedules) VALUES %L', insert_class_has_course), function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query(format('INSERT INTO users (first_name,last_name,email,phone,password,role_id) VALUES %L', insert_users), function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query(format('INSERT INTO teacher_teach_course (teacher_id,course_id,teacher_role) VALUES %L', insert_teacher_teach_course), function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query(format('INSERT INTO students (id,stud_id,class_id) VALUES %L', insert_students), function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query(format('INSERT INTO student_enroll_course (class_has_course_id,student_id) VALUES %L', insert_student_enroll_course), function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query(format('INSERT INTO absence_requests (student_id, reason, start_date, end_date) VALUES %L', insert_absence_requests), function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query(format('INSERT INTO attendance (course_id,class_id,closed) VALUES %L', insert_attendance), function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query(format('INSERT INTO attendance_detail (attendance_id, student_id, attendance_type) VALUES %L', insert_attendance_detail), function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query(format('INSERT INTO feedbacks (from_id, to_id, title, content, type) VALUES %L', insert_feeback), function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query(format('INSERT INTO quiz (title, class_has_course_id, closed, created_by) VALUES %L', insert_quiz), function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query(format('INSERT INTO quiz_questions (quiz_id, text) VALUES %L', insert_quiz_question), function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query(format('INSERT INTO quiz_answers (quiz_question_id, text,answered_by) VALUES %L', insert_quiz_answer), function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            //Commit transaction
+            function(callback) {
+                connection.query('COMMIT', (error) => {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+        ], function(error) {
+            if (error) {
+                _global.sendError(res, error.message);
+                connection.query('ROLLBACK', (error) => {
+                    if (error) return console.log(error);
+                });
+                done(error);
+                return console.log(error);
+            } else {
+                console.log('success seeding!---------------------------------------');
+                res.send({ result: 'success', message: 'success seeding' });
+                done();
+            }
+        });
+    });
+}
+router.get('/', function(req, res, next) {
+    //seeding_mysql(res);
+    seeding_postgres(res);
 });
 module.exports = router;

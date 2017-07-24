@@ -6,6 +6,9 @@ var connection = mysql.createConnection(_global.db);
 var pool = mysql.createPool(_global.db);
 var bcrypt = require('bcrypt');
 var async = require("async");
+var pg = require('pg');
+var format = require('pg-format');
+const pool_postgres = new pg.Pool(_global.db_postgres);
 
 router.post('/check-list', function(req, res, next) {
     if (req.body.student_id == null || req.body.student_id == 0) {
@@ -19,16 +22,17 @@ router.post('/check-list', function(req, res, next) {
     var student_id = req.body.student_id;
     var attendance_id = req.body.attendance_id;
     var attendance_type = req.body.attendance_type;
-    pool.getConnection(function(error, connection) {
-        connection.query(`UPDATE attendance_detail SET attendance_type = ?, attendance_time = ? WHERE attendance_id = ? AND student_id = ?`, [attendance_type, new Date(), attendance_id, student_id], function(error, results, fields) {
+    pool_postgres.connect(function(error, connection, done) {
+        connection.query(format(`UPDATE attendance_detail SET attendance_type = %L, attendance_time = %L WHERE attendance_id = %L AND student_id = %L`,attendance_type, new Date(), attendance_id, student_id), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, null, 'error at update attendance_detail');
+                done();
                 return console.log(error.message + ' at update attendance_detail');
             } else {
                 res.send({
                     result: 'success',
                 });
-                connection.release();
+                done();
             }
         });
     });
@@ -45,18 +49,18 @@ router.post('/qr-code/:id', function(req, res, next) {
     }
     
     var student_id = req.decoded.id;
-    pool.getConnection(function(error, connection) {
+    pool_postgres.connect(function(error, connection, done) {
         async.series([
             //Check attendance id
             function(callback) {
-                connection.query(`SELECT * FROM attendance WHERE id = ?`, attendance_id, function(error, results, fields) {
+                connection.query(format(`SELECT * FROM attendance WHERE id = %L`, attendance_id), function(error, result, fields) {
                     if (error) {
                         callback(error.message + ' at check attendance_id');
                     } else {
-                        if (results.length == 0) {
+                        if (result.rowCount == 0) {
                             callback('Invalid attendance id');
                         } else {
-                            if(results[0].closed){
+                            if(results.rows[0].closed){
                                 callback('This attendance is closed');
                             }else{
                                 callback();
@@ -67,13 +71,13 @@ router.post('/qr-code/:id', function(req, res, next) {
             },
             //Check student_id
             function(callback) {
-                connection.query(`SELECT * FROM class_has_course,attendance,student_enroll_course 
+                connection.query(format(`SELECT * FROM class_has_course,attendance,student_enroll_course 
                     WHERE class_has_course.class_id = attendance.class_id AND attendance.course_id = class_has_course.course_id AND student_enroll_course.class_has_course_id = class_has_course.id 
-                    AND attendance.id = ? AND student_enroll_course.student_id = ?`, [attendance_id, student_id], function(error, results, fields) {
+                    AND attendance.id = %L AND student_enroll_course.student_id = %L`, attendance_id, student_id), function(error, result, fields) {
                     if (error) {
                         callback(error.message + ' at check student_id');
                     } else {
-                        if (results.length == 0) {
+                        if (result.rowCount == 0) {
                             callback('Student did not enrolled in this Course');
                         } else {
                             callback();
@@ -83,7 +87,7 @@ router.post('/qr-code/:id', function(req, res, next) {
             },
             //Update attendance detail
             function(callback) {
-                connection.query(`UPDATE attendance_detail SET attendance_type = 2, attendance_time = ? WHERE attendance_id = ? AND student_id = ?`, [new Date(), attendance_id, student_id], function(error, results, fields) {
+                connection.query(format(`UPDATE attendance_detail SET attendance_type = ?, attendance_time = ? WHERE attendance_id = ? AND student_id = ?`, _global.attendance_type.qr,new Date(), attendance_id, student_id), function(error, results, fields) {
                     if (error) {
                         callback(error.message + ' at update attendance_detail');
                     } else {
@@ -94,12 +98,13 @@ router.post('/qr-code/:id', function(req, res, next) {
         ], function(error) {
             if (error) {
                 _global.sendError(res, null, error);
-                console.log(error);
+                done();
+                return console.log(error);
             } else {
                 res.send({
                     result: 'success',
                 });
-                connection.release();
+                done();
             }
         });
     });

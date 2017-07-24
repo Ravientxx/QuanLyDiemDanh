@@ -7,7 +7,9 @@ var async = require('async');
 var jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
 var bcrypt = require('bcrypt');
 var nodemailer = require('nodemailer');
-
+var pg = require('pg');
+var format = require('pg-format');
+const pool_postgres = new pg.Pool(_global.db_postgres);
 //blacklist for token when log out, change password,...
 var invalid_token = [];
 
@@ -22,29 +24,33 @@ router.post('/login', function(req, res, next) {
     }
     var email = req.body.email;
     var password = req.body.password;
-    pool.getConnection(function(error, connection) {
+    pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
+            done();
             return console.log(error);
         }
 
-        connection.query(`SELECT * FROM users WHERE email = ? LIMIT 1`, email, function(error, rows, fields) {
+        connection.query(format(`SELECT * FROM users WHERE email = %L LIMIT 1`, email), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
+                done();
                 return console.log(error);
             }
             //check email exist
-            if (rows.length == 0) {
+            if (result.rowCount == 0) {
                 _global.sendError(res, null, "Email not found");
+                done();
                 return console.log("Email is not existed");
             }
-            var password_hash = rows[0].password;
+            var password_hash = result.rows[0].password;
             if (bcrypt.compareSync(password, password_hash)) {
-                var token = jwt.sign(rows[0], _global.jwt_secret_key, { expiresIn: _global.jwt_expire_time });
-                res.send({ result: 'success', token: token, user: rows[0] });
-                connection.release();
+                var token = jwt.sign(result.rows[0], _global.jwt_secret_key, { expiresIn: _global.jwt_expire_time });
+                res.send({ result: 'success', token: token, user: result.rows[0] });
+                done();
             } else {
                 _global.sendError(res, null, "Wrong password");
+                done();
                 return console.log("Wrong password");
             }
         });
@@ -63,22 +69,23 @@ router.post('/forgot-password', function(req, res, next) {
         return;
     }
     var email = req.body.email;
-    pool.getConnection(function(error, connection) {
+    pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
-            console.log(error);
+            done();
+            return console.log(error);
         } else {
-            connection.query(`SELECT * FROM users WHERE email = ? LIMIT 1`, email, function(error, rows, fields) {
+            connection.query(format(`SELECT * FROM users WHERE email = %L LIMIT 1`, email), function(error, result, fields) {
                 if (error) {
                     _global.sendError(res, error.message);
-                    console.log(error);
-                    return;
+                    done();
+                    return console.log(error);
                 }
                 //check email exist
-                if (rows.length == 0) {
+                if (result.rowCount == 0) {
                     _global.sendError(res, null, 'Email not found');
-                    console.log('Email is not existed');
-                    return;
+                    done();
+                    return console.log('Email is not existed');
                 }
                 let transporter = nodemailer.createTransport(_global.email_setting);
                 var token = jwt.sign({ email: email }, _global.jwt_secret_key, { expiresIn: _global.jwt_reset_password_expire_time });
@@ -93,7 +100,7 @@ A password reset was requested for your account.To confirm this request, and set
 If this password reset was not requested by you, no action is needed.\r\n
 If you need help, please contact the site administrator,\r\n
 Admin User
-admin@fit.hcmus.edu.vn`,
+admin@fit.hcmus.edu.vn`
                 };
                 transporter.sendMail(mailOptions, (error, info) => {
                     if (error) {
@@ -102,7 +109,7 @@ admin@fit.hcmus.edu.vn`,
                     console.log('Message %s sent: %s', info.messageId, info.response);
                 });
                 res.send({ result: 'success' });
-                connection.release();
+                done();
             });
         }
     });
@@ -160,18 +167,20 @@ router.post('/reset-password', function(req, res, next) {
                     return;
                 }
                 var email = decoded.email;
-                pool.getConnection(function(error, connection) {
+                pool_postgres.connect(function(error, connection, done) {
                     if (error) {
                         _global.sendError(res, error.message);
+                        done();
                         return console.log(error);
                     }
-                    connection.query(`UPDATE users SET password = ? WHERE email = ?`, [bcrypt.hashSync(password, 10),email], function(error, rows, fields) {
+                    connection.query(format(`UPDATE users SET password = %L WHERE email = %L`, bcrypt.hashSync(password, 10),email), function(error, rows, fields) {
                         if (error) {
                             _global.sendError(res, error.message);
+                            done();
                             return console.log(error);
                         }
                         res.send({ result: 'success'});
-                        connection.release();
+                        done();
                     });
                 });
             }

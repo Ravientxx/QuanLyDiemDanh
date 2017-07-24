@@ -5,7 +5,21 @@ module.exports = {
         password: '',
         database: 'qldd'
     },
-    host: 'localhost:4200',
+    // db_postgres: {
+    //     host: 'ec2-54-247-166-129.eu-west-1.compute.amazonaws.com',
+    //     user: 'jrfgjdydwutqqq',
+    //     password: '6596b2752d1eba4e8e6793b4aef3d7424b75ecc5354dcf299fb003ca80aff764',
+    //     port:'5432',
+    //     database: 'dfgju67jiv9q22'
+    // },
+    db_postgres: {
+        host: 'localhost',
+        user: 'postgres',
+        password: '1234',
+        port:'5432',
+        database: 'qldd'
+    },
+    host: 'localhost:3000',
     email_setting: {
         host: 'smtp.office365.com', // Office 365 server
         port: 587, // secure SMTP

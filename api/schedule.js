@@ -4,6 +4,9 @@ var _global = require('../global.js');
 var mysql = require('mysql');
 var pool = mysql.createPool(_global.db);
 var async = require("async");
+var pg = require('pg');
+var format = require('pg-format');
+const pool_postgres = new pg.Pool(_global.db_postgres);
 
 router.put('/update/', function(req, res, next) {
     if (req.body.classes == undefined) {
@@ -18,7 +21,7 @@ router.put('/update/', function(req, res, next) {
     }
     pool.getConnection(function(error, connection) {
         async.each(classes, function(_class, callback) {
-            connection.query(`UPDATE class_has_course SET schedules = ? WHERE class_id = ? AND course_id = ?`, [_class.schedules, _class.class_id, _class.course_id], function(error, results, fields) {
+            connection.query(format(`UPDATE class_has_course SET schedules = %L WHERE class_id = %L AND course_id = %L`,_class.schedules, _class.class_id, _class.course_id), function(error, result, fields) {
                 if (error) {
                     console.log(error.message + ' at insert class_has_course');
                     callback(error);
@@ -30,11 +33,12 @@ router.put('/update/', function(req, res, next) {
             if (error) {
                 var message = error.message + ' at update schedule at class_has_course';
                 _global.sendError(res, message);
-                throw error;
+                done();
+                return console.log(error);
             } else {
                 console.log('updated class_has_course');
                 res.send({ result: 'success', message: 'Schedule updated successfully' });
-                connection.release();
+                done();
             }
         });
     });
@@ -54,7 +58,7 @@ router.post('/schedules-and-courses/', function(req, res, next) {
     var class_id = req.body.class_id ? req.body.class_id : 0;
     pool.getConnection(function(error, connection) {
         if (class_id == 0) {
-            connection.query(`SELECT courses.*,class_has_course.schedules,classes.name as class_name,
+            connection.query(format(`SELECT courses.*,class_has_course.schedules,classes.name as class_name,
                                     (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
                                     FROM teacher_teach_course,users 
                                     WHERE users.id = teacher_teach_course.teacher_id AND 
@@ -66,18 +70,19 @@ router.post('/schedules-and-courses/', function(req, res, next) {
                                     courses.id = teacher_teach_course.course_id AND 
                                     teacher_teach_course.teacher_role = 1) as TAs 
                 FROM courses, class_has_course, classes 
-                WHERE class_has_course.course_id = courses.id AND courses.semester_id = ? AND courses.program_id = ? AND class_has_course.class_id = classes.id`, [semester_id, program_id], function(error, results, fields) {
+                WHERE class_has_course.course_id = courses.id AND courses.semester_id = %L AND courses.program_id = %L AND class_has_course.class_id = classes.id`, semester_id, program_id), function(error, result, fields) {
                 if (error) {
                     var message = error.message + ' at get schedule and course';
                     _global.sendError(res, message);
-                    throw error;
+                    done();
+                    return console.log(error);
                 } else {
-                    res.send({ result: 'success', courses: results });
+                    res.send({ result: 'success', courses: result });
+                    done();
                 }
-                connection.release();
             });
         } else {
-            connection.query(`SELECT courses.*,class_has_course.schedules,classes.name as class_name,
+            connection.query(format(`SELECT courses.*,class_has_course.schedules,classes.name as class_name,
                                     (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
                                     FROM teacher_teach_course,users 
                                     WHERE users.id = teacher_teach_course.teacher_id AND 
@@ -89,23 +94,25 @@ router.post('/schedules-and-courses/', function(req, res, next) {
                                     courses.id = teacher_teach_course.course_id AND 
                                     teacher_teach_course.teacher_role = 1) as TAs  
                 FROM courses, class_has_course, classes 
-                WHERE class_has_course.course_id = courses.id AND courses.semester_id = ? AND courses.program_id = ? AND class_has_course.class_id = classes.id AND classes.id = ?`, [semester_id, program_id, class_id], function(error, results, fields) {
+                WHERE class_has_course.course_id = courses.id AND courses.semester_id = %L AND courses.program_id = %L AND class_has_course.class_id = classes.id AND classes.id = %L`, semester_id, program_id, class_id), function(error, result, fields) {
                 if (error) {
                     var message = error.message + ' at get schedule and course';
                     _global.sendError(res, message);
-                    throw error;
+                    done();
+                    return console.log(error);
                 } else {
-                    res.send({ result: 'success', courses: results });
+                    res.send({ result: 'success', courses: result });
+                    done();
                 }
-                connection.release();
             });
         }
     });
 });
+
 router.get('/schedules-and-courses-by-student/', function(req, res, next) {
     var student_id = req.decoded.id;
     pool.getConnection(function(error, connection) {
-        connection.query(`SELECT courses.*,class_has_course.schedules,classes.name as class_name,
+        connection.query(format(`SELECT courses.*,class_has_course.schedules,classes.name as class_name,
                                     (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
                                     FROM teacher_teach_course,users 
                                     WHERE users.id = teacher_teach_course.teacher_id AND 
@@ -119,22 +126,24 @@ router.get('/schedules-and-courses-by-student/', function(req, res, next) {
                 FROM courses, class_has_course, classes , student_enroll_course
                 WHERE class_has_course.class_id = classes.id AND class_has_course.course_id = courses.id AND student_enroll_course.class_has_course_id = class_has_course.id 
                 AND courses.semester_id = (SELECT MAX(id) from semesters) 
-                AND student_enroll_course.student_id = ?`, student_id, function(error, results, fields) {
+                AND student_enroll_course.student_id = %L`, student_id), function(error, result, fields) {
             if (error) {
                 var message = error.message + ' at get schedule and course by student';
                 _global.sendError(res, message);
-                throw error;
+                done();
+                return console.log(error);
             } else {
-                res.send({ result: 'success', courses: results });
+                res.send({ result: 'success', courses: result });
+                done();
             }
-            connection.release();
         });
     });
 });
+
 router.get('/schedules-and-courses-by-teacher/', function(req, res, next) {
     var teacher_id = req.decoded.id;
     pool.getConnection(function(error, connection) {
-        connection.query(`SELECT courses.*,class_has_course.schedules,classes.name as class_name,
+        connection.query(format(`SELECT courses.*,class_has_course.schedules,classes.name as class_name,
                             (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
                             FROM teacher_teach_course,users 
                             WHERE users.id = teacher_teach_course.teacher_id AND 
@@ -148,15 +157,16 @@ router.get('/schedules-and-courses-by-teacher/', function(req, res, next) {
             FROM courses, class_has_course, classes , teacher_teach_course 
             WHERE class_has_course.class_id = classes.id AND class_has_course.course_id = courses.id AND
              teacher_teach_course.course_id = class_has_course.course_id 
-             AND courses.semester_id = (SELECT MAX(id) from semesters) AND teacher_teach_course.teacher_id = ?`, teacher_id, function(error, results, fields) {
+             AND courses.semester_id = (SELECT MAX(id) from semesters) AND teacher_teach_course.teacher_id = %L`, teacher_id), function(error, result, fields) {
             if (error) {
                 var message = error.message + ' at get schedule and course by teacher';
                 _global.sendError(res, message);
-                throw error;
+                done();
+                return console.log(error);
             } else {
-                res.send({ result: 'success', courses: results });
+                res.send({ result: 'success', courses: result });
+                done();
             }
-            connection.release();
         });
     });
 });
