@@ -17,6 +17,7 @@ export class TeacherDetailComponent implements OnInit {
         status: 0,
         email: '',
         phone: '',
+        avatar: '',
     };
     public constructor(public  route: ActivatedRoute, public  router: Router, public  teacherService: TeacherService,public  appService:AppService) {
         this.route.params.subscribe(params => { this.teacher_id = params['id'] });
@@ -59,7 +60,7 @@ export class TeacherDetailComponent implements OnInit {
         this.isEditingTeacher = false;
     }
     public onSaveEditTeacher() {
-        this.teacherService.updateTeacher(this.teacher_id, this.editing_name, this.editing_mail, this.editing_phone)
+        this.teacherService.updateTeacher(this.teacher_id, this.editing_name, this.editing_mail, this.editing_phone,this.teacher.avatar)
             .subscribe(result => {
                 this.apiResult = result.result;
                 this.apiResultMessage = result.message;

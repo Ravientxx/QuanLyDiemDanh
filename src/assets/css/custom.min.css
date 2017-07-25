@@ -5048,6 +5048,9 @@ table td {
 .gray_background{
     background: #ededed;
 }
+.warning_background{
+    background: #f0ad4a;
+}
 .only_bottom_border{
     border-top-style: hidden !important;
     border-left-style: hidden !important;
@@ -5060,4 +5063,3 @@ table td {
     background-repeat: no-repeat;
     padding-left: 40px;
 }
-.date

@@ -8,6 +8,7 @@
     <div *ngIf="!teacher_not_found" class="x_panel">
         <div class="x_content">
             <div class="col-md-3 col-sm-3 col-xs-12 profile_left">
+                <img id="profilePic" style="height:150px;width:150px;padding-bottom: 5px;" [src]="teacher.avatar">
                 <ng-container *ngIf="!isEditingTeacher">
                     <h3>{{editing_name}}</h3>
                     <ul class="list-unstyled user_data" style="font-size: medium;">

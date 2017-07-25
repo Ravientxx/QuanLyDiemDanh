@@ -26,7 +26,7 @@ router.post('/list', function(req, res, next) {
     pool_postgres.connect(function(error, connection, done) {
         connection.query(format(`SELECT quiz.* FROM quiz,class_has_course 
             WHERE quiz.class_has_course_id = class_has_course.id AND class_has_course.class_id = %L AND
-             class_has_course.course_id = %L AND closed = 1`, class_id, course_id), function(error, quizzes, fields) {
+             class_has_course.course_id = %L AND closed = TRUE`, class_id, course_id), function(error, quizzes, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 done();
@@ -128,7 +128,7 @@ router.post('/opening', function(req, res, next) {
     pool_postgres.connect(function(error, connection, done) {
         connection.query(format(`SELECT quiz.* FROM quiz,class_has_course 
             WHERE quiz.class_has_course_id = class_has_course.id AND class_has_course.class_id = %L AND
-             class_has_course.course_id = %L AND quiz.closed = 0`, class_id, course_id), function(error, quizzes, fields) {
+             class_has_course.course_id = %L AND quiz.closed = FALSE`, class_id, course_id), function(error, quizzes, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 done();
@@ -222,7 +222,7 @@ router.post('/start', function(req, res, next) {
         if (quiz.code == null) {
             var temp = quiz.timer.split(':');
             var seconds = (+temp[0] * 60 + (+temp[1])) * 1000;
-            connection.query(format(`UPDATE quiz SET closed = 0, code = %L,started_at = %L , ended_at = %L WHERE id = %L`, quiz_code, new Date(), new Date(new Date().getTime() + seconds), quiz.id), function(error, result, fields) {
+            connection.query(format(`UPDATE quiz SET closed = FALSE, code = %L,started_at = %L , ended_at = %L WHERE id = %L`, quiz_code, new Date(), new Date(new Date().getTime() + seconds), quiz.id), function(error, result, fields) {
                 if (error) {
                     _global.sendError(res, error.message);
                     done();
@@ -337,7 +337,7 @@ router.post('/stop', function(req, res, next) {
     }
     var quiz_id = req.body.quiz_id;
     pool_postgres.connect(function(error, connection, done) {
-        connection.query(format(`UPDATE quiz SET closed = 1, ended_at = %L WHERE id = %L`, new Date(), quiz_id), function(error, result, fields) {
+        connection.query(format(`UPDATE quiz SET closed = TRUE, ended_at = %L WHERE id = %L`, new Date(), quiz_id), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, null, error.message);
                 done();
@@ -359,7 +359,7 @@ router.post('/check-code', function(req, res, next) {
     var student_id = req.decoded.id;
     var code = req.body.code;
     pool_postgres.connect(function(error, connection, done) {
-        connection.query(format(`SELECT id,class_has_course_id FROM quiz WHERE code = %L AND closed = 0 LIMIT 1`, code), function(error, result, fields) {
+        connection.query(format(`SELECT id,class_has_course_id FROM quiz WHERE code = %L AND closed = FALSE LIMIT 1`, code), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, null, error.message);
                 done();
@@ -459,7 +459,7 @@ router.post('/submit', function(req, res, next) {
                 connection.query(format(`SELECT attendance.id 
                     FROM quiz,class_has_course,attendance 
                     WHERE quiz.class_has_course_id = class_has_course.id AND class_has_course.class_id = attendance.class_id 
-                    AND class_has_course.course_id = class_has_course.course_id AND attendance.closed = 0 AND quiz.id = %L`, quiz.id), function(error, result, fields) {
+                    AND class_has_course.course_id = class_has_course.course_id AND attendance.closed = FALSE AND quiz.id = %L`, quiz.id), function(error, result, fields) {
                     if (error) {
                         callback(error);
                     } else {

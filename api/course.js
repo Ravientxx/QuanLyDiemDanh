@@ -112,12 +112,12 @@ router.post('/list', function(req, res, next) {
             done();
         };
         var query = `SELECT courses.id,courses.code,courses.name,attendance_count,total_stud, courses.note,courses.office_hour,
-                                (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
+                                (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name)), E'\r\n')
                                 FROM teacher_teach_course,users 
                                 WHERE users.id = teacher_teach_course.teacher_id AND 
                                     courses.id = teacher_teach_course.course_id AND 
                                     teacher_teach_course.teacher_role = 0) as lecturers,
-                                (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
+                                (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name)), E'\r\n')
                                 FROM teacher_teach_course,users 
                                 WHERE users.id = teacher_teach_course.teacher_id AND 
                                     courses.id = teacher_teach_course.course_id AND 
@@ -587,12 +587,12 @@ router.post('/list/teaching', function(req, res, next) {
             done();
         };
         var query = `SELECT courses.id,courses.code,courses.name,total_stud,classes.id as class_id,classes.name as class_name, 
-                            (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
+                            (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name)), E'\r\n')
                             FROM teacher_teach_course,users 
                             WHERE users.id = teacher_teach_course.teacher_id AND 
                                 courses.id = teacher_teach_course.course_id AND 
                                 teacher_teach_course.teacher_role = 0) as lecturers, 
-                            (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
+                            (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name)), E'\r\n')
                             FROM teacher_teach_course,users 
                             WHERE users.id = teacher_teach_course.teacher_id AND 
                                 courses.id = teacher_teach_course.course_id AND 
@@ -855,12 +855,12 @@ router.post('/export', function(req, res, next) {
             function(callback) {
                 async.each(classes_id, function(class_id, callback) {
                     connection.query(format(`SELECT courses.id,courses.code,courses.name,attendance_count,total_stud, courses.note,courses.office_hour,classes.name as class_name,
-                                (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
+                                (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name)), E'\r\n')
                                 FROM teacher_teach_course,users 
                                 WHERE users.id = teacher_teach_course.teacher_id AND 
                                     courses.id = teacher_teach_course.course_id AND 
                                     teacher_teach_course.teacher_role = 0) as lecturers,
-                                (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
+                                (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name)), E'\r\n')
                                 FROM teacher_teach_course,users 
                                 WHERE users.id = teacher_teach_course.teacher_id AND 
                                     courses.id = teacher_teach_course.course_id AND 

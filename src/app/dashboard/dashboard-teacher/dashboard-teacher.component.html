@@ -2,7 +2,16 @@
     <div class="x_panel">
         <div class="x_content">
             <div class="row">
-                <div class="col-sm-3 col-xs-12 profile_left">
+                <div class="col-sm-2" style="padding: 0;text-align: center;">
+                    <img id="profilePic" style="height:150px;width:150px;padding-bottom: 5px;">
+                    <ng-container *ngIf="isEditingProfile">
+                        <label class="btn btn-primary">
+                            Change Picture
+                            <input type="file" style="display:none;" name="uploads" (change)="onEditProfilePic($event)">
+                        </label>  
+                    </ng-container>    
+                </div>
+                <div class="col-sm-4 col-xs-12 profile_left">
                     <ng-container *ngIf="!isEditingProfile">
                         <h3>{{editing_name}}</h3>
                         <ul class="list-unstyled user_data" style="font-size: medium;">
@@ -31,7 +40,7 @@
                         <button class="btn btn-success" (click)="onSaveEditProfile()">Save</button>
                     </ng-container>
                 </div>
-                <div class="col-sm-9 col-xs-12">
+                <div class="col-sm-6 col-xs-12">
                     <div class="row pad-top col-xs-12">
                         <button type="button" class="btn btn-primary" (click)="onSendFeedback()">
                             <i class="fa fa-comments fa-3x"></i>
@@ -87,7 +96,7 @@
                             <td><a routerLink="/courses/{{course.id}}" routerLinkActive="active"><strong>{{course.code}} - {{course.name}}</strong></a></td>
                             <td>{{course.class_name}}</td>
                             <td>{{course.lecturers}}</td>
-                            <td>{{course.TAs}}</td>
+                            <td>{{course.tas}}</td>
                             <td>{{course.total_stud}}</td>
                             <td *ngIf="!course.is_opening_attendance"><button type="button" class="btn btn-primary btn-round" (click)="onCheckAttendance($event,course)"> <i class="fa fa-check-square-o"></i> Check Attendance</button></td>
                             <td *ngIf="course.is_opening_attendance"><button type="button" class="btn btn-success btn-round" (click)="onCheckAttendance($event,course)"> <i class="fa fa-check-square-o"></i> Opening Attendance</button></td>

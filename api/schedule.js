@@ -59,12 +59,12 @@ router.post('/schedules-and-courses/', function(req, res, next) {
     pool.getConnection(function(error, connection) {
         if (class_id == 0) {
             connection.query(format(`SELECT courses.*,class_has_course.schedules,classes.name as class_name,
-                                    (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
+                                    (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name)), E'\r\n')
                                     FROM teacher_teach_course,users 
                                     WHERE users.id = teacher_teach_course.teacher_id AND 
                                     courses.id = teacher_teach_course.course_id AND 
                                     teacher_teach_course.teacher_role = 0) as lecturers,
-                                    (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
+                                    (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name)), E'\r\n')
                                     FROM teacher_teach_course,users 
                                     WHERE users.id = teacher_teach_course.teacher_id AND 
                                     courses.id = teacher_teach_course.course_id AND 
@@ -83,12 +83,12 @@ router.post('/schedules-and-courses/', function(req, res, next) {
             });
         } else {
             connection.query(format(`SELECT courses.*,class_has_course.schedules,classes.name as class_name,
-                                    (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
+                                    (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name)), E'\r\n')
                                     FROM teacher_teach_course,users 
                                     WHERE users.id = teacher_teach_course.teacher_id AND 
                                     courses.id = teacher_teach_course.course_id AND 
                                     teacher_teach_course.teacher_role = 0) as lecturers,
-                                    (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
+                                    (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name)), E'\r\n')
                                     FROM teacher_teach_course,users 
                                     WHERE users.id = teacher_teach_course.teacher_id AND 
                                     courses.id = teacher_teach_course.course_id AND 
@@ -113,12 +113,12 @@ router.get('/schedules-and-courses-by-student/', function(req, res, next) {
     var student_id = req.decoded.id;
     pool.getConnection(function(error, connection) {
         connection.query(format(`SELECT courses.*,class_has_course.schedules,classes.name as class_name,
-                                    (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
+                                    (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name)), E'\r\n')
                                     FROM teacher_teach_course,users 
                                     WHERE users.id = teacher_teach_course.teacher_id AND 
                                     courses.id = teacher_teach_course.course_id AND 
                                     teacher_teach_course.teacher_role = 0) as lecturers,
-                                    (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
+                                    (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name)), E'\r\n')
                                     FROM teacher_teach_course,users 
                                     WHERE users.id = teacher_teach_course.teacher_id AND 
                                     courses.id = teacher_teach_course.course_id AND 
@@ -144,12 +144,12 @@ router.get('/schedules-and-courses-by-teacher/', function(req, res, next) {
     var teacher_id = req.decoded.id;
     pool.getConnection(function(error, connection) {
         connection.query(format(`SELECT courses.*,class_has_course.schedules,classes.name as class_name,
-                            (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
+                            (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name)), E'\r\n')
                             FROM teacher_teach_course,users 
                             WHERE users.id = teacher_teach_course.teacher_id AND 
                             courses.id = teacher_teach_course.course_id AND 
                             teacher_teach_course.teacher_role = 0) as lecturers,
-                            (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
+                            (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name)), E'\r\n')
                             FROM teacher_teach_course,users 
                             WHERE users.id = teacher_teach_course.teacher_id AND 
                             courses.id = teacher_teach_course.course_id AND 

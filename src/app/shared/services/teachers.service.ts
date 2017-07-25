@@ -75,12 +75,13 @@ export class TeacherService {
             });
     }
     public  updateTeacherUrl = this.appConfig.apiHost + '/teacher/update';
-    public updateTeacher(id: number,name: string, email: string, phone: string = null): Observable < { result: string, message: string } > {
+    public updateTeacher(id: number,name: string, email: string, phone: string = null,avatar : string): Observable < { result: string, message: string } > {
         var params = {
             'id' : id,
             'name': name,
             'email': email,
-            'phone': phone
+            'phone': phone,
+            'avatar': avatar
         };
         let authToken = this.authService.token;
         let headers = new Headers();

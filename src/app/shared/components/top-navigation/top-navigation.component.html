@@ -6,6 +6,7 @@
         <ul class="nav navbar-nav navbar-right">
             <li class="">
                 <a class="user-profile">
+                    <img id="topNavPic" [src]="authService.current_user.avatar">
                     <strong>{{authService.current_user.first_name}} {{authService.current_user.last_name}}</strong>
                 </a>
 <!--                 <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">

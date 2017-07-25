@@ -71,7 +71,7 @@ router.post('/list', function(req, res, next) {
 router.get('/detail/:id', function(req, res, next) {
     var id = req.params['id'];
     pool_postgres.connect(function(error, connection, done) {
-        connection.query(`SELECT users.id,last_name,first_name,email,phone,current_courses FROM users join teachers on users.id = teachers.id WHERE users.id = %L LIMIT 1`, id, function(error, result, fields) {
+        connection.query(format(`SELECT users.*,current_courses FROM users join teachers on users.id = teachers.id WHERE users.id = %L LIMIT 1`, id), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 done();
@@ -211,6 +211,7 @@ router.put('/update', function(req, res, next) {
     var new_first_name = _global.getFirstName(req.body.name);
     var new_email = req.body.email;
     var new_phone = req.body.phone;
+    var new_avatar = req.body.avatar ? req.body.avatar : 'assets/images/avatar.png';
 
     pool_postgres.connect(function(error, connection, done) {
         if (error) {
@@ -229,7 +230,7 @@ router.put('/update', function(req, res, next) {
             },
             //update user table
             function(callback) {
-                connection.query(format(`UPDATE users SET first_name = %L, last_name = %L, email = %L, phone = %L WHERE id = %L`, new_first_name, new_last_name, new_email, new_phone, user_id), function(error, result, fields) {
+                connection.query(format(`UPDATE users SET first_name = %L, last_name = %L, email = %L, phone = %L, avatar = %L WHERE id = %L`, new_first_name, new_last_name, new_email, new_phone,new_avatar, user_id), function(error, result, fields) {
                     if (error) {
                         console.log(error.message + ' at Update Users info');
                         callback(error);

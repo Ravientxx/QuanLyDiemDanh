@@ -25,6 +25,7 @@ export class StudentDetailComponent implements OnInit {
         status: 0,
         email: '',
         phone: '',
+        avatar: '',
         code: ''
     };
     public current_courses = [];
@@ -102,7 +103,7 @@ export class StudentDetailComponent implements OnInit {
     public apiResult: string;
     public apiResultMessage: string;
     public onSaveEditStudent() {
-        this.studentService.updateStudent(this.student.id, this.editing_name, this.editing_mail, this.editing_phone, this.editing_status)
+        this.studentService.updateStudent(this.student.id, this.editing_name, this.editing_mail, this.editing_phone, this.student.avatar, this.editing_status)
             .subscribe(result => {
                 this.apiResult = result.result;
                 this.apiResultMessage = result.message;

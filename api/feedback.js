@@ -15,7 +15,7 @@ router.post('/list', function(req, res, next) {
     var limit = req.body.limit != null ? req.body.limit : _global.detail_limit;
     pool_postgres.connect(function(error, connection, done) {
         var query = `SELECT id, title, content, feedbacks.read, created_at , 
-            (SELECT CONCAT(users.first_name,' ',users.last_name,'\r\n',users.email) FROM users WHERE users.id = feedbacks.from_id) as _from, 
+            (SELECT CONCAT(users.first_name,' ',users.last_name,E'\r\n',users.email) FROM users WHERE users.id = feedbacks.from_id) as _from, 
             (SELECT CONCAT(first_name,' ',last_name) FROM users WHERE users.id = feedbacks.to_id) as _to 
             FROM feedbacks`;
         if(role_id != 0){
@@ -79,7 +79,7 @@ router.put('/read', function(req, res, next) {
             done();
                 return console.log(error);
         }
-        connection.query(format(`UPDATE feedbacks SET feedbacks.read = 1 WHERE id = %L`,feedback_id),function(error, result, fields) {
+        connection.query(format(`UPDATE feedbacks SET feedbacks.read = TRUE WHERE id = %L`,feedback_id),function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 done();

@@ -231,14 +231,14 @@ router.get('/detail/:id', function(req, res, next) {
             }
             var student = result.rows[0];
             connection.query(format(`SELECT courses.id, code, name, attendance_status, enrollment_status,
-                                (SELECT GROUP_CONCAT( CONCAT(users.first_name,' ',users.last_name) SEPARATOR "\r\n")
+                                (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name)), E'\r\n')
                                 FROM teacher_teach_course,users 
                                 WHERE users.id = teacher_teach_course.teacher_id AND 
                                     courses.id = teacher_teach_course.course_id AND 
                                     teacher_teach_course.teacher_role = 0) as lecturers,
                                 (SELECT COUNT(attendance_detail.attendance_id) 
                                 FROM attendance,attendance_detail 
-                                WHERE attendance_detail.student_id = student_enroll_course.student_id AND attendance_detail.attendance_type = -1 AND attendance.course_id = courses.id AND attendance.id = attendance_detail.attendance_id ) as absence_count 
+                                WHERE attendance_detail.student_id = student_enroll_course.student_id AND attendance_detail.attendance_type = 0 AND attendance.course_id = courses.id AND attendance.id = attendance_detail.attendance_id ) as absence_count 
                 FROM student_enroll_course,courses,class_has_course
                 WHERE student_enroll_course.class_has_course_id = class_has_course.id AND class_has_course.course_id = courses.id AND student_enroll_course.student_id = %L`, id), function(error, result, fields) {
                 if (error) {
@@ -280,6 +280,7 @@ router.put('/update', function(req, res, next) {
     var new_email = req.body.email;
     var new_phone = req.body.phone;
     var new_status = req.body.status ? req.body.status : 0;
+    var new_avatar = req.body.avatar ? req.body.avatar : 'assets/images/avatar.png';
     pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
@@ -308,7 +309,7 @@ router.put('/update', function(req, res, next) {
             },
             //update user table
             function(callback) {
-                connection.query(format(`UPDATE users SET first_name = %L, last_name = %L, email = %L, phone = %L WHERE id = %L`, new_first_name, new_last_name, new_email, new_phone, user_id), function(error, result, fields) {
+                connection.query(format(`UPDATE users SET first_name = %L, last_name = %L, email = %L, phone = %L ,avatar = %L WHERE id = %L`, new_first_name, new_last_name, new_email, new_phone, new_avatar, user_id), function(error, result, fields) {
                     if (error) {
                         console.log(error.message + ' at Update Users info');
                         callback(error);
@@ -608,7 +609,7 @@ router.post('/export-examinees', function(req, res, next) {
                             //Sinh viên ko được miễn điểm danh
                             //count absences and total attendance
                             connection.query(`SELECT COUNT(*) as count, attendance_type FROM attendance,attendance_detail 
-                                WHERE attendance.closed = 1 AND id = attendance_id AND student_id = %L AND course_id = %L AND class_id = %L 
+                                WHERE attendance.closed = TRUE AND id = attendance_id AND student_id = %L AND course_id = %L AND class_id = %L 
                                 GROUP BY attendance_type`, [student.id, student.course_id, student.class_id], function(error, result, fields) {
                                 if (error) {
                                     console.log(error.message + ' at count attendance_details');

@@ -47,9 +47,10 @@ router.post('/list-by-course', function(req, res, next) {
                         name: student.name,
                         attendance_details: []
                     };
-                    connection.query(format(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type, created_at 
+                    connection.query(format(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type, created_at, edited_by, edited_reason
                         FROM attendance, attendance_detail 
-                        WHERE attendance.closed = 1 AND attendance.id = attendance_detail.attendance_id AND  course_id = %L AND student_id = %L`, course_id, student.id), function(error, result, fields) {
+                        WHERE attendance.closed = TRUE AND attendance.id = attendance_detail.attendance_id AND  course_id = %L AND student_id = %L 
+                        ORDER BY attendance_id`, course_id, student.id), function(error, result, fields) {
                         if (error) {
                             console.log(error.message + ' at get attendance_details');
                             callback(error);
@@ -59,7 +60,9 @@ router.post('/list-by-course', function(req, res, next) {
                                     attendance_id: result.rows[i].attendance_id,
                                     attendance_time: result.rows[i].attendance_time,
                                     attendance_type: result.rows[i].attendance_type,
-                                    created_at: result.rows[i].created_at
+                                    created_at: result.rows[i].created_at,
+                                    edited_by: result.rows[i].edited_by,
+                                    edited_reason: result.rows[i].edited_reason,
                                 });
                             }
                             attendance_list.push(attendance);
@@ -303,6 +306,8 @@ router.post('/update-list-by-course', function(req, res, next) {
                                                             student.id,
                                                             attendance_detail.attendance_type,
                                                             attendance_detail.attendance_time,
+                                                            req.decoded.id,
+                                                            attendance_detail.edited_reason
                                                         ];
                                                         connection.query(format(`INSERT INTO attendance_detail (attendance_id,student_id,attendance_type,attendance_time) VALUES %L`, temp), function(error, result, fields) {
                                                             if (error) {
@@ -312,7 +317,7 @@ router.post('/update-list-by-course', function(req, res, next) {
                                                             }
                                                         });
                                                     } else {
-                                                        connection.query(format(`UPDATE attendance_detail SET attendance_time = %L, attendance_type = %L, edited_by = %L WHERE attendance_id = %L AND student_id = %L`, attendance_detail.attendance_time, attendance_detail.attendance_type,req.decoded.id,attendance_detail.attendance_id, student.id), function(error, result, fields) {
+                                                        connection.query(format(`UPDATE attendance_detail SET attendance_time = %L, attendance_type = %L, edited_by = %L, edited_reason = %L WHERE attendance_id = %L AND student_id = %L`, attendance_detail.attendance_time, attendance_detail.attendance_type,req.decoded.id,attendance_detail.edited_reason,attendance_detail.attendance_id, student.id), function(error, result, fields) {
                                                             if (error) {
                                                                 callback(error);
                                                             } else {
@@ -395,7 +400,7 @@ router.post('/opening-by-teacher', function(req, res, next) {
          courses.code as course_code, classes.name as class_name,
          teacher_teach_course.* , class_has_course.total_stud, class_has_course.id as class_has_course_id
             FROM attendance, teacher_teach_course, courses, classes, class_has_course
-            WHERE attendance.closed = 0 AND attendance.course_id = teacher_teach_course.course_id AND 
+            WHERE attendance.closed = FALSE AND attendance.course_id = teacher_teach_course.course_id AND 
                 attendance.course_id = courses.id AND attendance.class_id = classes.id AND
                 class_has_course.class_id = classes.id AND class_has_course.course_id = courses.id AND
                 teacher_teach_course.teacher_id = %L`;
@@ -403,7 +408,7 @@ router.post('/opening-by-teacher', function(req, res, next) {
         if (isMobile) {
             query = `SELECT class_has_course.id as class_has_course_id, attendance.id as attendance_id
             FROM attendance, teacher_teach_course, courses, classes, class_has_course
-            WHERE attendance.closed = 0 AND attendance.course_id = teacher_teach_course.course_id AND 
+            WHERE attendance.closed = FALSE AND attendance.course_id = teacher_teach_course.course_id AND 
                 attendance.course_id = courses.id AND attendance.class_id = classes.id AND
                 class_has_course.class_id = classes.id AND class_has_course.course_id = courses.id AND
                 teacher_teach_course.teacher_id = %L`;
@@ -547,7 +552,7 @@ router.post('/close', function(req, res, next) {
                         break;
                     }
                 }
-                connection.query(format(`UPDATE attendance SET closed = 1 WHERE id = %L`, attendance_id), function(error, result, fields) {
+                connection.query(format(`UPDATE attendance SET closed = TRUE WHERE id = %L`, attendance_id), function(error, result, fields) {
                     if (error) {
                         _global.sendError(res, null, 'error at close attendances');
                         done();
@@ -654,8 +659,10 @@ router.post('/check-attendance-list', function(req, res, next) {
                     check_attendance_list.push(attendance);
                     callback();
                 } else {
-                    connection.query(format(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type FROM attendance, attendance_detail 
-                        WHERE attendance.id = attendance_detail.attendance_id AND  course_id = %L AND student_id = %L`, course_id, student.id), function(error, result, fields) {
+                    connection.query(format(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type,created_at, edited_by, edited_reason 
+                        FROM attendance, attendance_detail 
+                        WHERE attendance.id = attendance_detail.attendance_id AND  course_id = %L AND student_id = %L
+                        ORDER BY attendance_id`, course_id, student.id), function(error, result, fields) {
                         if (error) {
                             console.log(error.message + ' at get check_attendance_details');
                             callback(error);
@@ -664,7 +671,10 @@ router.post('/check-attendance-list', function(req, res, next) {
                                 attendance.attendance_details.push({
                                     attendance_id: result.rows[i].attendance_id,
                                     attendance_time: result.rows[i].attendance_time,
-                                    attendance_type: result.rows[i].attendance_type
+                                    attendance_type: result.rows[i].attendance_type,
+                                    created_at: result.rows[i].created_at,
+                                    edited_by: result.rows[i].edited_by,
+                                    edited_reason: result.rows[i].edited_reason
                                 });
                             }
                             check_attendance_list.push(attendance);
@@ -863,9 +873,10 @@ router.post('/list-by-student/', function(req, res, next) {
                     attendance_count: course.attendance_count,
                     attendance_details: []
                 };
-                connection.query(format(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type ,created_at
+                connection.query(format(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type ,created_at, edited_by, edited_reason
                     FROM attendance, attendance_detail 
-                    WHERE attendance.closed = 1 AND attendance.id = attendance_detail.attendance_id AND course_id = %L AND class_id = %L AND student_id = %L `,course.id, course.class_id, student_id), function(error, result, fields) {
+                    WHERE attendance.closed = TRUE AND attendance.id = attendance_detail.attendance_id AND course_id = %L AND class_id = %L AND student_id = %L 
+                    ORDER BY attendance_id`,course.id, course.class_id, student_id), function(error, result, fields) {
                     if (error) {
                         console.log(error.message + ' at get attendance_details by student');
                         callback(error);
@@ -875,7 +886,9 @@ router.post('/list-by-student/', function(req, res, next) {
                                 attendance_id: result.rows[i].attendance_id,
                                 attendance_time: result.rows[i].attendance_time,
                                 attendance_type: result.rows[i].attendance_type,
-                                created_at: result.rows[i].created_at
+                                created_at: result.rows[i].created_at,
+                                edited_by: result.rows[i].edited_by,
+                                edited_reason: result.rows[i].edited_reason,
                             });
                         }
                         attendance_list_by_student.push(attendance);
@@ -915,7 +928,7 @@ router.post('/generate-delegate-code', function(req, res, next) {
     var class_id = req.body.class_id;
     pool_postgres.connect(function(error, connection, done) {
         //check attendance is opening or not ?
-        connection.query(format(`SELECT * FROM attendance WHERE course_id = %L AND class_id = %L AND closed = 0`,course_id, class_id), function(error, result, fields) {
+        connection.query(format(`SELECT * FROM attendance WHERE course_id = %L AND class_id = %L AND closed = FALSE`,course_id, class_id), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, null, 'error at check  attendance opening or not');
                 done();
@@ -1006,7 +1019,7 @@ router.post('/opening-for-student', function(req, res, next) {
 
         query = `SELECT class_has_course.id as class_has_course_id, attendance.id as attendance_id
             FROM qldd.attendance, class_has_course, student_enroll_course as sec
-            WHERE attendance.closed = 0 AND
+            WHERE attendance.closed = FALSE AND
             class_has_course.class_id = attendance.class_id 
             AND class_has_course.course_id = attendance.course_id
             AND sec.class_has_course_id = class_has_course.id

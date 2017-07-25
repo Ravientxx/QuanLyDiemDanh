@@ -157,6 +157,26 @@ export class AppService {
             });
     }
 
+    public uploadAvatarUrl = 'https://api.imgur.com/3/upload';
+    public uploadAvatar(avatar : any): Observable < { result: any} > {
+        var formData = new FormData();
+        formData.append("image",avatar);
+        let headers = new Headers();
+        headers.append("Authorization", "Client-ID 56f531f985863ea");
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.uploadAvatarUrl, formData, options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            //.catch((error: any) => Observable.throw(error || 'Server error'));
+            .catch((error: any) => {
+                if (error.status == 401) {
+                    this.authService.tokenExpired(this.router.url);
+                }
+                return Observable.throw(error || 'Server error');
+            });
+    }
+
     public showPNotify(title, message, type) {
         PNotify.desktop.permission();
         new PNotify({

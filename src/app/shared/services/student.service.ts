@@ -81,12 +81,13 @@ export class StudentService {
             });
     }
     public  updateStudentUrl = this.appConfig.apiHost + '/student/update';
-    public updateStudent(id:number , name: string, email: string, phone: string, status:number): Observable < { result: string, message: string } > {
+    public updateStudent(id:number , name: string, email: string, phone: string, avatar:string, status:number): Observable < { result: string, message: string } > {
         var params = {
             'id': id,
             'name': name,
             'email': email,
             'phone': phone,
+            'avatar': avatar,
             'status': status
         };
         let authToken = this.authService.token;

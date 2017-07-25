@@ -1,4 +1,4 @@
-import { Component, OnInit,ViewChild } from '@angular/core';
+import { Component, OnInit,ViewChild, ElementRef} from '@angular/core';
 import {  AppService, AuthService ,TeacherService,ExcelService,ExportModalComponent } from '../../shared/shared.module';
 import { Router } from '@angular/router';
 declare var jQuery: any;
@@ -10,15 +10,26 @@ export class DashboardStaffComponent implements OnInit {
 
 	public i = 0;
 	public constructor(public  appService: AppService,public  excelService: ExcelService,public  authService: AuthService,
-		public  teacherService: TeacherService,public  router : Router) {
+		public  teacherService: TeacherService,public  router : Router,public element: ElementRef) {
 	}
 	public isEditingProfile = false;
 	public editing_name = '';
 	public editing_phone = '';
 	public editing_mail = '';
-
+	public uploaded_avatar;
 	public apiResult;
 	public apiResultMessage;
+	public onEditProfilePic(event:any){
+		var reader = new FileReader();
+        var image = this.element.nativeElement.querySelector('#profilePic');
+
+        reader.onload = function(e) {
+            var src = e.target['result'];
+            image.src = src;
+        };
+        this.uploaded_avatar = event.target.files[0];
+        reader.readAsDataURL(event.target.files[0]);
+	}
 	public onEditProfile(){
 		this.isEditingProfile = true;
 		this.editing_name = this.authService.current_user.first_name + ' ' + this.authService.current_user.last_name;
@@ -26,10 +37,14 @@ export class DashboardStaffComponent implements OnInit {
 		this.editing_phone = this.authService.current_user.phone;
 	}
 	public onCancelEditProfile(){
+		var image = this.element.nativeElement.querySelector('#profilePic');
+		image.src = this.authService.current_user.avatar;
 		this.isEditingProfile = false;
 	}
 	public onSaveEditProfile(){
-		this.teacherService.updateTeacher(this.authService.current_user.id, this.editing_name, this.editing_mail, this.editing_phone)
+        this.appService.uploadAvatar(this.uploaded_avatar).subscribe(result=>{
+			var avatar_link = result['data'].link;
+			this.teacherService.updateTeacher(this.authService.current_user.id, this.editing_name, this.editing_mail, this.editing_phone, avatar_link)
             .subscribe(result => {
                 this.apiResult = result.result;
                 this.apiResultMessage = result.message;
@@ -37,10 +52,13 @@ export class DashboardStaffComponent implements OnInit {
                     this.isEditingProfile = false;
                     this.authService.current_user.email = this.editing_mail;
                     this.authService.current_user.phone = this.editing_phone;
+                    this.authService.current_user.avatar = avatar_link;
+                    var image = this.element.nativeElement.querySelector('#topNavPic');
+					image.src = this.authService.current_user.avatar;
                 }
-                //this.resultMessageModal.onOpenModal();
                 this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
-            }, error => { this.appService.showPNotify('failure',"Server Error! Can't update profile",'error'); });
+            }, error => { this.appService.showPNotify('failure', "Server Error! Can't edit profile", 'error'); });
+		},error=>{this.appService.showPNotify('failure', "Error! Can't upload new profile picture", 'error');});
 	}
 	public onChangePassword(){
 		this.router.navigate(['/change-password']);
@@ -55,6 +73,8 @@ export class DashboardStaffComponent implements OnInit {
 	public new_class_program;
 	public ngOnInit() {
 		this.editing_name = this.authService.current_user.first_name + ' ' + this.authService.current_user.last_name;
+		var image = this.element.nativeElement.querySelector('#profilePic');
+		image.src = this.authService.current_user.avatar;
 		jQuery('#from_to').daterangepicker(null, function(start, end, label) {
 
         });

@@ -214,6 +214,7 @@ CREATE TABLE users (
   phone varchar(12) DEFAULT NULL,
   password varchar(255) DEFAULT NULL,
   role_id smallint DEFAULT NULL,
+  avatar varchar(255) DEFAULT 'assets/images/avatar.png',
   created_at timestamp DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id)

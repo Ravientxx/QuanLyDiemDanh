@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy, ElementRef } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 import {  AppService, AuthService ,SocketService, AttendanceService , 
     SendFeedbackModalComponent, TeacherService, CourseService} from '../../shared/shared.module';
@@ -11,8 +11,8 @@ declare var jQuery:any;
 export class DashboardTeacherComponent implements OnInit, OnDestroy {
 
 	public opening_attendances = [];
-
-	constructor(public  router: Router,public  localStorage : LocalStorageService,public socketService: SocketService ,
+    public uploaded_avatar;
+	constructor(public  router: Router,public element: ElementRef,public  localStorage : LocalStorageService,public socketService: SocketService ,
         public  appService: AppService,public  authService: AuthService,public  attendanceService: AttendanceService, public  teacherService: TeacherService,public  courseService : CourseService) {
 	    socketService.consumeEventOnCheckAttendanceCreated();
         socketService.invokeCheckAttendanceCreated.subscribe(result=>{
@@ -41,6 +41,8 @@ export class DashboardTeacherComponent implements OnInit, OnDestroy {
     }
 	public ngOnInit() {
 		this.editing_name = this.authService.current_user.first_name + ' ' + this.authService.current_user.last_name;
+        var image = this.element.nativeElement.querySelector('#profilePic');
+        image.src = this.authService.current_user.avatar;
 		this.appService.getSemesterProgramClass().subscribe(results => {
             this.classes = results.classes;
             this.programs = results.programs;
@@ -61,6 +63,17 @@ export class DashboardTeacherComponent implements OnInit, OnDestroy {
 
 	public apiResult;
 	public apiResultMessage;
+    public onEditProfilePic(event:any){
+        var reader = new FileReader();
+        var image = this.element.nativeElement.querySelector('#profilePic');
+
+        reader.onload = function(e) {
+            var src = e.target['result'];
+            image.src = src;
+        };
+        this.uploaded_avatar = event.target.files[0];
+        reader.readAsDataURL(event.target.files[0]);
+    }
 	public onEditProfile(){
 		this.isEditingProfile = true;
 		this.editing_name = this.authService.current_user.first_name + ' ' + this.authService.current_user.last_name;
@@ -68,10 +81,14 @@ export class DashboardTeacherComponent implements OnInit, OnDestroy {
 		this.editing_phone = this.authService.current_user.phone;
 	}
 	public onCancelEditProfile(){
+        var image = this.element.nativeElement.querySelector('#profilePic');
+        image.src = this.authService.current_user.avatar;
 		this.isEditingProfile = false;
 	}
 	public onSaveEditProfile(){
-		this.teacherService.updateTeacher(this.authService.current_user.id, this.editing_name, this.editing_mail, this.editing_phone)
+		this.appService.uploadAvatar(this.uploaded_avatar).subscribe(result=>{
+            var avatar_link = result['data'].link;
+            this.teacherService.updateTeacher(this.authService.current_user.id, this.editing_name, this.editing_mail, this.editing_phone, avatar_link)
             .subscribe(result => {
                 this.apiResult = result.result;
                 this.apiResultMessage = result.message;
@@ -79,10 +96,13 @@ export class DashboardTeacherComponent implements OnInit, OnDestroy {
                     this.isEditingProfile = false;
                     this.authService.current_user.email = this.editing_mail;
                     this.authService.current_user.phone = this.editing_phone;
+                    this.authService.current_user.avatar = avatar_link;
+                    var image = this.element.nativeElement.querySelector('#topNavPic');
+                    image.src = this.authService.current_user.avatar;
                 }
-                //this.resultMessageModal.onOpenModal();
                 this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
-            }, error => { this.appService.showPNotify('failure',"Server Error! Can't update teacher",'error'); });
+            }, error => { this.appService.showPNotify('failure', "Server Error! Can't edit profile", 'error'); });
+        },error=>{this.appService.showPNotify('failure', "Error! Can't upload new profile picture", 'error');});
 	}
 
     @ViewChild(SendFeedbackModalComponent)
