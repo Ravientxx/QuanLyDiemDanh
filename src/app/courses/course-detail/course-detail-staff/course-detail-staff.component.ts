@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { CourseService,StudentService, AttendanceService, AppService, EditScheduleModalComponent, ScheduleService, ResultMessageModalComponent } from '../../../shared/shared.module';
+import { CourseService,StudentService, AttendanceService, AppService, EditScheduleModalComponent,
+ ScheduleService, ResultMessageModalComponent, AuthService } from '../../../shared/shared.module';
 declare let jQuery: any;
 @Component({
     selector: 'course-detail-staff',
@@ -28,7 +29,9 @@ export class CourseDetailStaffComponent implements OnInit {
     @ViewChild(ResultMessageModalComponent)
     public  resultMessageModal: ResultMessageModalComponent;
 
-    public constructor(public route: ActivatedRoute, public studentService: StudentService, public  router: Router,public  appService: AppService, public  courseService: CourseService, public  attendanceSerivce: AttendanceService, public  scheduleService: ScheduleService) {}
+    public constructor(public route: ActivatedRoute, public studentService: StudentService, public  router: Router,
+        public  appService: AppService, public  courseService: CourseService, public  attendanceSerivce: AttendanceService,
+         public  scheduleService: ScheduleService, public authService: AuthService) {}
 
     public getAttendanceList() {
         var classes_id : Array<number> = [];
@@ -112,6 +115,9 @@ export class CourseDetailStaffComponent implements OnInit {
                             attendance_type: this.attendance_lists[k][i].attendance_details[j].attendance_type,
                             attendance_time: this.attendance_lists[k][i].attendance_details[j].attendance_time,
                             created_at: this.attendance_lists[k][i].attendance_details[j].created_at,
+                            edited_reason: this.attendance_lists[k][i].attendance_details[j].edited_reason,
+                            edited_by: this.attendance_lists[k][i].attendance_details[j].edited_by,
+                            editor: this.attendance_lists[k][i].attendance_details[j].editor,
                         };
                         attendance.attendance_details.push(attendance_detail);
                     }
@@ -136,6 +142,9 @@ export class CourseDetailStaffComponent implements OnInit {
                             attendance_type: this.temp_attendance_lists[k][i].attendance_details[j].attendance_type,
                             attendance_time: this.temp_attendance_lists[k][i].attendance_details[j].attendance_time,
                             created_at: this.temp_attendance_lists[k][i].attendance_details[j].created_at,
+                            edited_reason: this.temp_attendance_lists[k][i].attendance_details[j].edited_reason,
+                            edited_by: this.temp_attendance_lists[k][i].attendance_details[j].edited_by,
+                            editor: this.temp_attendance_lists[k][i].attendance_details[j].editor,
                         };
                         attendance.attendance_details.push(attendance_detail);
                     }
@@ -172,12 +181,29 @@ export class CourseDetailStaffComponent implements OnInit {
             this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
         },error=>{this.appService.showPNotify('failure',"Server Error! Can't get save attendance",'error');});
     }
+
+    public edit_attendance_reason = '';
+    public current_attendance_index = 0;
+    public current_attendance_detail_index = 0;
     public onAttendanceCheckClick(attendance_index: number, attendance_detail_index: number) {
-        if (this.temp_attendance_lists[this.selected_class_index][attendance_index].attendance_details[attendance_detail_index].attendance_type) {
-            this.temp_attendance_lists[this.selected_class_index][attendance_index].attendance_details[attendance_detail_index].attendance_type = 0;
-        } else {
-            this.temp_attendance_lists[this.selected_class_index][attendance_index].attendance_details[attendance_detail_index].attendance_type = 1;
-            this.temp_attendance_lists[this.selected_class_index][attendance_index].attendance_details[attendance_detail_index].attendance_time = new Date();
+        jQuery('#confirmChangeAttendanceDetailModal').modal('show');
+        this.current_attendance_index = attendance_index;
+        this.current_attendance_detail_index = attendance_detail_index;
+    }
+    public confirmChangeAttendanceDetail(){
+        if(this.edit_attendance_reason == ''){
+            this.appService.showPNotify('failure',"Error! Reason is required to change attendance detail",'error'); 
+        }else{
+            if (this.temp_attendance_lists[this.selected_class_index][this.current_attendance_index].attendance_details[this.current_attendance_detail_index].attendance_type) {
+                this.temp_attendance_lists[this.selected_class_index][this.current_attendance_index].attendance_details[this.current_attendance_detail_index].attendance_type = 0;
+            } else {
+                this.temp_attendance_lists[this.selected_class_index][this.current_attendance_index].attendance_details[this.current_attendance_detail_index].attendance_type = 1;
+            }
+            this.temp_attendance_lists[this.selected_class_index][this.current_attendance_index].attendance_details[this.current_attendance_detail_index].attendance_time = new Date();
+            this.temp_attendance_lists[this.selected_class_index][this.current_attendance_index].attendance_details[this.current_attendance_detail_index].edited_by = this.authService.current_user.id;
+            this.temp_attendance_lists[this.selected_class_index][this.current_attendance_index].attendance_details[this.current_attendance_detail_index].edited_reason = this.edit_attendance_reason;
+            this.temp_attendance_lists[this.selected_class_index][this.current_attendance_index].attendance_details[this.current_attendance_detail_index].editor = this.authService.current_user.first_name + ' ' + this.authService.current_user.last_name;
+            jQuery('#confirmChangeAttendanceDetailModal').modal('hide');
         }
     }
 
@@ -215,6 +241,8 @@ export class CourseDetailStaffComponent implements OnInit {
                         attendance_type: 0,
                         attendance_time: new Date(),
                         created_at: this.attendance_lists[this.selected_class_index][0].attendance_details[j].created_at,
+                        edited_by: null,
+                        edited_reason: null
                     };
                     attendance.attendance_details.push(attendance_detail);
                 }
@@ -244,6 +272,9 @@ export class CourseDetailStaffComponent implements OnInit {
                 this.temp_attendance_lists[this.selected_class_index][i].attendance_details[j].attendance_type =  this.temp_attendance_lists[this.selected_class_index][i+1].attendance_details[j].attendance_type;
                 this.temp_attendance_lists[this.selected_class_index][i].attendance_details[j].attendance_time =  this.temp_attendance_lists[this.selected_class_index][i+1].attendance_details[j].attendance_time;
                 this.temp_attendance_lists[this.selected_class_index][i].attendance_details[j].created_at =  this.temp_attendance_lists[this.selected_class_index][i+1].attendance_details[j].created_at;
+                this.temp_attendance_lists[this.selected_class_index][i].attendance_details[j].edited_by =  this.temp_attendance_lists[this.selected_class_index][i+1].attendance_details[j].edited_by;
+                this.temp_attendance_lists[this.selected_class_index][i].attendance_details[j].edited_reason =  this.temp_attendance_lists[this.selected_class_index][i+1].attendance_details[j].edited_reason;
+                this.temp_attendance_lists[this.selected_class_index][i].attendance_details[j].editor =  this.temp_attendance_lists[this.selected_class_index][i+1].attendance_details[j].editor;
             }
         }
         this.temp_attendance_lists[this.selected_class_index].pop();

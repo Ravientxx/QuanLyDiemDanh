@@ -86,4 +86,8 @@ export class AuthService {
             //...errors if any
             .catch((error: any) => Observable.throw(error || 'Server error'));
     }
+
+    public saveCurrentUserToLocal(){
+        this.localStorage.set('current_user',this.current_user);
+    }
 }

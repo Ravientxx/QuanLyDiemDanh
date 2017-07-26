@@ -131,7 +131,7 @@ router.post('/list', function(req, res, next) {
         if (semester_id != 0) {
             query += ' AND courses.semester_id = ' + semester_id;
         }
-        //query += ' GROUP BY courses.code ORDER BY courses.id';
+        query += ' ORDER BY courses.id';
         connection.query(query, return_function);
     });
 });
@@ -222,7 +222,7 @@ router.post('/add', function(req, res, next) {
                     },
                     //Insert new Course
                     function(callback) {
-                        connection.query(format(`INSERT INTO courses (code,name,semester_id,program_id,note,office_hour) VALUES %L`, new_course), function(error, result, fields) {
+                        connection.query(format(`INSERT INTO courses (code,name,semester_id,program_id,note,office_hour) VALUES %L RETURNING id`, new_course), function(error, result, fields) {
                             if (error) {
                                 console.log('insert courses error');
                                 callback(error);
@@ -279,7 +279,7 @@ router.post('/add', function(req, res, next) {
                                 new_course_id,
                                 _class.schedule
                             ];
-                            connection.query(format(`INSERT INTO class_has_course VALUES %L`, class_has_course), function(error, result, fields) {
+                            connection.query(format(`INSERT INTO class_has_course VALUES %L RETURNING id`, class_has_course), function(error, result, fields) {
                                 if (error) {
                                     console.log(error.message + ' at insert class_has_course');
                                     callback(error);
@@ -325,7 +325,7 @@ router.post('/add', function(req, res, next) {
                                                                     _global.role.student,
                                                                     bcrypt.hashSync(student.code, 10),
                                                                 ];
-                                                                connection.query(format(`INSERT INTO users (first_name,last_name,email,phone,role_id,password) VALUES %L`, new_user), function(error, result, fields) {
+                                                                connection.query(format(`INSERT INTO users (first_name,last_name,email,phone,role_id,password) VALUES %L RETURNING id`, new_user), function(error, result, fields) {
                                                                     if (error) {
                                                                         callback(error);
                                                                     } else {
@@ -684,7 +684,7 @@ router.post('/import', function(req, res, next) {
                                 email,
                                 program_id
                             ];
-                            connection.query(format(`INSERT INTO classes (name,email,program_id) VALUES %L`, new_class), function(error, result, fields) {
+                            connection.query(format(`INSERT INTO classes (name,email,program_id) VALUES %L RETURNING id`, new_class), function(error, result, fields) {
                                 if (error) {
                                     callback(error);
                                 } else {
@@ -713,7 +713,7 @@ router.post('/import', function(req, res, next) {
                     async.series([
                         //insert courses
                         function(callback) {
-                            connection.query(format(`INSERT INTO courses (code,name,semester_id,program_id,office_hour,note) VALUES %L`, new_course), function(error, result, fields) {
+                            connection.query(format(`INSERT INTO courses (code,name,semester_id,program_id,office_hour,note) VALUES %L RETURNING id`, new_course), function(error, result, fields) {
                                 if (error) {
                                     callback(error);
                                 } else {

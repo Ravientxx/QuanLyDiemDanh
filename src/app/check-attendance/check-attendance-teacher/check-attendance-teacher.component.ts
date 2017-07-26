@@ -43,12 +43,79 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
     public delegate_code = '';
     public check_attendance_list: Array < any > = [];
 
+    public sortAttendanceList(){
+        var temp_check_attendance_list = [];
+        for(var i = 0 ; i < this.check_attendance_list.length; i++){
+            var attendance_details = this.check_attendance_list[i].attendance_details;
+            if(!attendance_details[attendance_details.length - 1].attendance_type){
+                var temp_attendance_details = [];
+                for(var j = 0 ; j < attendance_details.length;j++){
+                    temp_attendance_details.push({
+                        attendance_type: attendance_details[j].attendance_type,
+                        attendance_time: attendance_details[j].attendance_time,
+                        attendance_id: attendance_details[j].attendance_id,
+                        created_at: attendance_details[j].created_at,
+                        edited_reason: attendance_details[j].edited_reason,
+                        edited_by: attendance_details[j].edited_by,
+                        editor: attendance_details[j].editor,
+                    });
+                }
+                temp_check_attendance_list.push({
+                    id : this.check_attendance_list[i].id,
+                    code : this.check_attendance_list[i].code,
+                    name : this.check_attendance_list[i].name,
+                    avatar : this.check_attendance_list[i].avatar,
+                    attendance_details : temp_attendance_details
+                });
+            }
+        }
+        for(var i = 0 ; i < this.check_attendance_list.length; i++){
+            var attendance_details = this.check_attendance_list[i].attendance_details;
+            if(attendance_details[attendance_details.length - 1].attendance_type){
+                var temp_attendance_details = [];
+                for(var j = 0 ; j < attendance_details.length;j++){
+                    temp_attendance_details.push({
+                        attendance_type: attendance_details[j].attendance_type,
+                        attendance_time: attendance_details[j].attendance_time,
+                        attendance_id: attendance_details[j].attendance_id,
+                        created_at: attendance_details[j].created_at,
+                        edited_reason: attendance_details[j].edited_reason,
+                        edited_by: attendance_details[j].edited_by,
+                        editor: attendance_details[j].editor,
+                    });
+                }
+                temp_check_attendance_list.push({
+                    id : this.check_attendance_list[i].id,
+                    code : this.check_attendance_list[i].code,
+                    name : this.check_attendance_list[i].name,
+                    avatar : this.check_attendance_list[i].avatar,
+                    attendance_details : temp_attendance_details
+                });
+            }
+        }
+        for(var i = 0 ; i < this.check_attendance_list.length; i++){
+            this.check_attendance_list[i].id = temp_check_attendance_list[i].id;
+            this.check_attendance_list[i].code = temp_check_attendance_list[i].code;
+            this.check_attendance_list[i].name = temp_check_attendance_list[i].name;
+            this.check_attendance_list[i].avatar = temp_check_attendance_list[i].avatar;
+            for(var j = 0 ; j < temp_check_attendance_list[i].attendance_details.length; j++){
+                this.check_attendance_list[i].attendance_details[j].attendance_id = temp_check_attendance_list[i].attendance_details[j].attendance_id;
+                this.check_attendance_list[i].attendance_details[j].attendance_type = temp_check_attendance_list[i].attendance_details[j].attendance_type;
+                this.check_attendance_list[i].attendance_details[j].attendance_time = temp_check_attendance_list[i].attendance_details[j].attendance_time;
+                this.check_attendance_list[i].attendance_details[j].created_at = temp_check_attendance_list[i].attendance_details[j].created_at;
+                this.check_attendance_list[i].attendance_details[j].edited_reason = temp_check_attendance_list[i].attendance_details[j].edited_reason;
+                this.check_attendance_list[i].attendance_details[j].edited_by = temp_check_attendance_list[i].attendance_details[j].edited_by;
+                this.check_attendance_list[i].attendance_details[j].editor = temp_check_attendance_list[i].attendance_details[j].editor;
+            }
+        }
+    }
     public getCheckAttendanceList() {
         this.selected_class_id = this.selected_attendance['class_id'];
         this.selected_course_id = this.selected_attendance['course_id'];
         this.attendanceService.getCheckAttendanceList(this.selected_course_id,this.selected_class_id).subscribe(result => {
             this.apiResult = result.result;
             this.check_attendance_list = result.check_attendance_list;
+            this.sortAttendanceList();
         }, error => { this.appService.showPNotify('failure',"Server Error! Can't get check_attendance_list",'error'); });
     }
     public ngOnInit() {
@@ -120,8 +187,10 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
     public createAttendance(){
         this.attendanceService.createAttendance(this.selected_course_id, this.selected_class_id, this.authService.current_user.id)
             .subscribe(result => {
-                this.getOpeningAttendance();
-                this.socketService.emitEventOnCheckAttendanceCreated(null);
+                if(result.result == 'success'){
+                    this.getOpeningAttendance();
+                    this.socketService.emitEventOnCheckAttendanceCreated(null);
+                }
             }, error => { this.appService.showPNotify('failure', "Server Error! Can't create new attendances", 'error'); });
     }
     public onChangeAttendance() {
@@ -186,6 +255,7 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
         }
         this.checkAttendanceService.checkList(this.check_attendance_list[student_index].attendance_details[attendance_detail_index].attendance_id,this.check_attendance_list[student_index].id,type).subscribe(result=>{
             this.check_attendance_list[student_index].attendance_details[attendance_detail_index].attendance_type = type;
+            this.sortAttendanceList();
             this.socketService.emitEventOnCheckAttendanceUpdated({
                 course_id : this.selected_course_id,
                 class_id : this.selected_class_id,

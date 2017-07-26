@@ -45,6 +45,7 @@
     "morgan": "~1.7.0",
     "mysql": "^2.13.0",
     "ng2-file-upload": "^1.2.1",
+    "ng2-img-cropper": "^0.9.0",
     "ngx-bootstrap": "^1.6.6",
     "nodemailer": "^4.0.1",
     "pg": "^7.0.1",

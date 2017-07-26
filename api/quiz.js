@@ -14,11 +14,11 @@ var quiz_code_list = [];
 router.post('/list', function(req, res, next) {
     if (req.body.course_id == null || req.body.course_id == 0) {
         _global.sendError(res, null, "Course_id is required");
-        throw "Course_id is required";
+        return console.log("Course_id is required");
     }
     if (req.body.class_id == null || req.body.class_id == 0) {
         _global.sendError(res, null, "Classes id is required");
-        throw "Classes id is required";
+        return console.log("Classes id is required");
     }
     var class_id = req.body.class_id;
     var course_id = req.body.course_id;
@@ -82,7 +82,7 @@ router.post('/list', function(req, res, next) {
 router.post('/detail', function(req, res, next) {
     if (req.body.quiz_id == null || req.body.quiz_id == 0) {
         _global.sendError(res, null, "quiz_id is required");
-        throw "quiz_id is required";
+        return console.log("quiz_id is required");
     }
     var quiz_id = req.body.quiz_id;
     pool_postgres.connect(function(error, connection, done) {
@@ -116,11 +116,11 @@ router.post('/detail', function(req, res, next) {
 router.post('/opening', function(req, res, next) {
     if (req.body.course_id == null || req.body.course_id == 0) {
         _global.sendError(res, null, "Course_id is required");
-        throw "Course_id is required";
+        return console.log("Course_id is required");
     }
     if (req.body.class_id == null || req.body.class_id == 0) {
         _global.sendError(res, null, "Classes id is required");
-        throw "Classes id is required";
+        return console.log("Classes id is required");
     }
     var class_id = req.body.class_id;
     var course_id = req.body.course_id;
@@ -184,23 +184,23 @@ router.post('/opening', function(req, res, next) {
 router.post('/start', function(req, res, next) {
     if (req.body.course_id == null || req.body.course_id == 0) {
         _global.sendError(res, null, "Course_id is required");
-        throw "Course_id is required";
+        return console.log("Course_id is required");
     }
     if (req.body.class_id == null || req.body.class_id == 0) {
         _global.sendError(res, null, "Classes id is required");
-        throw "Classes id is required";
+        return console.log("Classes id is required");
     }
     if (req.body.quiz == null || req.body.quiz.length == 0) {
         _global.sendError(res, null, "Quiz is required");
-        throw "Quiz is required";
+        return console.log("Quiz is required");
     }
     if (req.body.quiz.title == null || req.body.quiz.title == '') {
         _global.sendError(res, null, "Quiz title id is required");
-        throw "Quiz title id is required";
+        return console.log("Quiz title id is required");
     }
     if (req.body.quiz.questions == null || req.body.quiz.questions.length == 0) {
         _global.sendError(res, null, "Quiz questions are required");
-        throw "Quiz questions are required";
+        return console.log("Quiz questions are required");
     }
     var quiz = req.body.quiz;
     var class_id = req.body.class_id;
@@ -208,7 +208,7 @@ router.post('/start', function(req, res, next) {
     for (var i = 0; i < quiz.questions.length; i++) {
         if (req.body.quiz.questions[i].text == null || req.body.quiz.questions[i].text == '') {
             _global.sendError(res, null, "Title of question " + (i + 1) + " are required");
-            throw "Title of question " + (i + 1) + " are required";
+            return console.log("Title of question " + (i + 1) + " are required");
         }
     }
     var class_has_course_id = 0;
@@ -282,7 +282,7 @@ router.post('/start', function(req, res, next) {
                             quiz_code
                         ];
                     }
-                    connection.query(format(`INSERT INTO quiz (title,class_has_course_id,closed,started_at,ended_at,timer,is_use_timer,code) VALUES %L`, new_quiz), function(error, result, fields) {
+                    connection.query(format(`INSERT INTO quiz (title,class_has_course_id,closed,started_at,ended_at,timer,is_use_timer,code) VALUES %L RETURNING id`, new_quiz), function(error, result, fields) {
                         if (error) {
                             callback(error);
                         } else {
@@ -536,7 +536,7 @@ router.post('/submit', function(req, res, next) {
 router.post('/delete', function(req, res, next) {
     if (req.body.quiz_id == null || req.body.quiz_id == 0) {
         _global.sendError(res, null, "quiz_id is required");
-        throw "quiz_id is required";
+        return console.log("quiz_id is required");
     }
     var quiz_id = req.body.quiz_id;
     pool_postgres.connect(function(error, connection, done) {
@@ -677,7 +677,7 @@ router.post('/add', function(req, res, next) {
                     class_has_course_id,
                     1,
                 ];
-                connection.query(format(`INSERT INTO quiz (title,class_has_course_id,closed) VALUES %L`, new_quiz), function(error, result, fields) {
+                connection.query(format(`INSERT INTO quiz (title,class_has_course_id,closed) VALUES %L RETURNING id`, new_quiz), function(error, result, fields) {
                     if (error) {
                         callback(error);
                     } else {

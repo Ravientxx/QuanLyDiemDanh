@@ -13,11 +13,11 @@ const pool_postgres = new pg.Pool(_global.db_postgres);
 router.post('/check-list', function(req, res, next) {
     if (req.body.student_id == null || req.body.student_id == 0) {
         _global.sendError(res, null, "student_id is required");
-        throw "student_id is required";
+        return console.log("student_id is required");
     }
     if (req.body.attendance_id == null || req.body.attendance_id == 0) {
         _global.sendError(res, null, "attendance_id is required");
-        throw "attendance_id is required";
+        return console.log("attendance_id is required");
     }
     var student_id = req.body.student_id;
     var attendance_id = req.body.attendance_id;
@@ -44,7 +44,7 @@ router.post('/qr-code/:id', function(req, res, next) {
         attendance_id = req.body.attendance_id;
         if (attendance_id == null || attendance_id == 0) {
             _global.sendError(res, null, "attendance_id is required");
-            throw "attendance_id is required";
+            return console.log("attendance_id is required");
         }
     }
     

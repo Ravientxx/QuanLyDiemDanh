@@ -168,7 +168,7 @@ router.post('/add', function(req, res, next) {
                     },
                     //add data to user table
                     function(callback) {
-                        connection.query('INSERT INTO users (first_name,last_name,email,phone,password,role_id) VALUES %L', new_user, function(error, result, fields) {
+                        connection.query('INSERT INTO users (first_name,last_name,email,phone,password,role_id) VALUES %L RETURNING id', new_user, function(error, result, fields) {
                             if (error) {
                                 callback(error);
                             }else{
@@ -280,7 +280,7 @@ router.put('/update', function(req, res, next) {
     var new_email = req.body.email;
     var new_phone = req.body.phone;
     var new_status = req.body.status ? req.body.status : 0;
-    var new_avatar = req.body.avatar ? req.body.avatar : 'assets/images/avatar.png';
+    var new_avatar = req.body.avatar ? req.body.avatar : 'http://i.imgur.com/FTa2JWD.png';
     pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
@@ -391,7 +391,7 @@ router.post('/import', function(req, res, next) {
                                             email,
                                             result.rows[0].id
                                         ];
-                                        connection.query(format(`INSERT INTO classes VALUES %L`, new_class), function(error, result, fields) {
+                                        connection.query(format(`INSERT INTO classes VALUES %L RETURNING id`, new_class), function(error, result, fields) {
                                             if (error) {
                                                 callback(error);
                                             } else {
@@ -427,7 +427,7 @@ router.post('/import', function(req, res, next) {
                                     _global.role.student,
                                     bcrypt.hashSync(student.stud_id.toString(), 10),
                                 ];
-                                connection.query(format(`INSERT INTO users (first_name,last_name,email,phone,role_id,password) VALUES %L`, new_user), function(error, result, fields) {
+                                connection.query(format(`INSERT INTO users (first_name,last_name,email,phone,role_id,password) VALUES %L RETURNING id`, new_user), function(error, result, fields) {
                                     if (error) {
                                         callback(error);
                                     } else {
