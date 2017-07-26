@@ -996,7 +996,7 @@ router.post('/studying', function(req, res, next) {
                     return console.log(error);
                 }
 
-                console.log(rows);
+                console.log(result);
 
                 res.send({
                     result: 'success',
