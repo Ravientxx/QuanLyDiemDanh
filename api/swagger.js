@@ -57,6 +57,61 @@
  *         description: json
  */
 
+//Teacher
+
+/**
+* @swagger
+* tags:
+*   name: Teacher
+*   description: Teacher management
+*/
+
+/**
+* @swagger
+* /api/teacher/update:
+*   post:
+*     summary: Update teacher info
+*     description:
+*     tags: [Teacher]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: user token
+*         in: formData
+*         required: true
+*         type: string
+*       - name: id
+*         description: user id
+*         in: formData
+*         required: true
+*         type: integer
+*       - name: name
+*         description: name
+*         in: formData
+*         required: true
+*         type: string
+*       - name: email
+*         description: email
+*         in: formData
+*         required: true
+*         type: string
+*       - name: phone
+*         description: phone
+*         in: formData
+*         required: true
+*         type: string
+*       - name: avatar
+*         description: avatar
+*         in: formData
+*         required: true
+*         type: string
+*     responses:
+*       200:
+*         description: json
+*/
+
+
 // Student
 
 /**
@@ -64,6 +119,51 @@
 * tags:
 *   name: Student
 *   description: Student data
+*/
+
+/**
+* @swagger
+* /api/student/update:
+*   post:
+*     summary: Update student info
+*     description:
+*     tags: [Student]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: user token
+*         in: formData
+*         required: true
+*         type: string
+*       - name: id
+*         description: user id
+*         in: formData
+*         required: true
+*         type: integer
+*       - name: name
+*         description: name
+*         in: formData
+*         required: true
+*         type: string
+*       - name: email
+*         description: email
+*         in: formData
+*         required: true
+*         type: string
+*       - name: phone
+*         description: phone
+*         in: formData
+*         required: true
+*         type: string
+*       - name: avatar
+*         description: avatar
+*         in: formData
+*         required: true
+*         type: string
+*     responses:
+*       200:
+*         description: json
 */
 
 /**
