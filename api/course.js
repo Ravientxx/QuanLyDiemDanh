@@ -298,7 +298,7 @@ router.post('/add', function(req, res, next) {
                                                         for (var i = 0; i < result.rowCount; i++) {
                                                             var temp = [];
                                                             temp.push(class_has_course_id);
-                                                            temp.push(result[i].id);
+                                                            temp.push(result.rows[i].id);
                                                             new_student_enroll_course.push(temp);
                                                         }
                                                         callback();
@@ -352,7 +352,7 @@ router.post('/add', function(req, res, next) {
                                                                 //old student
                                                                 var temp = [];
                                                                 temp.push(class_has_course_id);
-                                                                temp.push(result[0].id);
+                                                                temp.push(result.rows[0].id);
                                                                 new_student_enroll_course.push(temp);
                                                                 callback();
                                                             }
@@ -872,7 +872,7 @@ router.post('/export', function(req, res, next) {
                             console.log(error.message + ' at get course by class');
                             callback(error);
                         } else {
-                            course_lists.push(result);
+                            course_lists.push(result.rows);
                             callback();
                         }
                     });
@@ -919,6 +919,28 @@ router.post('/class-has-course', function(req, res, next) {
         connection.query(`SELECT class_has_course.id,courses.code,courses.name,classes.name as class_name 
                         FROM courses, class_has_course, classes
                         WHERE class_has_course.course_id = courses.id AND classes.id = class_has_course.class_id`, function(error, result, fields) {
+            if (error) {
+                _global.sendError(res, error.message);
+                done();
+                return console.log(error);
+            }
+            res.send({
+                result: 'success',
+                class_has_course: result.rows
+            });
+            done();
+        });
+    });
+});
+
+router.post('/program-has-course', function(req, res, next) {
+    pool_postgres.connect(function(error, connection, done) {
+        if (error) {
+            _global.sendError(res, error.message);
+            done();
+            return console.log(error);
+        }
+        connection.query(`SELECT * FROM programs`, function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 done();

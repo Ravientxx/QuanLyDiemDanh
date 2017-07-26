@@ -69,7 +69,7 @@
 /**
 * @swagger
 * /api/teacher/update:
-*   post:
+*   put:
 *     summary: Update teacher info
 *     description:
 *     tags: [Teacher]

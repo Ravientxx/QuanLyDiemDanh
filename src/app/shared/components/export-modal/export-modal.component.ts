@@ -19,13 +19,13 @@ export class ExportModalComponent implements OnInit {
     public ngOnInit() {}
     public classes = [];
     public programs = [];
-    public class_has_course = [];
+    public program_has_course = [];
     public export_on_search = 1;
     public export_list = [];
     public export_progress = 0;
     public isExporting = false;
     public select_all_class = 0;
-    public select_all_class_has_course = 0;
+    public select_all_program_has_course = 0;
     public select_all_program = 0;
     public file_name = '';
     public onOpenModal() {
@@ -52,12 +52,15 @@ export class ExportModalComponent implements OnInit {
                 break;
             case this.appService.import_export_type.examinees:
                 this.export_on_search = 0;
-                this.courseService.getClassHasCourse().subscribe(result => {
-                    this.class_has_course = result.class_has_course;
-                    for (var i = 0; i < this.class_has_course.length; i++) {
-                        this.class_has_course[i]['selected'] = false;
-                    }
-                }, error => { this.appService.showPNotify('failure', "Server Error! Can't get class_has_course", 'error'); });
+                this.courseService.getProgramHasCourse().subscribe(result => {
+                    this.program_has_course = result.program_has_course;
+                    // for (var i = 0; i < this.class_has_course.length; i++) {
+                    //     this.class_has_course[i]['selected'] = false;
+                    // }
+                }, error => { this.appService.showPNotify('failure', "Server Error! Can't get program_has_course", 'error'); });
+                break;
+            case this.appService.import_export_type.attendance_summary:
+                this.export_on_search = 0;
                 break;
             default:
                 // code...
@@ -69,11 +72,6 @@ export class ExportModalComponent implements OnInit {
     public onSelectAllClass() {
         for (var i = 0; i < this.classes.length; i++) {
             this.classes[i]['selected'] = this.select_all_class;
-        }
-    }
-    public onSelectAllClassHasCourse() {
-        for (var i = 0; i < this.class_has_course.length; i++) {
-            this.class_has_course[i]['selected'] = this.select_all_class_has_course;
         }
     }
     public onSelectAllProgram() {
@@ -193,21 +191,21 @@ export class ExportModalComponent implements OnInit {
         }
     }
     public exportExaminees(){
-        var selected_class_has_course_id = [];
-        var selected_class_has_course = [];
-        for (var i = 0; i < this.class_has_course.length; i++) {
-            if (this.class_has_course[i].selected) {
-                selected_class_has_course_id.push(this.class_has_course[i].id);
-                selected_class_has_course.push(this.class_has_course[i]);
-            }
-        }
-        if (selected_class_has_course_id.length == 0) {
-            return;
-        } else {
-            this.studentService.exportExaminees(selected_class_has_course_id).subscribe(result => {
-                var examinees_lists = result.examinees_lists;
-                this.excelService.writeExamineesLists(examinees_lists,selected_class_has_course);
-            }, error => { this.appService.showPNotify('failure', "Server Error! Can't get examinees lists", 'error') });
-        }
+        // var selected_class_has_course_id = [];
+        // var selected_class_has_course = [];
+        // for (var i = 0; i < this.class_has_course.length; i++) {
+        //     if (this.class_has_course[i].selected) {
+        //         selected_class_has_course_id.push(this.class_has_course[i].id);
+        //         selected_class_has_course.push(this.class_has_course[i]);
+        //     }
+        // }
+        // if (selected_class_has_course_id.length == 0) {
+        //     return;
+        // } else {
+        //     this.studentService.exportExaminees(selected_class_has_course_id).subscribe(result => {
+        //         var examinees_lists = result.examinees_lists;
+        //         this.excelService.writeExamineesLists(examinees_lists,selected_class_has_course);
+        //     }, error => { this.appService.showPNotify('failure', "Server Error! Can't get examinees lists", 'error') });
+        // }
     }
 }

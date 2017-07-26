@@ -77,7 +77,7 @@ router.post('/schedules-and-courses/', function(req, res, next) {
                     done();
                     return console.log(error);
                 } else {
-                    res.send({ result: 'success', courses: result });
+                    res.send({ result: 'success', courses: result.rows });
                     done();
                 }
             });
@@ -101,7 +101,7 @@ router.post('/schedules-and-courses/', function(req, res, next) {
                     done();
                     return console.log(error);
                 } else {
-                    res.send({ result: 'success', courses: result });
+                    res.send({ result: 'success', courses: result.rows });
                     done();
                 }
             });
@@ -133,7 +133,7 @@ router.get('/schedules-and-courses-by-student/', function(req, res, next) {
                 done();
                 return console.log(error);
             } else {
-                res.send({ result: 'success', courses: result });
+                res.send({ result: 'success', courses: result.rows });
                 done();
             }
         });
@@ -164,7 +164,7 @@ router.get('/schedules-and-courses-by-teacher/', function(req, res, next) {
                 done();
                 return console.log(error);
             } else {
-                res.send({ result: 'success', courses: result });
+                res.send({ result: 'success', courses: result.rows });
                 done();
             }
         });
