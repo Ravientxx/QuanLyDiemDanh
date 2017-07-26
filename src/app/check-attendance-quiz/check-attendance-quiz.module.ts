@@ -3,7 +3,6 @@ import { CommonModule }   from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 import { TextMaskModule } from 'angular2-text-mask';
-import { Autosize } from 'angular2-autosize/angular2-autosize';
 import { CollapseModule } from 'ngx-bootstrap';
 import { CheckAttendanceQuizComponent } from './check-attendance-quiz.component'
 import { CheckAttendanceQuizTeacherComponent } from './check-attendance-quiz-teacher/check-attendance-quiz-teacher.component'
@@ -32,8 +31,7 @@ const Routes: Routes = [
   declarations: [
     CheckAttendanceQuizComponent,
     CheckAttendanceQuizStudentComponent,
-    CheckAttendanceQuizTeacherComponent,
-    Autosize
+    CheckAttendanceQuizTeacherComponent
   ],
   providers: []
 })

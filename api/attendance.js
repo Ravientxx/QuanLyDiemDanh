@@ -16,12 +16,10 @@ var delegate_list = [];
 router.post('/list-by-course', function(req, res, next) {
     if (req.body.course_id == null) {
         _global.sendError(res, null, "Course id is required");
-        done();
         return console.log("Course_id is required");
     }
     if (req.body.classes_id == null || req.body.classes_id.length == 0) {
         _global.sendError(res, null, "Classes id is required");
-        done();
         return console.log("Classes id is required");
     }
     var course_id = req.body.course_id;
@@ -29,7 +27,7 @@ router.post('/list-by-course', function(req, res, next) {
     pool_postgres.connect(function(error, connection, done) {
         var attendance_lists = [];
         async.each(classes_id, function(class_id, callback) {
-            connection.query(format(`SELECT students.id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name 
+            connection.query(format(`SELECT students.id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name ,users.avatar
             FROM users,student_enroll_course,students,class_has_course 
             WHERE users.id = students.id AND users.id = student_enroll_course.student_id AND student_enroll_course.class_has_course_id = class_has_course.id AND class_has_course.course_id = %L AND class_has_course.class_id = %L`, course_id, class_id), function(error, result, fields) {
                 if (error) {
@@ -47,7 +45,8 @@ router.post('/list-by-course', function(req, res, next) {
                         name: student.name,
                         attendance_details: []
                     };
-                    connection.query(format(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type, created_at, edited_by, edited_reason
+                    connection.query(format(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type, created_at, edited_by, edited_reason, 
+                        (SELECT CONCAT(users.first_name,' ',users.last_name) FROM users WHERE users.id = edited_by) as editor
                         FROM attendance, attendance_detail 
                         WHERE attendance.closed = TRUE AND attendance.id = attendance_detail.attendance_id AND  course_id = %L AND student_id = %L 
                         ORDER BY attendance_id`, course_id, student.id), function(error, result, fields) {
@@ -63,6 +62,7 @@ router.post('/list-by-course', function(req, res, next) {
                                     created_at: result.rows[i].created_at,
                                     edited_by: result.rows[i].edited_by,
                                     edited_reason: result.rows[i].edited_reason,
+                                    editor: result.rows[i].editor,
                                 });
                             }
                             attendance_list.push(attendance);
@@ -102,12 +102,10 @@ router.post('/list-by-course', function(req, res, next) {
 router.post('/check-add-to-course', function(req, res, next) {
     if (req.body.course_id == null || req.body.course_id == 0) {
         _global.sendError(res, null, "Course_id is required");
-        done();
         return console.log("Course_id is required");
     }
     if (req.body.student_code == null || req.body.student_code == '') {
         _global.sendError(res, null, "Student code is required");
-        done();
         return console.log("Student code is required");
     }
     if (isNaN(req.body.student_code)) {
@@ -116,7 +114,6 @@ router.post('/check-add-to-course', function(req, res, next) {
     }
     if (req.body.student_name == null || req.body.student_name == '') {
         _global.sendError(res, null, "Student name is required");
-        done();
         return console.log("Student name is required");
     }
 
@@ -149,17 +146,14 @@ router.post('/check-add-to-course', function(req, res, next) {
 router.post('/update-list-by-course', function(req, res, next) {
     if (req.body.course_id == null || req.body.course_id == 0) {
         _global.sendError(res, null, "Course_id is required");
-        done();
         return console.log("Course_id is required");
     }
     if (req.body.classes_id == null || req.body.classes_id.length == 0) {
         _global.sendError(res, null, "classes is required");
-        done();
         return console.log("classes is required");
     }
     if (req.body.attendance_lists == null) {
         _global.sendError(res, null, "Attendance Lists is required");
-        done();
         return console.log("Attendance Lists is required");
     }
     var course_id = req.body.course_id;
@@ -176,7 +170,7 @@ router.post('/update-list-by-course', function(req, res, next) {
     }
 
     pool_postgres.connect(function(error, connection, done) {
-        connection.query(`SELECT name FROM courses WHERE id = %L LIMIT 1`, course_id, function(error, result, fields) {
+        connection.query(format(`SELECT name FROM courses WHERE id = %L LIMIT 1`, course_id), function(error, result, fields) {
             if (error) {
                 var message = error.message + ' at check valid course';
                 _global.sendError(res, message);
@@ -189,7 +183,7 @@ router.post('/update-list-by-course', function(req, res, next) {
                 async.series([
                     //Start transaction
                     function(callback) {
-                        connection.query('BEGIN',function(error) {
+                        connection.query('BEGIN', function(error) {
                             if (error) callback(error);
                             else callback();
                         });
@@ -214,7 +208,7 @@ router.post('/update-list-by-course', function(req, res, next) {
                                                             _global.role.student,
                                                             bcrypt.hashSync(student.code, 10),
                                                         ];
-                                                        connection.query(format(`INSERT INTO users (email,role_id,password) VALUES %L`, new_user), function(error, result, fields) {
+                                                        connection.query(format(`INSERT INTO users (email,role_id,password) VALUES %L RETURNING id`, new_user), function(error, result, fields) {
                                                             if (error) {
                                                                 callback(error);
                                                             } else {
@@ -237,7 +231,7 @@ router.post('/update-list-by-course', function(req, res, next) {
                                                         //Exist in system
                                                         //Get class_has_course_id
                                                         student.id = result.rows[0].id;
-                                                        connection.query(format(`SELECT id FROM class_has_course WHERE class_id = %L AND course_id = %L LIMIT 1`,classes_id[index], course_id), function(error, result, fields) {
+                                                        connection.query(format(`SELECT id FROM class_has_course WHERE class_id = %L AND course_id = %L LIMIT 1`, classes_id[index], course_id), function(error, result, fields) {
                                                             if (error) {
                                                                 callback(error);
                                                             } else {
@@ -291,11 +285,13 @@ router.post('/update-list-by-course', function(req, res, next) {
                                                 student.id,
                                                 student.attendance_details[i].attendance_type,
                                                 student.attendance_details[i].attendance_time,
+                                                student.attendance_details[i].edited_by,
+                                                student.attendance_details[i].edited_reason,
                                             ];
                                             insert_attendance_detail.push(temp);
                                         }
                                         async.each(student.attendance_details, function(attendance_detail, callback) {
-                                            connection.query(format(`SELECT * FROM attendance_detail WHERE attendance_id = %L AND student_id = %L`,attendance_detail.attendance_id, student.id), function(error, result, fields) {
+                                            connection.query(format(`SELECT * FROM attendance_detail WHERE attendance_id = %L AND student_id = %L`, attendance_detail.attendance_id, student.id), function(error, result, fields) {
                                                 if (error) {
                                                     callback(error);
                                                 } else {
@@ -306,7 +302,7 @@ router.post('/update-list-by-course', function(req, res, next) {
                                                             student.id,
                                                             attendance_detail.attendance_type,
                                                             attendance_detail.attendance_time,
-                                                            req.decoded.id,
+                                                            attendance_detail.edited_by,
                                                             attendance_detail.edited_reason
                                                         ];
                                                         connection.query(format(`INSERT INTO attendance_detail (attendance_id,student_id,attendance_type,attendance_time) VALUES %L`, temp), function(error, result, fields) {
@@ -317,7 +313,7 @@ router.post('/update-list-by-course', function(req, res, next) {
                                                             }
                                                         });
                                                     } else {
-                                                        connection.query(format(`UPDATE attendance_detail SET attendance_time = %L, attendance_type = %L, edited_by = %L, edited_reason = %L WHERE attendance_id = %L AND student_id = %L`, attendance_detail.attendance_time, attendance_detail.attendance_type,req.decoded.id,attendance_detail.edited_reason,attendance_detail.attendance_id, student.id), function(error, result, fields) {
+                                                        connection.query(format(`UPDATE attendance_detail SET attendance_time = %L, attendance_type = %L, edited_by = %L, edited_reason = %L WHERE attendance_id = %L AND student_id = %L`, attendance_detail.attendance_time, attendance_detail.attendance_type, attendance_detail.edited_by, attendance_detail.edited_reason, attendance_detail.attendance_id, student.id), function(error, result, fields) {
                                                             if (error) {
                                                                 callback(error);
                                                             } else {
@@ -362,7 +358,7 @@ router.post('/update-list-by-course', function(req, res, next) {
                     },
                     //Commit transaction
                     function(callback) {
-                        connection.query('COMMIT',function(error) {
+                        connection.query('COMMIT', function(error) {
                             if (error) callback(error);
                             else callback();
                         });
@@ -390,7 +386,6 @@ router.post('/update-list-by-course', function(req, res, next) {
 router.post('/opening-by-teacher', function(req, res, next) {
     if (req.body.teacher_id == null || req.body.teacher_id == 0) {
         _global.sendError(res, null, "teacher_id is required");
-        done();
         return console.log("teacher_id is required");
     }
     var teacher_id = req.body.teacher_id;
@@ -434,64 +429,91 @@ router.post('/opening-by-teacher', function(req, res, next) {
 router.post('/create', function(req, res, next) {
     if (req.body.course_id == null || req.body.course_id == 0) {
         _global.sendError(res, null, "course_id is required");
-        done();
         return console.log("course_id is required");
     }
     if (req.body.class_id == null || req.body.class_id == 0) {
         _global.sendError(res, null, "class_id is required");
-        done();
         return console.log("class_id is required");
     }
     var course_id = req.body.course_id;
     var class_id = req.body.class_id;
+    var created_by = req.body.created_by ? req.body.created_by : req.decoded.id;
     var attendance = [
-        course_id,
-        class_id,
-        req.decoded.id
+        [
+            course_id,
+            class_id,
+            created_by
+        ]
     ];
+    var new_attendance_id = 0;
     pool_postgres.connect(function(error, connection, done) {
-        connection.query(format(`INSERT INTO attendance (course_id,class_id,created_by) VALUES %L`, attendance), function(error, result, fields) {
-            if (error) {
-                _global.sendError(res, null, 'error at create attendances');
-                done();
-                return console.log(error.message + ' at create attendances');
-            } else {
+        async.series([
+            function(callback) {
+                connection.query('BEGIN', (error) => {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+            //Insert Attendance
+            function(callback) {
+                connection.query(format(`INSERT INTO attendance (course_id,class_id,created_by) VALUES %L RETURNING id`, attendance), function(error, result, fields) {
+                    if (error) {
+                        callback(error.message + ' at create attendances');
+                    } else {
+                        new_attendance_id = result.rows[0].id;
+                        callback();
+                    }
+                });
+            },
+            //Insert attendance detail
+            function(callback) {
                 connection.query(format(`SELECT student_id FROM student_enroll_course,class_has_course,attendance 
                     WHERE student_enroll_course.class_has_course_id = class_has_course.id AND attendance.course_id = class_has_course.course_id 
                     AND attendance.class_id = class_has_course.class_id 
                     AND attendance.course_id = %L AND attendance.class_id = %L 
                     GROUP BY student_enroll_course.student_id `, course_id, class_id), function(error, result, fields) {
                     if (error) {
-                        _global.sendError(res, null, 'error at get student in attendances');
-                        done();
-                        return console.log(error.message + ' at get student in attendances');
+                        callback(error.message + ' at get student in attendances');
                     } else {
                         async.each(result.rows, function(student, callback) {
-                            var attendance_detail = [
-                                result.insertId,
+                            var attendance_detail = [[
+                                new_attendance_id,
                                 student.student_id
-                            ];
+                            ]];
                             connection.query(format(`INSERT INTO attendance_detail (attendance_id,student_id) VALUES %L`, attendance_detail), function(error, result, fields) {
                                 if (error) {
-                                    console.log(error.message + ' at insert attendance_details');
-                                    callback(error);
+                                    console.log(error);
+                                    callback(error.message + ' at insert attendance_details');
                                 } else {
                                     callback();
                                 }
                             });
                         }, function(error) {
-                            if (error) {
-                                _global.sendError(res, error.message);
-                                done();
-                                return console.log(error);
-                            } else {
-                                console.log('insert attendance_details');
-                                res.send({ result: 'success', attendance_id: result.insertId });
-                                done();
-                            }
+                            if(error) callback(error);
+                            else callback();
                         });
                     }
                 });
+            },
+            //Commit transaction
+            function(callback) {
+                connection.query('COMMIT', (error) => {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+        ], function(error) {
+            if (error) {
+                _global.sendError(res, error.message);
+                connection.query('ROLLBACK', (error) => {
+                    if (error) return console.log(error);
+                });
+                done(error);
+                return console.log(error);
+            } else {
+                console.log('insert attendance_details');
+                res.send({ result: 'success', attendance_id: new_attendance_id });
+                done();
             }
         });
     });
@@ -500,7 +522,6 @@ router.post('/create', function(req, res, next) {
 router.post('/delete', function(req, res, next) {
     if (req.body.attendance_id == null || req.body.attendance_id == 0) {
         _global.sendError(res, null, "attendance_id is required");
-        done();
         return console.log("attendance_id is required");
     }
     var attendance_id = req.body.attendance_id;
@@ -535,7 +556,6 @@ router.post('/delete', function(req, res, next) {
 router.post('/close', function(req, res, next) {
     if (req.body.attendance_id == null || req.body.attendance_id == 0) {
         _global.sendError(res, null, "attendance_id is required");
-        done();
         return console.log("attendance_id is required");
     }
     var attendance_id = req.body.attendance_id;
@@ -626,20 +646,18 @@ router.post('/check-attendance-list', function(req, res, next) {
 
     if (req.body.course_id == null || req.body.course_id == 0) {
         _global.sendError(res, null, "Course_id is required");
-        done();
         return console.log("Course_id is required");
     }
     if (req.body.class_id == null || req.body.class_id == 0) {
         _global.sendError(res, null, "Class id is required");
-        done();
         return console.log("Class id is required");
     }
     var course_id = req.body.course_id;
     var class_id = req.body.class_id;
     pool_postgres.connect(function(error, connection, done) {
-        connection.query(format(`SELECT students.id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name 
+        connection.query(format(`SELECT students.id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name ,avatar
             FROM users,student_enroll_course,students,class_has_course 
-            WHERE users.id = students.id AND users.id = student_enroll_course.student_id AND student_enroll_course.class_has_course_id = class_has_course.id AND class_has_course.course_id = %L AND class_has_course.class_id = %L`,course_id, class_id), function(error, result, fields) {
+            WHERE users.id = students.id AND users.id = student_enroll_course.student_id AND student_enroll_course.class_has_course_id = class_has_course.id AND class_has_course.course_id = %L AND class_has_course.class_id = %L`, course_id, class_id), function(error, result, fields) {
             if (error) {
                 var message = error.message + ' at get student_list by course';
                 _global.sendError(res, message);
@@ -653,13 +671,15 @@ router.post('/check-attendance-list', function(req, res, next) {
                     id: student.id,
                     code: student.code,
                     name: student.name,
+                    avatar : student.avatar,
                     attendance_details: []
                 };
                 if (listOnlyFlag) {
                     check_attendance_list.push(attendance);
                     callback();
                 } else {
-                    connection.query(format(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type,created_at, edited_by, edited_reason 
+                    connection.query(format(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type,created_at, edited_by, edited_reason , 
+                        (SELECT CONCAT(users.first_name,' ',users.last_name) FROM users WHERE users.id = edited_by) as editor
                         FROM attendance, attendance_detail 
                         WHERE attendance.id = attendance_detail.attendance_id AND  course_id = %L AND student_id = %L
                         ORDER BY attendance_id`, course_id, student.id), function(error, result, fields) {
@@ -674,7 +694,8 @@ router.post('/check-attendance-list', function(req, res, next) {
                                     attendance_type: result.rows[i].attendance_type,
                                     created_at: result.rows[i].created_at,
                                     edited_by: result.rows[i].edited_by,
-                                    edited_reason: result.rows[i].edited_reason
+                                    edited_reason: result.rows[i].edited_reason,
+                                    editor: result.rows[i].editor,
                                 });
                             }
                             check_attendance_list.push(attendance);
@@ -705,7 +726,6 @@ router.post('/check-attendance-list', function(req, res, next) {
 router.post('/check-attendance', function(req, res, next) {
     if (req.body.attendance_id == null || req.body.attendance_id == 0) {
         _global.sendError(res, null, "attendance_id is required");
-        done();
         return console.log("attendance_id is required");
     }
 
@@ -748,7 +768,6 @@ router.post('/check-attendance', function(req, res, next) {
 router.post('/update-attendance', function(req, res, next) {
     if (req.body.attendance_id == null || req.body.attendance_id == 0) {
         _global.sendError(res, null, "attendance_id is required");
-        done();
         return console.log("attendance_id is required");
     }
 
@@ -779,7 +798,7 @@ router.post('/update-attendance', function(req, res, next) {
             if (error) {
                 _global.sendError(res, error.message);
                 done();
-        return console.log(error);
+                return console.log(error);
             } else {
                 res.send({ result: "success" });
                 done();
@@ -791,17 +810,14 @@ router.post('/update-attendance', function(req, res, next) {
 router.post('/update-attendance-offline', function(req, res, next) {
     if (req.body.data == null || req.body.data.length == 0) {
         _global.sendError(res, null, "attendance detail is required");
-        done();
         return console.log("attendance detail is required");
     }
     if (req.body.course_id == null || req.body.course_id == 0) {
         _global.sendError(res, null, "course id is required");
-        done();
         return console.log("course id is required");
     }
     if (req.body.class_id == null || req.body.class_id == 0) {
         _global.sendError(res, null, "class id is required");
-        done();
         return console.log("class id is required");
     }
 
@@ -813,7 +829,7 @@ router.post('/update-attendance-offline', function(req, res, next) {
             class_id,
             req.decoded.id,
         ];
-        connection.query(format(`INSERT INTO attendance (course_id,class_id,created_by) VALUES %L `, new_attendance), function(error, result, fields) {
+        connection.query(format(`INSERT INTO attendance (course_id,class_id,created_by) VALUES %L RETURNING id`, new_attendance), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, null, "error at insert new attendance");
                 done();
@@ -821,15 +837,15 @@ router.post('/update-attendance-offline', function(req, res, next) {
             } else {
                 attendance_id = result.rows[0].id;
                 var new_attendance_details = [];
-                for(var i = 0 ; i < attendance_detail.length; i++){
+                for (var i = 0; i < attendance_detail.length; i++) {
                     new_attendance_details.push([
                         attendance_id,
                         attendance_detail[i].student_id,
                         attendance_detail[i].status,
                         attendance_detail[i].time
-                        ]);
+                    ]);
                 }
-                connection.query(format(`INSERT INTO attendance_detail (attendance_id,student_id,attendance_type,attendance_time) VALUES ?`,new_attendance_details), function(error, result, fields) {
+                connection.query(format(`INSERT INTO attendance_detail (attendance_id,student_id,attendance_type,attendance_time) VALUES ?`, new_attendance_details), function(error, result, fields) {
                     if (error) {
                         _global.sendError(res, null, "error at insert new attendance_details");
                         done();
@@ -847,7 +863,6 @@ router.post('/update-attendance-offline', function(req, res, next) {
 router.post('/list-by-student/', function(req, res, next) {
     if (req.body.student_id == null) {
         _global.sendError(res, null, "student_id is required");
-        done();
         return console.log("student_id is required");
     }
     var student_id = req.body.student_id;
@@ -873,10 +888,11 @@ router.post('/list-by-student/', function(req, res, next) {
                     attendance_count: course.attendance_count,
                     attendance_details: []
                 };
-                connection.query(format(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type ,created_at, edited_by, edited_reason
+                connection.query(format(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type ,created_at, edited_by, edited_reason, 
+                        (SELECT CONCAT(users.first_name,' ',users.last_name) FROM users WHERE users.id = edited_by) as editor
                     FROM attendance, attendance_detail 
                     WHERE attendance.closed = TRUE AND attendance.id = attendance_detail.attendance_id AND course_id = %L AND class_id = %L AND student_id = %L 
-                    ORDER BY attendance_id`,course.id, course.class_id, student_id), function(error, result, fields) {
+                    ORDER BY attendance_id`, course.id, course.class_id, student_id), function(error, result, fields) {
                     if (error) {
                         console.log(error.message + ' at get attendance_details by student');
                         callback(error);
@@ -889,6 +905,7 @@ router.post('/list-by-student/', function(req, res, next) {
                                 created_at: result.rows[i].created_at,
                                 edited_by: result.rows[i].edited_by,
                                 edited_reason: result.rows[i].edited_reason,
+                                editor: result.rows[i].editor,
                             });
                         }
                         attendance_list_by_student.push(attendance);
@@ -916,19 +933,17 @@ router.post('/list-by-student/', function(req, res, next) {
 router.post('/generate-delegate-code', function(req, res, next) {
     if (req.body.course_id == null || req.body.course_id == 0) {
         _global.sendError(res, null, "Course_id is required");
-        done();
         return console.log("Course_id is required");
     }
     if (req.body.class_id == null || req.body.class_id == 0) {
         _global.sendError(res, null, "Class id is required");
-        done();
         return console.log("Class id is required");
     }
     var course_id = req.body.course_id;
     var class_id = req.body.class_id;
     pool_postgres.connect(function(error, connection, done) {
         //check attendance is opening or not ?
-        connection.query(format(`SELECT * FROM attendance WHERE course_id = %L AND class_id = %L AND closed = FALSE`,course_id, class_id), function(error, result, fields) {
+        connection.query(format(`SELECT * FROM attendance WHERE course_id = %L AND class_id = %L AND closed = FALSE`, course_id, class_id), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, null, 'error at check  attendance opening or not');
                 done();
@@ -978,7 +993,6 @@ router.post('/generate-delegate-code', function(req, res, next) {
 router.post('/check-delegate-code', function(req, res, next) {
     if (req.body.code == null || req.body.code == '') {
         _global.sendError(res, null, "Delegate code is required");
-        done();
         return console.log("Delegate code is required");
     }
     var code = req.body.code;

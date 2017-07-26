@@ -190,4 +190,22 @@ export class CourseService {
                 return Observable.throw(error || 'Server error');
             });
     }
+    public getProgramHasCourseUrl = this.appConfig.apiHost + '/course/program-has-course';
+    public getProgramHasCourse(): Observable < { result: string,program_has_course: Array < any >, message:string } > {
+        var params = {};
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.getProgramHasCourseUrl, params, options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => {
+                if(error.status == 401){
+                    this.authService.tokenExpired(this.router.url);
+                }
+                return Observable.throw(error || 'Server error');
+            });
+    }
 }

@@ -24,7 +24,7 @@ const Routes: Routes = [
     CollapseModule.forRoot(),
     TooltipModule.forRoot(),
     PaginationModule.forRoot(),
-    TabsModule,
+    TabsModule.forRoot(),
     SharedModule
   ],
   declarations: [

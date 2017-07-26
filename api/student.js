@@ -123,7 +123,7 @@ router.post('/add', function(req, res, next) {
             return console.log(error);
         }
 
-        connection.query(`SELECT stud_id FROM students WHERE stud_id = %L LIMIT 1`, new_code, function(error, result, fields) {
+        connection.query(format(`SELECT stud_id FROM students WHERE stud_id = %L LIMIT 1`, new_code), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 done();
@@ -168,7 +168,7 @@ router.post('/add', function(req, res, next) {
                     },
                     //add data to user table
                     function(callback) {
-                        connection.query('INSERT INTO users (first_name,last_name,email,phone,password,role_id) VALUES %L', new_user, function(error, result, fields) {
+                        connection.query(format('INSERT INTO users (first_name,last_name,email,phone,password,role_id) VALUES %L RETURNING id', new_user), function(error, result, fields) {
                             if (error) {
                                 callback(error);
                             }else{
@@ -280,7 +280,7 @@ router.put('/update', function(req, res, next) {
     var new_email = req.body.email;
     var new_phone = req.body.phone;
     var new_status = req.body.status ? req.body.status : 0;
-    var new_avatar = req.body.avatar ? req.body.avatar : 'assets/images/avatar.png';
+    var new_avatar = req.body.avatar ? req.body.avatar : 'http://i.imgur.com/FTa2JWD.png';
     pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
@@ -391,7 +391,7 @@ router.post('/import', function(req, res, next) {
                                             email,
                                             result.rows[0].id
                                         ];
-                                        connection.query(format(`INSERT INTO classes VALUES %L`, new_class), function(error, result, fields) {
+                                        connection.query(format(`INSERT INTO classes VALUES %L RETURNING id`, new_class), function(error, result, fields) {
                                             if (error) {
                                                 callback(error);
                                             } else {
@@ -427,7 +427,7 @@ router.post('/import', function(req, res, next) {
                                     _global.role.student,
                                     bcrypt.hashSync(student.stud_id.toString(), 10),
                                 ];
-                                connection.query(format(`INSERT INTO users (first_name,last_name,email,phone,role_id,password) VALUES %L`, new_user), function(error, result, fields) {
+                                connection.query(format(`INSERT INTO users (first_name,last_name,email,phone,role_id,password) VALUES %L RETURNING id`, new_user), function(error, result, fields) {
                                     if (error) {
                                         callback(error);
                                     } else {
@@ -515,7 +515,7 @@ router.post('/export', function(req, res, next) {
                             console.log(error.message + ' at get student by class');
                             callback(error);
                         } else {
-                            student_lists.push(result);
+                            student_lists.push(result.rows);
                             callback();
                         }
                     });
@@ -576,15 +576,15 @@ router.post('/export-examinees', function(req, res, next) {
             //get student from each class_has_course
             function(callback) {
                 async.each(class_has_course_ids, function(class_has_course_id, callback) {
-                    connection.query(`SELECT student_enroll_course.*,users.last_name,users.first_name, students.stud_id as student_code, students.id,
+                    connection.query(format(`SELECT student_enroll_course.*,users.last_name,users.first_name, students.stud_id as student_code, students.id,
                                     class_has_course.class_id, class_has_course.course_id, class_has_course.attendance_count 
                         FROM student_enroll_course,users, students, class_has_course 
-                        WHERE class_has_course.id = class_has_course_id AND users.id = student_enroll_course.student_id AND users.id = students.id AND class_has_course_id = %L`, class_has_course_id, function(error, result, fields) {
+                        WHERE class_has_course.id = class_has_course_id AND users.id = student_enroll_course.student_id AND users.id = students.id AND class_has_course_id = %L`, class_has_course_id), function(error, result, fields) {
                         if (error) {
                             console.log(error.message + ' at get student by class_has_course');
                             callback(error);
                         } else {
-                            student_lists.push(result);
+                            student_lists.push(result.rows);
                             callback();
                         }
                     });
@@ -608,9 +608,9 @@ router.post('/export-examinees', function(req, res, next) {
                         } else {
                             //Sinh viên ko được miễn điểm danh
                             //count absences and total attendance
-                            connection.query(`SELECT COUNT(*) as count, attendance_type FROM attendance,attendance_detail 
+                            connection.query(format(`SELECT COUNT(*) as count, attendance_type FROM attendance,attendance_detail 
                                 WHERE attendance.closed = TRUE AND id = attendance_id AND student_id = %L AND course_id = %L AND class_id = %L 
-                                GROUP BY attendance_type`, [student.id, student.course_id, student.class_id], function(error, result, fields) {
+                                GROUP BY attendance_type`, student.id, student.course_id, student.class_id), function(error, result, fields) {
                                 if (error) {
                                     console.log(error.message + ' at count attendance_details');
                                     callback(error);
@@ -618,8 +618,8 @@ router.post('/export-examinees', function(req, res, next) {
                                     var total = 0;
                                     var absence = 0;
                                     for (var i = 0; i < result.rowCount; i++) {
-                                        if (result[i].attendance_type == _global.attendance_type.absent) absence = result[i].count;
-                                        total += result[i].count;
+                                        if (result.rows[i].attendance_type == _global.attendance_type.absent) absence = result.rows[i].count;
+                                        total += result.rows[i].count;
                                     }
                                     console.log(student.student_code + ' ' + absence + ' ' + total);
                                     if (Math.floor(100 * absence / total) <= 30) {

@@ -4,7 +4,6 @@ import { FormsModule }    from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 
 import { CollapseModule } from 'ngx-bootstrap';
-
 import { CoursesComponent } from './courses.component'
 import { AddCourseComponent } from './add-course/add-course.component'
 import { CourseDetailComponent } from './course-detail/course-detail.component'

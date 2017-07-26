@@ -28,12 +28,16 @@ export class SideMenuComponent implements OnInit {
 
     public staffMenu = [
         { title: 'Dashboard', url: '/', icon: 'fa-home' },
-        { title: 'Students', url: '/students', icon: 'fa-users' },
+        { title: 'Statistic', url: '/statistic', icon: 'fa-line-chart' }, 
+        { title: 'Students', url: '/students', icon: 'fa-user' },
         { title: 'Courses', url: '/courses', icon: 'fa-book' },
         { title: 'Teachers', url: '/teachers', icon: 'fa-graduation-cap' },
         { title: 'Schedule', url: '/schedule', icon: 'fa-calendar' },
         { title: 'Absence Requests', url: '/absence-requests', icon: 'fa-envelope' },
         { title: 'Feedbacks', url: '/feedbacks', icon: 'fa-comments' }, 
+        { title: 'Classes', url: '/classes', icon: 'fa-users' }, 
+        { title: 'Programs', url: '/programs', icon: 'fa-institution' }, 
+        { title: 'Semesters', url: '/semesters', icon: 'fa-calendar-plus-o' }, 
         // {
         //     title: 'Administration',
         //     url: '/administration',

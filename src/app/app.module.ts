@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 import { RouterModule, Routes } from '@angular/router';
 import { FileUploadModule } from "ng2-file-upload";
-
+import { Autosize } from 'angular2-autosize/angular2-autosize';
 import { AppComponent } from './app.component';
 import { LoginComponent } from './login.component';
 import { LogoutComponent } from './logout.component';
@@ -26,7 +26,8 @@ const ROUTES = [
         AppComponent,
         LoginComponent,
         ForgotPasswordComponent,
-        LogoutComponent
+        LogoutComponent,
+        Autosize
     ],
     imports: [
         BrowserModule,

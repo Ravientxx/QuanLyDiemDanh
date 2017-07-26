@@ -32,6 +32,10 @@ const ROUTES = [{
         { path: 'check-attendance', loadChildren: 'app/check-attendance/check-attendance.module#CheckAttendanceModule' },
         { path: 'check-attendance/quiz', loadChildren: 'app/check-attendance-quiz/check-attendance-quiz.module#CheckAttendanceQuizModule' },
         { path: 'quiz', loadChildren: 'app/quiz/quiz.module#QuizModule' },
+        { path: 'statistic', loadChildren: 'app/statistic/statistic.module#StatisticModule' },
+        { path: 'classes', loadChildren: 'app/classes/classes.module#ClassesModule' },
+        { path: 'programs', loadChildren: 'app/programs/programs.module#ProgramsModule' },
+        { path: 'semesters', loadChildren: 'app/semesters/semesters.module#SemestersModule' },
         { path: 'change-password', component: ChangePasswordComponent },
     ]
 }, ];

@@ -53,10 +53,6 @@
                         <i class="fa fa-institution fa-3x"></i>
                         <h5>New Program</h5>
                     </button>
-                    <button type="button" class="btn btn-primary" (click)="onExportExamineesList()">
-                        <i class="fa fa-address-book-o fa-3x"></i>
-                        <h5>Export Examinees</h5>
-                    </button>
                     <button type="button" class="btn btn-primary" (click)="onChangePassword()">
                         <i class="fa fa-cogs fa-3x"></i>
                         <h5>Change Password</h5>
@@ -198,4 +194,3 @@
         </div>
     </div>
 </div>
-<export-modal [export_type]="appService.import_export_type.examinees" [title]="'Export Examinees'"></export-modal>

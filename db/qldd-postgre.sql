@@ -15,11 +15,11 @@ CREATE TABLE absence_requests (
   id serial NOT NULL,
   student_id int NOT NULL,
   reason varchar(255) DEFAULT NULL,
-  start_date timestamp DEFAULT NULL,
-  end_date timestamp DEFAULT NULL,
+  start_date timestamp with time zone DEFAULT NULL,
+  end_date timestamp with time zone DEFAULT NULL,
   status smallint NOT NULL DEFAULT 0,
-  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp DEFAULT CURRENT_TIMESTAMP,
+  created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id)
 );
 
@@ -31,16 +31,16 @@ CREATE TABLE attendance (
   id serial NOT NULL,
   course_id int DEFAULT NULL,
   class_id int DEFAULT NULL,
-  time timestamp DEFAULT NULL,
+  time timestamp with time zone DEFAULT NULL,
   student_count smallint DEFAULT 0,
-  teacher_checkin timestamp DEFAULT NULL,
-  teacher_checkout timestamp DEFAULT NULL,
+  teacher_checkin timestamp with time zone DEFAULT NULL,
+  teacher_checkout timestamp with time zone DEFAULT NULL,
   created_by int DEFAULT NULL,
   validated_by int DEFAULT NULL,
-  validation_time timestamp DEFAULT NULL,
+  validation_time timestamp with time zone DEFAULT NULL,
   addition_info varchar(50) DEFAULT NULL,
-  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp DEFAULT CURRENT_TIMESTAMP,
+  created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
   closed boolean DEFAULT FALSE,
   PRIMARY KEY (id)
 );
@@ -52,7 +52,7 @@ DROP TABLE IF EXISTS attendance_detail;
 CREATE TABLE attendance_detail (
   attendance_id int NOT NULL,
   student_id int NOT NULL,
-  attendance_time timestamp DEFAULT NULL,
+  attendance_time timestamp with time zone DEFAULT NULL,
   attendance_type smallint NOT NULL DEFAULT '0',
   edited_by int DEFAULT NULL,
   edited_reason varchar(255) DEFAULT NULL,
@@ -83,8 +83,8 @@ CREATE TABLE courses (
   program_id int DEFAULT NULL,
   note varchar(255) NULL,
   office_hour varchar(50) NULL,
-  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp DEFAULT CURRENT_TIMESTAMP,
+  created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id)
 );
 
@@ -100,7 +100,7 @@ CREATE TABLE feedbacks (
   content varchar(255) DEFAULT NULL,
   type smallint DEFAULT 0,
   read boolean DEFAULT FALSE,
-  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
+  created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id)
 );
 
@@ -111,7 +111,7 @@ DROP TABLE IF EXISTS log;
 CREATE TABLE log (
   id serial NOT NULL,
   user_id int NOT NULL,
-  time timestamp DEFAULT CURRENT_TIMESTAMP,
+  time timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
   object_id int DEFAULT NULL,
   object_type smallint DEFAULT NULL,
   user_action smallint DEFAULT NULL,
@@ -149,8 +149,8 @@ DROP TABLE IF EXISTS semesters;
 CREATE TABLE semesters (
   id serial NOT NULL,
   name varchar(50) NOT NULL DEFAULT '???',
-  start_date timestamp DEFAULT NULL,
-  end_date timestamp DEFAULT NULL,
+  start_date timestamp with time zone DEFAULT NULL,
+  end_date timestamp with time zone DEFAULT NULL,
   vacation_time varchar(50) DEFAULT NULL,
   PRIMARY KEY (id)
 );
@@ -214,9 +214,9 @@ CREATE TABLE users (
   phone varchar(12) DEFAULT NULL,
   password varchar(255) DEFAULT NULL,
   role_id smallint DEFAULT NULL,
-  avatar varchar(255) DEFAULT 'assets/images/avatar.png',
-  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp DEFAULT CURRENT_TIMESTAMP,
+  avatar varchar(255) DEFAULT 'http://i.imgur.com/FTa2JWD.png',
+  created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id)
 );
 
@@ -231,7 +231,7 @@ CREATE TABLE votes (
   course_id int DEFAULT NULL,
   rate smallint DEFAULT NULL,
   note varchar(50) DEFAULT NULL,
-  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
+  created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id)
 );
 
@@ -259,9 +259,9 @@ CREATE TABLE quiz (
   class_has_course_id int NOT NULL,
   closed boolean DEFAULT FALSE,
   created_by int DEFAULT NULL,
-  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
-  started_at timestamp DEFAULT NULL,
-  ended_at timestamp DEFAULT NULL,
+  created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+  started_at timestamp with time zone DEFAULT NULL,
+  ended_at timestamp with time zone DEFAULT NULL,
   is_use_timer boolean DEFAULT TRUE,
   timer varchar(255) DEFAULT NULL,
   code varchar(7) DEFAULT NULL,
@@ -288,7 +288,7 @@ CREATE TABLE quiz_answers (
   quiz_question_id int NOT NULL,
   answered_by int NOT NULL,
   text text DEFAULT NULL,
-  answered_at timestamp DEFAULT CURRENT_TIMESTAMP,
+  answered_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id,quiz_question_id,answered_by)
 );
 

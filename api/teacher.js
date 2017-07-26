@@ -211,7 +211,7 @@ router.put('/update', function(req, res, next) {
     var new_first_name = _global.getFirstName(req.body.name);
     var new_email = req.body.email;
     var new_phone = req.body.phone;
-    var new_avatar = req.body.avatar ? req.body.avatar : 'assets/images/avatar.png';
+    var new_avatar = req.body.avatar ? req.body.avatar : 'http://i.imgur.com/FTa2JWD.png';
 
     pool_postgres.connect(function(error, connection, done) {
         if (error) {

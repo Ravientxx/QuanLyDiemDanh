@@ -131,7 +131,7 @@ router.post('/list', function(req, res, next) {
         if (semester_id != 0) {
             query += ' AND courses.semester_id = ' + semester_id;
         }
-        //query += ' GROUP BY courses.code ORDER BY courses.id';
+        query += ' ORDER BY courses.id';
         connection.query(query, return_function);
     });
 });
@@ -222,7 +222,7 @@ router.post('/add', function(req, res, next) {
                     },
                     //Insert new Course
                     function(callback) {
-                        connection.query(format(`INSERT INTO courses (code,name,semester_id,program_id,note,office_hour) VALUES %L`, new_course), function(error, result, fields) {
+                        connection.query(format(`INSERT INTO courses (code,name,semester_id,program_id,note,office_hour) VALUES %L RETURNING id`, new_course), function(error, result, fields) {
                             if (error) {
                                 console.log('insert courses error');
                                 callback(error);
@@ -279,7 +279,7 @@ router.post('/add', function(req, res, next) {
                                 new_course_id,
                                 _class.schedule
                             ];
-                            connection.query(format(`INSERT INTO class_has_course VALUES %L`, class_has_course), function(error, result, fields) {
+                            connection.query(format(`INSERT INTO class_has_course VALUES %L RETURNING id`, class_has_course), function(error, result, fields) {
                                 if (error) {
                                     console.log(error.message + ' at insert class_has_course');
                                     callback(error);
@@ -298,7 +298,7 @@ router.post('/add', function(req, res, next) {
                                                         for (var i = 0; i < result.rowCount; i++) {
                                                             var temp = [];
                                                             temp.push(class_has_course_id);
-                                                            temp.push(result[i].id);
+                                                            temp.push(result.rows[i].id);
                                                             new_student_enroll_course.push(temp);
                                                         }
                                                         callback();
@@ -325,7 +325,7 @@ router.post('/add', function(req, res, next) {
                                                                     _global.role.student,
                                                                     bcrypt.hashSync(student.code, 10),
                                                                 ];
-                                                                connection.query(format(`INSERT INTO users (first_name,last_name,email,phone,role_id,password) VALUES %L`, new_user), function(error, result, fields) {
+                                                                connection.query(format(`INSERT INTO users (first_name,last_name,email,phone,role_id,password) VALUES %L RETURNING id`, new_user), function(error, result, fields) {
                                                                     if (error) {
                                                                         callback(error);
                                                                     } else {
@@ -352,7 +352,7 @@ router.post('/add', function(req, res, next) {
                                                                 //old student
                                                                 var temp = [];
                                                                 temp.push(class_has_course_id);
-                                                                temp.push(result[0].id);
+                                                                temp.push(result.rows[0].id);
                                                                 new_student_enroll_course.push(temp);
                                                                 callback();
                                                             }
@@ -684,7 +684,7 @@ router.post('/import', function(req, res, next) {
                                 email,
                                 program_id
                             ];
-                            connection.query(format(`INSERT INTO classes (name,email,program_id) VALUES %L`, new_class), function(error, result, fields) {
+                            connection.query(format(`INSERT INTO classes (name,email,program_id) VALUES %L RETURNING id`, new_class), function(error, result, fields) {
                                 if (error) {
                                     callback(error);
                                 } else {
@@ -713,7 +713,7 @@ router.post('/import', function(req, res, next) {
                     async.series([
                         //insert courses
                         function(callback) {
-                            connection.query(format(`INSERT INTO courses (code,name,semester_id,program_id,office_hour,note) VALUES %L`, new_course), function(error, result, fields) {
+                            connection.query(format(`INSERT INTO courses (code,name,semester_id,program_id,office_hour,note) VALUES %L RETURNING id`, new_course), function(error, result, fields) {
                                 if (error) {
                                     callback(error);
                                 } else {
@@ -872,7 +872,7 @@ router.post('/export', function(req, res, next) {
                             console.log(error.message + ' at get course by class');
                             callback(error);
                         } else {
-                            course_lists.push(result);
+                            course_lists.push(result.rows);
                             callback();
                         }
                     });
@@ -919,6 +919,28 @@ router.post('/class-has-course', function(req, res, next) {
         connection.query(`SELECT class_has_course.id,courses.code,courses.name,classes.name as class_name 
                         FROM courses, class_has_course, classes
                         WHERE class_has_course.course_id = courses.id AND classes.id = class_has_course.class_id`, function(error, result, fields) {
+            if (error) {
+                _global.sendError(res, error.message);
+                done();
+                return console.log(error);
+            }
+            res.send({
+                result: 'success',
+                class_has_course: result.rows
+            });
+            done();
+        });
+    });
+});
+
+router.post('/program-has-course', function(req, res, next) {
+    pool_postgres.connect(function(error, connection, done) {
+        if (error) {
+            _global.sendError(res, error.message);
+            done();
+            return console.log(error);
+        }
+        connection.query(`SELECT * FROM programs`, function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 done();

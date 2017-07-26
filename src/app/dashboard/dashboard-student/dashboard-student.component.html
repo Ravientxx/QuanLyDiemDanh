@@ -92,8 +92,8 @@
                             <ng-container *ngFor="let attendance_detail of course.attendance_details;let j = index">
                                 <ng-template #tolTemplate>
                                     <div>Created at : {{attendance_detail.created_at | date:'short'}}</div>
-                                    <div *ngIf="attendance_detail.attendance_type != appService.attendance_type.absent">Attended at : {{attendance_detail.attendance_time | date:'short'}}</div>
-                                    <div *ngIf="attendance_detail.edited_by">Edited by : </div>
+                                    <div>Edited at : {{attendance_detail.attendance_time | date:'short'}}</div>
+                                    <div *ngIf="attendance_detail.edited_by">Edited by : {{attendance_detail.editor}}</div>
                                     <div *ngIf="attendance_detail.edited_by">Reason : {{attendance_detail.edited_reason}}</div>
                                 </ng-template>
                                 <td [tooltip]="tolTemplate" container="body" [ngClass]="{'warning_background': attendance_detail.edited_by}"><i *ngIf="attendance_detail.attendance_type == appService.attendance_type.checklist" class="fa fa-check attendance-check"></i><i *ngIf="attendance_detail.attendance_type == appService.attendance_type.qr" class="fa fa-qrcode attendance-check"></i><i *ngIf="attendance_detail.attendance_type == appService.attendance_type.quiz" class="fa fa-question-circle attendance-check"></i><i *ngIf="attendance_detail.attendance_type == appService.attendance_type.face" class="fa fa-user-circle-o attendance-check"></i></td>

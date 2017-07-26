@@ -74,15 +74,16 @@ export class DashboardStudentComponent implements OnInit {
             .subscribe(result => {
                 this.apiResult = result.result;
                 this.apiResultMessage = result.message;
+                this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
                 if (result.result == 'success') {
                     this.isEditingProfile = false;
                     this.authService.current_user.email = this.editing_mail;
                     this.authService.current_user.phone = this.editing_phone;
                     this.authService.current_user.avatar = avatar_link;
+                    this.authService.saveCurrentUserToLocal();
                     var image = this.element.nativeElement.querySelector('#topNavPic');
 					image.src = this.authService.current_user.avatar;
                 }
-                this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
             }, error => { this.appService.showPNotify('failure', "Server Error! Can't edit profile", 'error'); });
 		},error=>{this.appService.showPNotify('failure', "Error! Can't upload new profile picture", 'error');});
 	}

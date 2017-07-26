@@ -1,0 +1,23 @@
+<div class="col-md-12 col-sm-12 col-xs-12">
+    <div class="x_panel">
+        <div class="x_title">
+            <h3>Statistic</h3>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <div class="col-xs-12">
+                <div class="pad-top">
+                    <button type="button" class="btn btn-primary" (click)="onExportExamineesList()">
+                        <i class="fa fa-address-book-o fa-3x"></i>
+                        <h5>Export Examinees</h5>
+                    </button>
+                    <button type="button" class="btn btn-primary" (click)="onExportAttendanceSummary()">
+                        <i class="fa fa-cogs fa-3x"></i>
+                        <h5>Export Attendance Summary</h5>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<export-modal [export_type]="export_type" [title]="export_title"></export-modal>
