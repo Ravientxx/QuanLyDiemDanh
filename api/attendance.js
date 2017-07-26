@@ -718,7 +718,7 @@ router.post('/check-attendance', function(req, res, next) {
             return console.log(message);
         }
 
-        connection.query(format(`SELECT students.id as id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name, attendance_detail.attendance_type as status 
+        connection.query(format(`SELECT students.id as id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name, attendance_detail.attendance_type as status, users.avatar as avatar 
             FROM users, attendance_detail, students 
             WHERE users.id = students.id
             AND attendance_detail.student_id = students.id
