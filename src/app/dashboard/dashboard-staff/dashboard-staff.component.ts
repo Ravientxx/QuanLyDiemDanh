@@ -168,15 +168,6 @@ export class DashboardStaffComponent implements OnInit {
             }
         }, error => {this.appService.showPNotify('failure',"Server Error! Can't read student list file",'error');});
 	}
-
-
-	@ViewChild(ExportModalComponent)
-    public  exportModal: ExportModalComponent;
-	public onExportExamineesList(){
-		this.exportModal.onOpenModal();
-	}
-
-	
 	public keyDownFunction(event) {
       if(event.keyCode == 13) {
         this.onSaveEditProfile();

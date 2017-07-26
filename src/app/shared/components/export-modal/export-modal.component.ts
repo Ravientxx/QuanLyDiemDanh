@@ -20,22 +20,24 @@ export class ExportModalComponent implements OnInit {
     public classes = [];
     public programs = [];
     public program_has_course = [];
-    public export_on_search = 1;
+    public export_on_search = 0;
     public export_list = [];
     public export_progress = 0;
     public isExporting = false;
     public select_all_class = 0;
-    public select_all_program_has_course = 0;
+    public select_all_program_has_course = [];
     public select_all_program = 0;
     public file_name = '';
+    public larger_modal = false;
     public onOpenModal() {
+        console.log(this.export_type);
         this.file_name = '';
         this.export_progress = 0;
-        this.export_on_search = 1;
         switch (this.export_type) {
             case this.appService.import_export_type.student:
             case this.appService.import_export_type.course:
             case this.appService.import_export_type.schedule:
+                this.export_on_search = 1;
                 this.appService.getSemesterProgramClass().subscribe(result => {
                     this.classes = result.classes;
                     for (var i = 0; i < this.classes.length; i++) {
@@ -48,25 +50,26 @@ export class ExportModalComponent implements OnInit {
                 }, error => { this.appService.showPNotify('failure', "Server Error! Can't semester class program", 'error'); });
                 break;
             case this.appService.import_export_type.teacher:
-
+                this.export_on_search = 1;
                 break;
             case this.appService.import_export_type.examinees:
-                this.export_on_search = 0;
-                this.courseService.getProgramHasCourse().subscribe(result => {
-                    this.program_has_course = result.program_has_course;
-                    // for (var i = 0; i < this.class_has_course.length; i++) {
-                    //     this.class_has_course[i]['selected'] = false;
-                    // }
-                }, error => { this.appService.showPNotify('failure', "Server Error! Can't get program_has_course", 'error'); });
-                break;
             case this.appService.import_export_type.attendance_summary:
                 this.export_on_search = 0;
+                this.larger_modal = true;
+                this.courseService.getProgramHasCourse().subscribe(result => {
+                    this.program_has_course = result.program_has_course;
+                    for (var i = 0; i < this.program_has_course.length; i++) {
+                        for(var j = 0 ; j < this.program_has_course[i].courses.length; j++){
+                            this.program_has_course[i].courses[j]['selected'] = false;
+                        }
+                        this.select_all_program_has_course.push(0);
+                    }
+                }, error => { this.appService.showPNotify('failure', "Server Error! Can't get program_has_course", 'error'); });
                 break;
             default:
                 // code...
                 break;
         }
-        
         jQuery("#exportModal").modal({ backdrop: 'static', keyboard: false });
     }
     public onSelectAllClass() {
@@ -79,6 +82,12 @@ export class ExportModalComponent implements OnInit {
             this.programs[i]['selected'] = this.select_all_program;
         }
     }
+    public onSelectAllProgramHasCourse(index) {
+        for(var j = 0 ; j < this.program_has_course[index].courses.length; j++){
+            this.program_has_course[index].courses[j]['selected'] = this.select_all_program_has_course[index];
+        }
+    }
+
     public onCancelExport() {
         this.isExporting = false;
         jQuery("#exportModal").modal("hide");
@@ -99,6 +108,9 @@ export class ExportModalComponent implements OnInit {
                 break;
             case this.appService.import_export_type.examinees:
                 this.exportExaminees();
+                break;
+            case this.appService.import_export_type.attendance_summary:
+                this.exportAttendanceSummary();
                 break;
             default:
                 // code...
@@ -191,21 +203,44 @@ export class ExportModalComponent implements OnInit {
         }
     }
     public exportExaminees(){
-        // var selected_class_has_course_id = [];
-        // var selected_class_has_course = [];
-        // for (var i = 0; i < this.class_has_course.length; i++) {
-        //     if (this.class_has_course[i].selected) {
-        //         selected_class_has_course_id.push(this.class_has_course[i].id);
-        //         selected_class_has_course.push(this.class_has_course[i]);
-        //     }
-        // }
-        // if (selected_class_has_course_id.length == 0) {
-        //     return;
-        // } else {
-        //     this.studentService.exportExaminees(selected_class_has_course_id).subscribe(result => {
-        //         var examinees_lists = result.examinees_lists;
-        //         this.excelService.writeExamineesLists(examinees_lists,selected_class_has_course);
-        //     }, error => { this.appService.showPNotify('failure', "Server Error! Can't get examinees lists", 'error') });
-        // }
+        var selected_class_has_course_id = [];
+        var selected_class_has_course = [];
+        for(var i = 0 ; i < this.program_has_course.length; i++){
+            for(var j = 0 ; j < this.program_has_course[i].courses.length; j++){
+                if (this.program_has_course[i].courses[j].selected) {
+                    selected_class_has_course_id.push(this.program_has_course[i].courses[j].id);
+                    this.program_has_course[i].courses[j]['program'] = this.program_has_course[i].name;
+                    selected_class_has_course.push(this.program_has_course[i].courses[j]);
+                }
+            }
+        }
+        if (selected_class_has_course_id.length == 0) {
+            return;
+        } else {
+            this.studentService.exportExaminees(selected_class_has_course_id).subscribe(result => {
+                var examinees_lists = result.examinees_lists;
+                this.excelService.writeExamineesLists(examinees_lists,selected_class_has_course);
+            }, error => { this.appService.showPNotify('failure', "Server Error! Can't get examinees lists", 'error') });
+        }
+    }
+    public exportAttendanceSummary(){
+        var selected_class_has_course_id = [];
+        var selected_class_has_course = [];
+        for(var i = 0 ; i < this.program_has_course.length; i++){
+            for(var j = 0 ; j < this.program_has_course[i].courses.length; j++){
+                if (this.program_has_course[i].courses[j].selected) {
+                    selected_class_has_course_id.push(this.program_has_course[i].courses[j].id);
+                    selected_class_has_course.push(this.program_has_course[i].courses[j]);
+                }
+            }
+        }
+        if (selected_class_has_course_id.length == 0) {
+            return;
+        } else {
+            this.studentService.exportAttendanceSummary(selected_class_has_course_id).subscribe(result => {
+                var attendance_summary_lists = result.attendance_summary_lists;
+                this.excelService.writeAttendanceSummary(attendance_summary_lists, selected_class_has_course);
+            }, error => { this.appService.showPNotify('failure', "Server Error! Can't get attendance summary", 'error') });
+        }
     }
 }

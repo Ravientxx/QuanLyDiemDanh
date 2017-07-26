@@ -918,7 +918,8 @@ router.post('/class-has-course', function(req, res, next) {
         }
         connection.query(`SELECT class_has_course.id,courses.code,courses.name,classes.name as class_name 
                         FROM courses, class_has_course, classes
-                        WHERE class_has_course.course_id = courses.id AND classes.id = class_has_course.class_id`, function(error, result, fields) {
+                        WHERE class_has_course.course_id = courses.id AND classes.id = class_has_course.class_id
+                        ORDER BY classes.name DESC`, function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 done();
@@ -946,11 +947,37 @@ router.post('/program-has-course', function(req, res, next) {
                 done();
                 return console.log(error);
             }
-            res.send({
-                result: 'success',
-                class_has_course: result.rows
+            var program_has_course = result.rows;
+            async.each(program_has_course, function(program, callback) {
+                connection.query(format(`SELECT class_has_course.id,courses.code,courses.name,classes.name as class_name, semesters.name as semester,
+                                (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name)), ', ')
+                                FROM teacher_teach_course,users 
+                                WHERE users.id = teacher_teach_course.teacher_id AND 
+                                    courses.id = teacher_teach_course.course_id AND 
+                                    teacher_teach_course.teacher_role = 0) as lecturers 
+                        FROM courses, class_has_course, classes, semesters
+                        WHERE class_has_course.course_id = courses.id AND classes.id = class_has_course.class_id AND semesters.id = courses.semester_id AND courses.program_id = %L
+                        ORDER BY classes.name DESC`, program.id), function(error, result, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        program['courses'] = result.rows;
+                        callback();
+                    }
+                });
+            }, function(error) {
+                if (error) {
+                    _global.sendError(res, error.message);
+                    done();
+                    return console.log(error);
+                } else {
+                    res.send({
+                        result: 'success',
+                        program_has_course: program_has_course
+                    });
+                    done();
+                }
             });
-            done();
         });
     });
 });

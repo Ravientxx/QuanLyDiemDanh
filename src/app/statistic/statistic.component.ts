@@ -21,12 +21,16 @@ export class StatisticComponent implements OnInit {
 	public onExportExamineesList(){
 		this.export_type = this.appService.import_export_type.examinees;
 		this.export_title = 'Export Examinees';
-		this.exportModal.onOpenModal();
+		setTimeout(()=>{
+			this.exportModal.onOpenModal();
+        },500);
 	}
 
 	public onExportAttendanceSummary(){
 		this.export_type = this.appService.import_export_type.attendance_summary;
 		this.export_title = 'Export Attendance Summary';
-		this.exportModal.onOpenModal();
+		setTimeout(()=>{
+			this.exportModal.onOpenModal();
+        },500);
 	}
 }

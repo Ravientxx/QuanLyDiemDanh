@@ -79,7 +79,7 @@ router.put('/read', function(req, res, next) {
             done();
                 return console.log(error);
         }
-        connection.query(format(`UPDATE feedbacks SET feedbacks.read = TRUE WHERE id = %L`,feedback_id),function(error, result, fields) {
+        connection.query(format(`UPDATE feedbacks SET read = TRUE WHERE id = %L`,feedback_id),function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 done();

@@ -213,4 +213,25 @@ export class StudentService {
                 return Observable.throw(error || 'Server error');
             });
     }
+
+    public exportAttenadanceSummaryUrl = this.appConfig.apiHost + '/student/export-attendance-summary';
+    public exportAttendanceSummary(class_has_course_id:Array<any>): Observable < { result: string,attendance_summary_lists:Array<any>, message: string } > {
+        var params = {
+            'class_has_course_id': class_has_course_id,
+        };
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.exportAttenadanceSummaryUrl, params, options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => {
+                if(error.status == 401){
+                    this.authService.tokenExpired(this.router.url);
+                }
+                return Observable.throw(error || 'Server error');
+            });
+    }
 }

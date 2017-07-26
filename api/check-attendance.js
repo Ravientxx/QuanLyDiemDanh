@@ -47,8 +47,9 @@ router.post('/qr-code/:id', function(req, res, next) {
             return console.log("attendance_id is required");
         }
     }
-    
     var student_id = req.decoded.id;
+    var class_id = 0;
+    var course_id = 0;
     pool_postgres.connect(function(error, connection, done) {
         async.series([
             //Check attendance id
@@ -80,6 +81,8 @@ router.post('/qr-code/:id', function(req, res, next) {
                         if (result.rowCount == 0) {
                             callback('Student did not enrolled in this Course');
                         } else {
+                            class_id = result.rows[0].class_id;
+                            course_id = result.rows[0].course_id;
                             callback();
                         }
                     }
@@ -104,6 +107,8 @@ router.post('/qr-code/:id', function(req, res, next) {
                 res.send({
                     result: 'success',
                 });
+                var socket = req.app.get('socket');
+                socket.emit('checkAttendanceUpdated', {'course_id':course_id,'class_id':class_id});
                 done();
             }
         });

@@ -138,17 +138,36 @@ export class ExcelService {
             var wb = { SheetNames: [], Sheets: {} };
             wb.SheetNames.push(ws_name);
             var ws = {};
-            ws[XLSX.utils.encode_cell({ c: 0, r: 0 })] = { v: 'STT' };
-            ws[XLSX.utils.encode_cell({ c: 1, r: 0 })] = { v: 'MSSV' };
-            ws[XLSX.utils.encode_cell({ c: 2, r: 0 })] = { v: 'Họ' };
-            ws[XLSX.utils.encode_cell({ c: 3, r: 0 })] = { v: 'Tên' };
-            for (var i = 1; i <= student_list.length; i++) {
-                ws[XLSX.utils.encode_cell({ c: 0, r: i })] = { v: i };
-                ws[XLSX.utils.encode_cell({ c: 1, r: i })] = { v: student_list[i - 1].student_code };
-                ws[XLSX.utils.encode_cell({ c: 2, r: i })] = { v: student_list[i - 1].first_name };
-                ws[XLSX.utils.encode_cell({ c: 3, r: i })] = { v: student_list[i - 1].last_name };
+            ws[XLSX.utils.encode_cell({ c: 0, r: 0 })] = { v: 'Trường Đại học Khoa học Tự nhiên - TP.HCM'};
+            ws[XLSX.utils.encode_cell({ c: 0, r: 1 })] = { v: 'Khoa Công Nghệ Thông Tin'};
+            ws[XLSX.utils.encode_cell({ c: 0, r: 2 })] = { v: 'BẢNG ĐIỂM TỔNG KẾT MÔN'};
+            ws[XLSX.utils.encode_cell({ c: 0, r: 3 })] = { v: 'Học kỳ: ' + class_has_course.semester};
+            ws[XLSX.utils.encode_cell({ c: 0, r: 4 })] = { v: 'Chương trình: ' + class_has_course.program};
+            ws[XLSX.utils.encode_cell({ c: 6, r: 4 })] = { v: 'Lớp: ' + class_has_course.class_name};
+            ws[XLSX.utils.encode_cell({ c: 0, r: 5 })] = { v: 'Môn: ' + class_has_course.code + ' - ' + class_has_course.name};
+            ws[XLSX.utils.encode_cell({ c: 6, r: 5 })] = { v: 'Ngày thi: '};
+            ws[XLSX.utils.encode_cell({ c: 0, r: 6 })] = { v: 'Giảng viên: ' + class_has_course.lecturers};
+            ws[XLSX.utils.encode_cell({ c: 6, r: 6 })] = { v: 'Phòng thi: '};
+
+            ws[XLSX.utils.encode_cell({ c: 0, r: 8 })] = { v: 'STT' };
+            ws[XLSX.utils.encode_cell({ c: 1, r: 8 })] = { v: 'MSSV' };
+            ws[XLSX.utils.encode_cell({ c: 2, r: 8 })] = { v: 'Họ SV' };
+            ws[XLSX.utils.encode_cell({ c: 3, r: 8 })] = { v: 'Tên SV' };
+            ws[XLSX.utils.encode_cell({ c: 4, r: 8 })] = { v: 'Số tờ' };
+            ws[XLSX.utils.encode_cell({ c: 5, r: 8 })] = { v: 'Ký tên' };
+            ws[XLSX.utils.encode_cell({ c: 6, r: 8 })] = { v: 'Điểm CK' };
+            ws[XLSX.utils.encode_cell({ c: 7, r: 8 })] = { v: 'Điểm TK' };
+            ws[XLSX.utils.encode_cell({ c: 8, r: 8 })] = { v: 'Ghi chú' };
+            for (var i = 9; i <= student_list.length + 8; i++) {
+                ws[XLSX.utils.encode_cell({ c: 0, r: i })] = { v: i - 8 };
+                ws[XLSX.utils.encode_cell({ c: 1, r: i })] = { v: student_list[i - 9].student_code };
+                ws[XLSX.utils.encode_cell({ c: 2, r: i })] = { v: student_list[i - 9].first_name };
+                ws[XLSX.utils.encode_cell({ c: 3, r: i })] = { v: student_list[i - 9].last_name };
             }
-            ws['!ref'] = XLSX.utils.encode_range({ s: { c: 0, r: 0 }, e: { c: 4, r: student_list.length } });
+            ws[XLSX.utils.encode_cell({ c: 0, r: student_list.length + 10 })] = { v: 'Giảng viên: ...................................' };
+            ws[XLSX.utils.encode_cell({ c: 0, r: student_list.length + 11 })] = { v: 'Ngày: ................................' };
+
+            ws['!ref'] = XLSX.utils.encode_range({ s: { c: 0, r: 0 }, e: { c: 9, r: student_list.length + 12} });
             wb.Sheets[ws_name] = ws;
 
             var wbout = XLSX.write(wb, { bookType: 'xlsx', bookSST: false, type: 'binary' });
@@ -158,6 +177,47 @@ export class ExcelService {
             .then(function(content) {
                 // see FileSaver.js
                 FileSaver.saveAs(content, "examinees.zip");
+            });
+    }
+    public writeAttendanceSummary(student_lists: any, class_has_courses: any) {
+        var zip = new JSZip();
+        for (var j = 0; j < student_lists.length; j++) {
+            var student_list = student_lists[j];
+            var class_has_course = class_has_courses[j];
+
+            var ws_name = "Sheet1";
+            var wb = { SheetNames: [], Sheets: {} };
+            wb.SheetNames.push(ws_name);
+            var ws = {};
+            ws[XLSX.utils.encode_cell({ c: 0, r: 0 })] = { v: 'Danh Sách Sinh Viên Môn ' + class_has_course.code + ' - ' + class_has_course.name};
+            ws[XLSX.utils.encode_cell({ c: 0, r: 1 })] = { v: 'Học kỳ: ' + class_has_course.semester};
+            ws[XLSX.utils.encode_cell({ c: 0, r: 2 })] = { v: 'Giảng viên: ' + class_has_course.lecturers};
+
+            ws[XLSX.utils.encode_cell({ c: 0, r: 4 })] = { v: 'STT' };
+            ws[XLSX.utils.encode_cell({ c: 1, r: 4 })] = { v: 'MSSV' };
+            ws[XLSX.utils.encode_cell({ c: 2, r: 4 })] = { v: 'Họ SV' };
+            ws[XLSX.utils.encode_cell({ c: 3, r: 4 })] = { v: 'Tên SV' };
+            ws[XLSX.utils.encode_cell({ c: 4, r: 4 })] = { v: 'Số buổi vắng' };
+            ws[XLSX.utils.encode_cell({ c: 5, r: 4 })] = { v: 'Số % buổi vắng' };
+            for (var i = 5; i <= student_list.length + 4; i++) {
+                ws[XLSX.utils.encode_cell({ c: 0, r: i })] = { v: i - 4 };
+                ws[XLSX.utils.encode_cell({ c: 1, r: i })] = { v: student_list[i - 5].student_code };
+                ws[XLSX.utils.encode_cell({ c: 2, r: i })] = { v: student_list[i - 5].first_name };
+                ws[XLSX.utils.encode_cell({ c: 3, r: i })] = { v: student_list[i - 5].last_name };
+                ws[XLSX.utils.encode_cell({ c: 4, r: i })] = { v: student_list[i - 5].absent_count };
+                ws[XLSX.utils.encode_cell({ c: 5, r: i })] = { v: student_list[i - 5].absent_percentage };
+            }
+
+            ws['!ref'] = XLSX.utils.encode_range({ s: { c: 0, r: 0 }, e: { c: 6, r: student_list.length + 5} });
+            wb.Sheets[ws_name] = ws;
+
+            var wbout = XLSX.write(wb, { bookType: 'xlsx', bookSST: false, type: 'binary' });
+            zip.file(class_has_course.code + ' - ' + class_has_course.name + ' - ' + class_has_course.class_name + ".xlsx", new Blob([this.s2ab(wbout)]));
+        }
+        zip.generateAsync({ type: "blob" })
+            .then(function(content) {
+                // see FileSaver.js
+                FileSaver.saveAs(content, "attendance_summary.zip");
             });
     }
 

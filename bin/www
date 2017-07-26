@@ -23,6 +23,7 @@ var server = http.createServer(app);
 
 var io = require('socket.io').listen(server);
 
+app.set('socket', io);
 
 io.sockets.on('connection', function(socket){
   console.log('Socket connected');
@@ -132,3 +133,5 @@ function onListening() {
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }
+
+//module.exports = app;

@@ -5083,3 +5083,6 @@ table td {
     font-size: 5em;
     line-height: 140px;
 }
+.larger_modal{
+    width: 1200px !important;
+}
