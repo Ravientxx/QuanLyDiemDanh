@@ -54,7 +54,11 @@ module.exports = {
         accepted: 1,
         rejected: 2
     },
-
+    student_interaction_type:{
+        answer_question: 0,
+        discuss: 1,
+        present: 2
+    },
     jwt_secret_key: '13530191353049',
     jwt_expire_time: '1d',
     jwt_reset_password_expire_time: 30 * 60,

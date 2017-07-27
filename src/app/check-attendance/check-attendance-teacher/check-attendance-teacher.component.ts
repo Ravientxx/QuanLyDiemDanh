@@ -262,4 +262,8 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
             });
         },error=>{this.appService.showPNotify('failure',"Server Error! Can't check_list",'error');});
     }
+
+    public confirmInteraction(student, interaction_type){
+        
+    }
 }

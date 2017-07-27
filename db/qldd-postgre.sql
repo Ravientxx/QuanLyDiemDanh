@@ -178,6 +178,9 @@ CREATE TABLE student_enroll_course (
   student_id int NOT NULL,
   attendance_status smallint DEFAULT '0',
   enrollment_status smallint DEFAULT '0',
+  answered_questions smallint DEFAULT '0',
+  discussions smallint DEFAULT '0',
+  presentations smallint DEFAULT '0',
   PRIMARY KEY (class_has_course_id,student_id)
 );
 

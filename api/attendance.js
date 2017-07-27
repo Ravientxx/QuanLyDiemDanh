@@ -655,7 +655,7 @@ router.post('/check-attendance-list', function(req, res, next) {
     var course_id = req.body.course_id;
     var class_id = req.body.class_id;
     pool_postgres.connect(function(error, connection, done) {
-        connection.query(format(`SELECT students.id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name ,avatar
+        connection.query(format(`SELECT students.id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name ,avatar, answered_questions, discussions, presentations
             FROM users,student_enroll_course,students,class_has_course 
             WHERE users.id = students.id AND users.id = student_enroll_course.student_id AND student_enroll_course.class_has_course_id = class_has_course.id AND class_has_course.course_id = %L AND class_has_course.class_id = %L`, course_id, class_id), function(error, result, fields) {
             if (error) {
@@ -672,6 +672,9 @@ router.post('/check-attendance-list', function(req, res, next) {
                     code: student.code,
                     name: student.name,
                     avatar : student.avatar,
+                    discussions : student.discussions,
+                    answered_questions : student.answered_questions,
+                    presentations : student.presentations,
                     attendance_details: []
                 };
                 if (listOnlyFlag) {
@@ -723,6 +726,7 @@ router.post('/check-attendance-list', function(req, res, next) {
     });
 });
 
+//Mobile
 router.post('/check-attendance', function(req, res, next) {
     if (req.body.attendance_id == null || req.body.attendance_id == 0) {
         _global.sendError(res, null, "attendance_id is required");
@@ -765,6 +769,7 @@ router.post('/check-attendance', function(req, res, next) {
     });
 });
 
+//Mobile
 router.post('/update-attendance', function(req, res, next) {
     if (req.body.attendance_id == null || req.body.attendance_id == 0) {
         _global.sendError(res, null, "attendance_id is required");
@@ -807,6 +812,7 @@ router.post('/update-attendance', function(req, res, next) {
     });
 });
 
+//Mobile
 router.post('/update-attendance-offline', function(req, res, next) {
     if (req.body.data == null || req.body.data.length == 0) {
         _global.sendError(res, null, "attendance detail is required");
@@ -860,6 +866,7 @@ router.post('/update-attendance-offline', function(req, res, next) {
     });
 });
 
+//Student progression
 router.post('/list-by-student/', function(req, res, next) {
     if (req.body.student_id == null) {
         _global.sendError(res, null, "student_id is required");
