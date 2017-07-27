@@ -61,7 +61,7 @@ router.post('/qr-code/:id', function(req, res, next) {
                         if (result.rowCount == 0) {
                             callback('Invalid attendance id');
                         } else {
-                            if(results.rows[0].closed){
+                            if(result.rows[0].closed){
                                 callback('This attendance is closed');
                             }else{
                                 callback();
