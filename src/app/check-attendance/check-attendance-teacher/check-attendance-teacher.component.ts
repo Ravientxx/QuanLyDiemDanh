@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { AppService, AttendanceService, AuthService, SocketService, AppConfig, CheckAttendanceService } from '../../shared/shared.module';
+import { AppService, AttendanceService, AuthService, SocketService, AppConfig, CheckAttendanceService, StudentService } from '../../shared/shared.module';
 import { LocalStorageService } from 'angular-2-local-storage';
 declare var jQuery:any;
 @Component({
@@ -10,7 +10,8 @@ declare var jQuery:any;
 export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
     public stopped_modal_message;
     public constructor(public checkAttendanceService : CheckAttendanceService,public appConfig: AppConfig,public socketService: SocketService ,
-        public authService: AuthService, public attendanceService: AttendanceService, public localStorage: LocalStorageService, public appService: AppService, public router: Router) {
+        public authService: AuthService, public attendanceService: AttendanceService, public localStorage: LocalStorageService,
+         public appService: AppService, public router: Router, public studentService : StudentService) {
         socketService.consumeEventOnCheckAttendanceUpdated();
         socketService.invokeCheckAttendanceUpdated.subscribe(result=>{
             if(this.selected_course_id == result['course_id'] && this.selected_class_id == result['class_id']){
@@ -264,6 +265,21 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
     }
 
     public confirmInteraction(student, interaction_type){
-        
+        this.studentService.updateStudentInteraction(student.id,this.selected_class_id,this.selected_course_id,interaction_type)
+        .subscribe(result=>{
+            if(result.result == 'success'){
+                switch (interaction_type) {
+                    case this.appService.student_interaction_type.answer_question:
+                        student.answered_questions++;
+                        break;
+                    case this.appService.student_interaction_type.discuss:
+                        student.discussions++;
+                        break;
+                    case this.appService.student_interaction_type.present:
+                        student.presentations++;
+                        break;
+                }
+            }
+        },error=>{this.appService.showPNotify('failure',"Server Error! Can't update student interaction",'error');});
     }
 }

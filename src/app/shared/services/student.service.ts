@@ -80,6 +80,7 @@ export class StudentService {
                 return Observable.throw(error || 'Server error');
             });
     }
+
     public  updateStudentUrl = this.appConfig.apiHost + '/student/update';
     public updateStudent(id:number , name: string, email: string, phone: string, avatar:string, status:number): Observable < { result: string, message: string } > {
         var params = {
@@ -169,6 +170,7 @@ export class StudentService {
                 return Observable.throw(error || 'Server error');
             });
     }
+
     public changeAttendanceStatusUrl = this.appConfig.apiHost + '/student/change-attendance-status';
     public changeAttendanceStatus(student_id: number,course_id: number,class_id: number,status: number): Observable < { result: string, message:string} > {
         var params = {
@@ -224,6 +226,30 @@ export class StudentService {
         headers.append('x-access-token', `${authToken}`);
         let options = new RequestOptions({ headers: headers });
         return this.http.post(this.exportAttenadanceSummaryUrl, params, options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => {
+                if(error.status == 401){
+                    this.authService.tokenExpired(this.router.url);
+                }
+                return Observable.throw(error || 'Server error');
+            });
+    }
+
+    public  updateStudentInteractionUrl = this.appConfig.apiHost + '/student/update-interaction';
+    public updateStudentInteraction(id:number, class_id:number, course_id:number, interaction_type: number): Observable < { result: string, message: string } > {
+        var params = {
+            'id': id,
+            'class_id': class_id,
+            'course_id': course_id,
+            'interaction_type': interaction_type,
+        };
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.updateStudentInteractionUrl, params, options)
             // ...and calling .json() on the response to return data
             .map((res: Response) => res.json())
             //...errors if any

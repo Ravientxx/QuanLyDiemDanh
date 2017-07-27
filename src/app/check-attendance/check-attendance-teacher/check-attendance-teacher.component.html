@@ -58,6 +58,8 @@
                     </tab>
                     <tab heading='Class management'>
                         <br>
+                        <p class="note">Note: Hover on student picture to see student's interactions: # of answered questions (<i class="fa fa-question-circle-o"></i>), # of discussions (<i class="fa fa-comments"></i>), # of presentations (<i class="fa fa-laptop"></i>)</p>
+                        <br>
                         <ng-container *ngFor="let student of check_attendance_list;let i = index;">
                             <div class="col-sm-3 col-md-55 text-center" style="height: 200px" *ngIf="student.attendance_details[student.attendance_details.length-1].attendance_type">
                                 <div class="thumbnail">

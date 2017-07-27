@@ -858,4 +858,99 @@ router.post('/change-attendance-status', function(req, res, next) {
     });
 });
 
+router.post('/update-interaction', function(req, res, next) {
+    if (req.body.id == undefined || req.body.id == 0) {
+        _global.sendError(res, null, "Student id is required");
+        return;
+    }
+    if (req.body.class_id == undefined || req.body.class_id == 0) {
+        _global.sendError(res, null, "Class id is required");
+        return;
+    }
+    if (req.body.course_id == undefined || req.body.course_id == 0) {
+        _global.sendError(res, null, "Email is required");
+        return;
+    }
+    if (req.body.interaction_type == undefined) {
+        _global.sendError(res, null, "Interaction type is required");
+        return;
+    }
+    var student_id = req.body.id;
+    var class_id = req.body.class_id;
+    var course_id = req.body.course_id;
+    var interaction_type = req.body.interaction_type;
+    var class_has_course_id = 0;
+    pool_postgres.connect(function(error, connection, done) {
+        if (error) {
+            _global.sendError(res, error.message);
+            done();
+            return console.log(error);
+        }
+        async.series([
+            //Start transaction
+            function(callback) {
+                connection.query('BEGIN', (error) => {
+                    if(error) callback(error);
+                    else callback();
+                });
+            },
+            //get class_has_course_id
+            function(callback) {
+                connection.query(format(`SELECT id FROM class_has_course WHERE class_id = %L AND course_id = %L`, class_id, course_id), function(error, result, fields) {
+                    if (error) {
+                        console.log(error.message + "at get class_has_course_id");
+                        callback(error);
+                    } else {
+                        class_has_course_id = result.rows[0].id;
+                        callback();
+                    }
+                });
+            },
+            //update user interaction
+            function(callback) {
+                var query = 'UPDATE student_enroll_course ';
+                switch(interaction_type){
+                    case _global.student_interaction_type.answer_question:
+                        query += 'SET answered_questions = answered_questions + 1 ';
+                    break;
+                    case _global.student_interaction_type.discuss:
+                        query += 'SET discussions = discussions + 1 ';
+                    break;
+                    case _global.student_interaction_type.present:
+                        query += 'SET presentations = presentations + 1 ';
+                    break;
+                }
+                query += 'WHERE class_has_course_id = %L AND student_id = %L ';
+                connection.query(format(query, class_has_course_id, student_id), function(error, result, fields) {
+                    if (error) {
+                        console.log(error.message + ' at Update Student interaction');
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            //Commit transaction
+            function(callback) {
+                connection.query('COMMIT', (error) => {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+        ], function(error) {
+            if (error) {
+                _global.sendError(res, error.message);
+                connection.query('ROLLBACK', (error) => {
+                    if (error) return console.log(error);
+                });
+                done(error);
+                return console.log(error);
+            } else {
+                console.log('success updating student interaction!---------------------------------------');
+                res.send({ result: 'success', message: 'Student Interaction Updated Successfully' });
+                done();
+            }
+        });
+    });
+});
 module.exports = router;
