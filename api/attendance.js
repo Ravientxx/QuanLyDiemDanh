@@ -784,8 +784,8 @@ router.post('/update-attendance', function(req, res, next) {
 
         async.each(attendance_detail, function(detail, callback) {
             connection.query(format(`UPDATE attendance_detail
-                SET attendance_detail.attendance_type = %L, attendance_detail.attendance_time = %L
-                WHERE attendance_detail.student_id = %L AND attendance_detail.attendance_id = %L`, detail.status, new Date(),
+                SET attendance_type = %L, attendance_time = %L
+                WHERE student_id = %L AND attendance_id = %L`, detail.status, new Date(),
                 detail.student_id, attendance_id), function(error, result, fields) {
                 if (error) {
                     console.log(error.message + ' at get attendance_details');
