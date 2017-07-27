@@ -3728,7 +3728,7 @@ ul.project_files li a i {
 }
 
 .view img {
-    display: block
+    /*display: block*/
 }
 
 .view .tools {
@@ -5067,21 +5067,21 @@ table td {
     position: absolute;
     background: rgb(0, 0, 0);
     background: rgba(0, 0, 0, 0.7);
-    height: 150px;
-    width: 150px;
+    height: 120px;
+    width: 120px;
     left: 0;
     right: 0;
     margin: 0 auto;
     color: #0bf !important;
 }
 .attendance_avatar{
-    height: 150px;
-    width: 150px;
+    height: 120px;
+    width: 120px;
     padding-bottom: 5px;
 }
 .avatar_check{
-    font-size: 5em;
-    line-height: 140px;
+    font-size: 4em;
+    line-height: 120px;
 }
 .larger_modal{
     width: 1200px !important;
