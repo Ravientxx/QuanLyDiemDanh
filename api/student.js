@@ -149,14 +149,14 @@ router.post('/add', function(req, res, next) {
                 }
                 //new data to users table
                 var new_password = new_email.split('@')[0];
-                var new_user = [
+                var new_user = [[
                     new_first_name,
                     new_last_name,
                     new_email,
                     new_phone,
                     bcrypt.hashSync(new_password, 10),
                     _global.role.student
-                ];
+                ]];
                 var new_student = [];
                 async.series([
                     //Start transaction
@@ -172,12 +172,12 @@ router.post('/add', function(req, res, next) {
                             if (error) {
                                 callback(error);
                             }else{
-                                new_student = [
+                                new_student = [[
                                     result.rows[0].id,
                                     new_code,
                                     new_class_id,
                                     new_note
-                                ];
+                                ]];
                                 callback();
                             }
                         });
@@ -386,11 +386,11 @@ router.post('/import', function(req, res, next) {
                                         callback({ message: 'Program not found' });
                                     } else {
                                         var email = class_name.toLowerCase() + '@student.hcmus.edu.vn';
-                                        var new_class = [
+                                        var new_class = [[
                                             class_name,
                                             email,
                                             result.rows[0].id
-                                        ];
+                                        ]];
                                         connection.query(format(`INSERT INTO classes VALUES %L RETURNING id`, new_class), function(error, result, fields) {
                                             if (error) {
                                                 callback(error);
@@ -419,24 +419,24 @@ router.post('/import', function(req, res, next) {
                         } else {
                             if (result.rowCount == 0) {
                                 //new student to system
-                                var new_user = [
+                                var new_user = [[
                                     _global.getFirstName(student.name),
                                     _global.getLastName(student.name),
                                     student.stud_id + '@student.hcmus.edu.vn',
                                     student.phone,
                                     _global.role.student,
                                     bcrypt.hashSync(student.stud_id.toString(), 10),
-                                ];
+                                ]];
                                 connection.query(format(`INSERT INTO users (first_name,last_name,email,phone,role_id,password) VALUES %L RETURNING id`, new_user), function(error, result, fields) {
                                     if (error) {
                                         callback(error);
                                     } else {
                                         var student_id = result.rows[0].id;
-                                        var new_student = [
+                                        var new_student = [[
                                             student_id,
                                             student.stud_id,
                                             class_id,
-                                        ];
+                                        ]];
                                         connection.query(format(`INSERT INTO students (id,stud_id,class_id) VALUES %L`, new_student), function(error, result, fields) {
                                             if (error) {
                                                 callback(error);

@@ -1136,22 +1136,22 @@ var insert_feeback = [
 ];
 //[title, class_has_course_id, closed, created_by]
 var insert_quiz = [
-    ['Angular', 20, 1, 1], //1
-    ['Window', 20, 1, 1], //2
+    ['KTLT tuần 1', 20, 1, 1], //1
 ];
-//[quiz_id, text]
+//[quiz_id, text, option_a, option_b, option_c, option_d, correct_option]
 var insert_quiz_question = [
-    [1, `Service trong Angular hoạt động thế nào?`], //1
-    [1, `Routing thực hiện thế nào?`], //2
-    [2, `Win32 và Win64 khác nhau gì?`], //3
-    [2, `Window ra mắt lần đầu khi nào ?`], //4
+    [1, `Kiểu nào có kích thước lớn nhất`,'int','char','long','double','double'], //1
+    [1, `Dạng hậu tố của biểu thức 9 - (5 + 2) là ?`,'95-+2','95-2+','952+-','95+2-','952+-'], //2
+    [1, `Giả sử a và b là hai số thực. Biểu thức nào dưới đây là không được phép theo cú pháp của ngôn ngữ lập trình C?`,'ab','a-=b','a>>=b','a*=b','a>>=b'],//3
 ];
-//[quiz_question_id, text,answered_by]
+//[quiz_question_id, selected_option, answered_by]
 var insert_quiz_answer = [
-    [1, `Service 1`, 114], //1
-    [1, `Service 2`, 115], //2
-    [2, `Win 1`, 114], //3
-    [2, `Window 2`, 115], //4
+    [1, `C`, 114], //1
+    [1, `D`, 115], //2
+    [2, `B`, 114], //3
+    [2, `C`, 115], //4
+    [3, `C`, 116], //3
+    [3, `A`, 117], //4
 ];
 
 var seeding_mysql = function(res) {
@@ -1485,7 +1485,7 @@ var seeding_postgres = function(res) {
                 });
             },
             function(callback) {
-                connection.query(format('INSERT INTO quiz_questions (quiz_id, text) VALUES %L', insert_quiz_question), function(error, results, fields) {
+                connection.query(format('INSERT INTO quiz_questions (quiz_id, text, option_a, option_b, option_c, option_d, correct_option) VALUES %L', insert_quiz_question), function(error, results, fields) {
                     if (error) {
                         callback(error);
                     } else {
@@ -1494,7 +1494,7 @@ var seeding_postgres = function(res) {
                 });
             },
             function(callback) {
-                connection.query(format('INSERT INTO quiz_answers (quiz_question_id, text,answered_by) VALUES %L', insert_quiz_answer), function(error, results, fields) {
+                connection.query(format('INSERT INTO quiz_answers (quiz_question_id, selected_option ,answered_by) VALUES %L', insert_quiz_answer), function(error, results, fields) {
                     if (error) {
                         callback(error);
                     } else {

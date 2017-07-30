@@ -203,21 +203,21 @@ router.post('/update-list-by-course', function(req, res, next) {
                                                 } else {
                                                     if (result.rowCount == 0) {
                                                         //Not exist in system
-                                                        var new_user = [
+                                                        var new_user = [[
                                                             student.code + '@student.hcmus.edu.vn',
                                                             _global.role.student,
                                                             bcrypt.hashSync(student.code, 10),
-                                                        ];
+                                                        ]];
                                                         connection.query(format(`INSERT INTO users (email,role_id,password) VALUES %L RETURNING id`, new_user), function(error, result, fields) {
                                                             if (error) {
                                                                 callback(error);
                                                             } else {
                                                                 student.id = result.rows[0].id;
-                                                                var new_student = [
+                                                                var new_student = [[
                                                                     result.rows[0].id,
                                                                     student.code,
                                                                     classes_id[index],
-                                                                ];
+                                                                ]];
                                                                 connection.query(format(`INSERT INTO students (id,stud_id,class_id) VALUES %L`, new_student), function(error, result, fields) {
                                                                     if (error) {
                                                                         callback(error);
@@ -235,10 +235,10 @@ router.post('/update-list-by-course', function(req, res, next) {
                                                             if (error) {
                                                                 callback(error);
                                                             } else {
-                                                                var insert_student_enroll_course = [
+                                                                var insert_student_enroll_course = [[
                                                                     result.rows[0].id,
                                                                     student.id
-                                                                ];
+                                                                ]];
                                                                 connection.query(format(`INSERT INTO student_enroll_course (class_has_course,student_id) VALUES %L`, insert_student_enroll_course), function(error, result, fields) {
                                                                     if (error) {
                                                                         callback(error);
@@ -297,14 +297,14 @@ router.post('/update-list-by-course', function(req, res, next) {
                                                 } else {
                                                     //for new student
                                                     if (result.rowCount == 0) {
-                                                        var temp = [
+                                                        var temp = [[
                                                             attendance_detail.attendance_id,
                                                             student.id,
                                                             attendance_detail.attendance_type,
                                                             attendance_detail.attendance_time,
                                                             attendance_detail.edited_by,
                                                             attendance_detail.edited_reason
-                                                        ];
+                                                        ]];
                                                         connection.query(format(`INSERT INTO attendance_detail (attendance_id,student_id,attendance_type,attendance_time) VALUES %L`, temp), function(error, result, fields) {
                                                             if (error) {
                                                                 callback(error);
@@ -830,11 +830,11 @@ router.post('/update-attendance-offline', function(req, res, next) {
     var attendance_id = 0;
     var attendance_detail = req.body.data;
     pool_postgres.connect(function(error, connection, done) {
-        var new_attendance = [
+        var new_attendance = [[
             course_id,
             class_id,
             req.decoded.id,
-        ];
+        ]];
         connection.query(format(`INSERT INTO attendance (course_id,class_id,created_by) VALUES %L RETURNING id`, new_attendance), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, null, "error at insert new attendance");

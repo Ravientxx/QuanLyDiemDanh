@@ -2,28 +2,14 @@ var express = require('express');
 var router = express.Router();
 var _global = require('../global.js');
 var mysql = require('mysql');
-var pool = mysql.createPool(_global.db);
 var async = require("async");
 var pg = require('pg');
 var format = require('pg-format');
 const pool_postgres = new pg.Pool(_global.db_postgres);
+var connection = mysql.createConnection(_global.db);
+var pool = mysql.createPool(_global.db);
+var bcrypt = require('bcrypt');
 
-router.get('/:id', function(req, res, next) {
-    var id = req.params['id'];
-    pool_postgres.connect(function(error, connection, done) {
-        connection.query(format(`SELECT * FROM semesters WHERE id = %L`, id), function(error, result, fields) {
-            if (error) {
-                var message = error.message + ' at get semester info';
-                _global.sendError(res, message);
-                done();
-                return console.log(error);
-            } else {
-                res.send({ result: 'success', semester : result.rows[0]});
-                done();
-            }
-        });
-    });
-});
 router.post('/list', function(req, res, next) {
     var searchText = req.body.searchText;
     var page = req.body.page != null ? req.body.page : _global.default_page;
@@ -44,14 +30,15 @@ router.post('/list', function(req, res, next) {
                 return console.log(error);
             }
 
-            semesters = result.rows;
+            programs = result.rows;
             var search_list = [];
             if (searchText == null) {
-                search_list = semesters;
+                search_list = programs;
             } else {
-                for (var i = 0; i < semesters.length; i++) {
-                    if (semesters[i].name.toLowerCase().indexOf(searchText.toLowerCase()) != -1) {
-                        search_list.push(semesters[i]);
+                for (var i = 0; i < programs.length; i++) {
+                    if (programs[i].name.toLowerCase().indexOf(searchText.toLowerCase()) != -1 ||
+                        programs[i].code.toLowerCase().indexOf(searchText.toLowerCase()) != -1) {
+                        search_list.push(programs[i]);
                     }
                 }
             }
@@ -62,63 +49,58 @@ router.post('/list', function(req, res, next) {
                 res.send({
                     result: 'success',
                     total_items: search_list.length,
-                    semesters: _global.filterListByPage(page, limit, search_list)
+                    programs: _global.filterListByPage(page, limit, search_list)
                 });
             } else {
                 res.send({
                     result: 'success',
                     total_items: search_list.length,
-                    semesters: search_list
+                    programs: search_list
                 });
             }
             done();
         };
-        connection.query(format(`SELECT * FROM semesters`), return_function);
+        connection.query(format(`SELECT * FROM programs`), return_function);
     });
 });
+
 router.post('/create', function(req, res, next) {
     if (req.body.name == undefined || req.body.name == '') {
         _global.sendError(res, null, "Name is required");
         return;
     }
-    if (req.body.start_date == undefined || req.body.start_date == 0) {
-        _global.sendError(res, null, "Start date is required");
+    if (req.body.code == undefined || req.body.start_date == 0) {
+        _global.sendError(res, null, "Code is required");
         return;
     }
-    if (req.body.end_date == undefined || req.body.end_date == 0) {
-        _global.sendError(res, null, "End date is required");
-        return;
-    }
-    var semester = [[
+    var program = [[
         req.body.name,
-        req.body.start_date,
-        req.body.end_date,
-        req.body.vacation_time,
+        req.body.code
     ]];
     pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
-            done(error);
+            done();
             return console.log(error);
         }
-        connection.query(format(`SELECT * FROM semesters WHERE name = %L`,req.body.name),function(error, result, fields) {
+        connection.query(format(`SELECT * FROM programs WHERE code = %L OR name = %L`,program[0],program[1]),function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
-                done(error);
+                done();
                 return console.log(error);
             }
             if(result.rowCount > 0){
-                _global.sendError(res, null, "Semester's existed");
+                _global.sendError(res, null, "Program's existed");
                 done();
-                return console.log("Semester's existed");
+                return console.log("Program's existed");
             }else{
-                connection.query(format(`INSERT INTO semesters (name,start_date,end_date,vacation_time) VALUES %L`,semester),function(error, rows, fields) {
+                connection.query(format(`INSERT INTO programs (name,code) VALUES %L`,program),function(error, rows, fields) {
                     if (error) {
                         _global.sendError(res, error.message);
-                        done(error);
+                        done();
                         return console.log(error);
                     }
-                    res.send({ result: 'success', message: 'Semester added successfully'});
+                    res.send({ result: 'success', message: 'Program added successfully'});
                     done();
                 });
             }

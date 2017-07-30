@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import {  AppService, AuthService , CreateAbsenceRequestModalComponent , SendFeedbackModalComponent, StudentService, AttendanceService} from '../../shared/shared.module';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 declare var uploadToImgur : any;
+declare var jQuery: any;
 @Component({
 	selector: 'app-dashboard-student',
 	templateUrl: './dashboard-student.component.html'
@@ -68,6 +69,7 @@ export class DashboardStudentComponent implements OnInit {
 		this.isEditingProfile = false;
 	}
 	public onSaveEditProfile(){
+		jQuery('#progressModal').modal({backdrop: 'static', keyboard: false});
 		this.appService.uploadAvatar(this.uploaded_avatar).subscribe(result=>{
 			var avatar_link = result['data'].link;
 			this.studentService.updateStudent(this.authService.current_user.id, this.editing_name, this.editing_mail, this.editing_phone, avatar_link, null)
@@ -76,6 +78,7 @@ export class DashboardStudentComponent implements OnInit {
                 this.apiResultMessage = result.message;
                 this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
                 if (result.result == 'success') {
+					jQuery('#progressModal').modal('hide');
                     this.isEditingProfile = false;
                     this.authService.current_user.email = this.editing_mail;
                     this.authService.current_user.phone = this.editing_phone;
@@ -84,8 +87,14 @@ export class DashboardStudentComponent implements OnInit {
                     var image = this.element.nativeElement.querySelector('#topNavPic');
 					image.src = this.authService.current_user.avatar;
                 }
-            }, error => { this.appService.showPNotify('failure', "Server Error! Can't edit profile", 'error'); });
-		},error=>{this.appService.showPNotify('failure', "Error! Can't upload new profile picture", 'error');});
+            }, error => { 
+            	this.appService.showPNotify('failure', "Server Error! Can't edit profile", 'error');
+            	jQuery('#progressModal').modal('hide');
+    		});
+		},error=>{
+			this.appService.showPNotify('failure', "Error! Can't upload new profile picture", 'error');
+			jQuery('#progressModal').modal('hide');
+		});
 	}
 
 	@ViewChild(CreateAbsenceRequestModalComponent)

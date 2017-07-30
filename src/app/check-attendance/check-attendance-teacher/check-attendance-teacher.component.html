@@ -37,46 +37,44 @@
                     <button class="btn btn-primary" (click)="generateQuiz()"><i class="fa fa-question-circle"></i> Quiz</button>
                 </div>
             </div>
+            <hr>
             <div class="row">
                 <tabset [justified]="true">
                     <tab heading='Current Week'>
                         <br>
                         <ng-container *ngFor="let student of check_attendance_list;let i = index;">
-                            <div class="col-sm-3 col-md-55 text-center" style="height: 200px" (click)="onAttendanceCheckClick(i,student.attendance_details.length-1)">
-                                <div class="checked_overlay" *ngIf="student.attendance_details[student.attendance_details.length-1].attendance_type"><i *ngIf="student.attendance_details[student.attendance_details.length-1].attendance_type == appService.attendance_type.checklist" class="fa fa-check avatar_check"></i><i *ngIf="student.attendance_details[student.attendance_details.length-1].attendance_type == appService.attendance_type.qr" class="fa fa-qrcode avatar_check"></i><i *ngIf="student.attendance_details[student.attendance_details.length-1].attendance_type == appService.attendance_type.quiz" class="fa fa-question-circle avatar_check"></i><i *ngIf="student.attendance_details[student.attendance_details.length-1].attendance_type == appService.attendance_type.face" class="fa fa-user-circle-o avatar_check"></i></div>
-                                <div class="thumbnail">
-                                    <div class="image view view-first">
+                            <div class="col-sm-3 col-md-55 text-center">
+                                <div class="thumbnail" style="height: 190px">
+                                    <div class="image" (click)="onAttendanceCheckClick(i,student.attendance_details.length-1)">
+                                        <div class="checked_overlay" *ngIf="student.attendance_details[student.attendance_details.length-1].attendance_type"><i *ngIf="student.attendance_details[student.attendance_details.length-1].attendance_type == appService.attendance_type.checklist" class="fa fa-check avatar_check"></i><i *ngIf="student.attendance_details[student.attendance_details.length-1].attendance_type == appService.attendance_type.qr" class="fa fa-qrcode avatar_check"></i><i *ngIf="student.attendance_details[student.attendance_details.length-1].attendance_type == appService.attendance_type.quiz" class="fa fa-question-circle avatar_check"></i><i *ngIf="student.attendance_details[student.attendance_details.length-1].attendance_type == appService.attendance_type.face" class="fa fa-user-circle-o avatar_check"></i></div>
                                         <img [src]="student.avatar" class="attendance_avatar">
                                     </div>
                                     <div class="caption">
-                                        <p style="margin-bottom: 0px"><label>{{student.code}}</label></p>
-                                        <p style="margin-bottom: 0px"><label>{{student.name}}</label></p>
+                                        <p><label>{{student.code}}</label></p>
+                                        <p><label>{{student.name}}</label></p>
                                     </div>
                                 </div>
                             </div>
                         </ng-container>
                     </tab>
-                    <tab heading='Class management'>
+                    <tab class="text-center" heading='Class management'>
                         <br>
-                        <p class="note">Note: Hover on student picture to see student's interactions: # of answered questions (<i class="fa fa-question-circle-o"></i>), # of discussions (<i class="fa fa-comments"></i>), # of presentations (<i class="fa fa-laptop"></i>)</p>
+                        <label class="note">Note: Student's interactions: # of answered questions (<i class="fa fa-question-circle-o"></i>), # of discussions (<i class="fa fa-comments"></i>), # of presentations (<i class="fa fa-laptop"></i>)</label>
                         <br>
                         <ng-container *ngFor="let student of check_attendance_list;let i = index;">
-                            <div class="col-sm-3 col-md-55 text-center" style="height: 200px" *ngIf="student.attendance_details[student.attendance_details.length-1].attendance_type">
-                                <div class="thumbnail">
-                                    <div class="image view view-first">
+                            <div class="col-sm-3 col-md-55 text-center" *ngIf="student.attendance_details[student.attendance_details.length-1].attendance_type">
+                                <div class="thumbnail" style="height: 220px">
+                                    <div class="image">
                                         <img [src]="student.avatar" class="attendance_avatar">
-                                        <div class="mask">
-                                          <p>Interaction infos</p>
-                                          <div class="tools tools-bottom">
-                                            <a (click)="confirmInteraction(student,appService.student_interaction_type.answer_question)"><i class="fa fa-question-circle-o"></i> {{student.answered_questions}}</a>
-                                            <a (click)="confirmInteraction(student,appService.student_interaction_type.discuss)"><i class="fa fa-comments"></i> {{student.discussions}}</a>
-                                            <a (click)="confirmInteraction(student,appService.student_interaction_type.present)"><i class="fa fa-laptop"></i> {{student.presentations}}</a>
-                                          </div>
-                                        </div>
                                     </div>
                                     <div class="caption">
-                                        <p style="margin-bottom: 0px"><label>{{student.code}}</label></p>
-                                        <p style="margin-bottom: 0px"><label>{{student.name}}</label></p>
+                                        <div class="row student_interaction">
+                                            <button class="btn btn-round btn-primary" (click)="confirmInteraction(student,appService.student_interaction_type.answer_question)"><i class="fa fa-question-circle-o"></i> {{student.answered_questions}}</button>
+                                            <button class="btn btn-round btn-primary" (click)="confirmInteraction(student,appService.student_interaction_type.discuss)"><i class="fa fa-comments"></i> {{student.discussions}}</button>
+                                            <button class="btn btn-round btn-primary" (click)="confirmInteraction(student,appService.student_interaction_type.present)"><i class="fa fa-laptop"></i> {{student.presentations}}</button>
+                                        </div>
+                                        <p><label>{{student.code}}</label></p>
+                                        <p><label>{{student.name}}</label></p>
                                     </div>
                                 </div>
                             </div>

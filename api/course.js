@@ -202,14 +202,14 @@ router.post('/add', function(req, res, next) {
                     done();
                     return console.log(error);
                 }
-                var new_course = [
+                var new_course = [[
                     new_code,
                     new_name,
                     result.rows[0].id,
                     new_program_id,
                     new_note,
                     new_office_hour,
-                ];
+                ]];
                 var new_course_id;
 
                 async.series([
@@ -274,11 +274,11 @@ router.post('/add', function(req, res, next) {
                         // }
 
                         async.each(new_classes, function(_class, callback) {
-                            var class_has_course = [
+                            var class_has_course = [[
                                 _class.classId,
                                 new_course_id,
                                 _class.schedule
-                            ];
+                            ]];
                             connection.query(format(`INSERT INTO class_has_course VALUES %L RETURNING id`, class_has_course), function(error, result, fields) {
                                 if (error) {
                                     console.log(error.message + ' at insert class_has_course');
@@ -317,14 +317,14 @@ router.post('/add', function(req, res, next) {
                                                         } else {
                                                             if (result.rowCount == 0) {
                                                                 //new student to system
-                                                                var new_user = [
+                                                                var new_user = [[
                                                                     _global.getFirstName(student.name),
                                                                     _global.getLastName(student.name),
                                                                     student.stud_id + '@student.hcmus.edu.vn',
                                                                     student.phone,
                                                                     _global.role.student,
                                                                     bcrypt.hashSync(student.code, 10),
-                                                                ];
+                                                                ]];
                                                                 connection.query(format(`INSERT INTO users (first_name,last_name,email,phone,role_id,password) VALUES %L RETURNING id`, new_user), function(error, result, fields) {
                                                                     if (error) {
                                                                         callback(error);
@@ -679,11 +679,11 @@ router.post('/import', function(req, res, next) {
                         if (result.rowCount == 0) {
                             //new class => insert
                             var email = class_name.toLowerCase() + '@student.hcmus.edu.vn';
-                            var new_class = [
+                            var new_class = [[
                                 class_name,
                                 email,
                                 program_id
-                            ];
+                            ]];
                             connection.query(format(`INSERT INTO classes (name,email,program_id) VALUES %L RETURNING id`, new_class), function(error, result, fields) {
                                 if (error) {
                                     callback(error);
@@ -702,14 +702,14 @@ router.post('/import', function(req, res, next) {
             //Insert course
             function(callback) {
                 async.each(course_list, function(course, callback) {
-                    var new_course = [
+                    var new_course = [[
                         course.code,
                         course.name,
                         semester_id,
                         program_id,
                         course.office_hour,
                         course.note,
-                    ];
+                    ]];
                     async.series([
                         //insert courses
                         function(callback) {
@@ -724,10 +724,10 @@ router.post('/import', function(req, res, next) {
                         },
                         //insert class_has_course
                         function(callback) {
-                            var new_class_has_course = [
+                            var new_class_has_course = [[
                                 class_id,
                                 new_course_id
-                            ];
+                            ]];
                             connection.query(format(`INSERT INTO class_has_course (class_id,course_id) VALUES %L`, new_class_has_course), function(error, result, fields) {
                                 if (error) {
                                     callback(error);
@@ -767,11 +767,11 @@ router.post('/import', function(req, res, next) {
                                         if (result.rowCount == 0) {
                                             callback('Teacher' + teacher.first_name + ' ' + teacher.last_name + ' not found');
                                         } else {
-                                            var new_teacher_teach_course = [
+                                            var new_teacher_teach_course = [[
                                                 result.rows[0].id,
                                                 teacher.role,
                                                 new_course_id
-                                            ];
+                                            ]];
                                             connection.query(format(`INSERT INTO teacher_teach_course (teacher_id,teacher_role,course_id) VALUES %L`, new_teacher_teach_course), function(error, result, fields) {
                                                 if (error) {
                                                     callback(error);

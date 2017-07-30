@@ -15,7 +15,7 @@ module.exports = {
     db_postgres: {
         host: 'localhost',
         user: 'postgres',
-        password: 'a',
+        password: '1234',
         port:'5432',
         database: 'qldd'
     },
@@ -38,6 +38,10 @@ module.exports = {
         qr: 2,
         quiz: 3,
         face: 4
+    },
+    quiz_type:{
+        academic: 0,
+        miscellaneous: 1,
     },
     attendance_status:{
         normal: 0,

@@ -5,30 +5,12 @@ import { AppConfig } from '../config'
 import { AuthService } from './auth.service';
 import { Router } from '@angular/router';
 @Injectable()
-export class SemesterService {
+export class ProgramsService {
     // Resolve HTTP using the constructor
-    public constructor(public  http: Http, public  appConfig: AppConfig,public  authService: AuthService,public  router :Router) {}
+    constructor(public  http: Http, public  appConfig: AppConfig,public  authService: AuthService,public  router :Router) {}
 
-    public  getSemesterUrl = this.appConfig.apiHost + '/semester';
-    public getSemester(id: number): Observable < { result: string, semester : any , message:string} > {
-        let authToken = this.authService.token;
-        let headers = new Headers();
-        headers.append('x-access-token', `${authToken}`);
-        let options = new RequestOptions({ headers: headers });
-        return this.http.get(`${this.getSemesterUrl}/${id}`,options)
-            // ...and calling .json() on the response to return data
-            .map((res: Response) => res.json())
-            //...errors if any
-            .catch((error: any) => {
-                if(error.status == 401){
-                    this.authService.tokenExpired(this.router.url);
-                }
-                return Observable.throw(error || 'Server error');
-            });
-    }
-
-    public getSemesterListsUrl = this.appConfig.apiHost + '/semester/list';
-    public getSemesterList(searchText: string = null, sort: string = 'none', page: number = 1, limit: number = -1): Observable < { result: string, total_items: number, semesters: Array < any >, message:string } > {
+    public getProgramListsUrl = this.appConfig.apiHost + '/program/list';
+    public getProgramList(searchText: string = null, sort: string = 'none', page: number = 1, limit: number = -1): Observable < { result: string, total_items: number, programs: Array < any >, message:string } > {
         var params = {
             'searchText': searchText,
             'page': page,
@@ -39,7 +21,7 @@ export class SemesterService {
         let headers = new Headers();
         headers.append('x-access-token', `${authToken}`);
         let options = new RequestOptions({ headers: headers });
-        return this.http.post(this.getSemesterListsUrl, params, options)
+        return this.http.post(this.getProgramListsUrl, params, options)
             // ...and calling .json() on the response to return data
             .map((res: Response) => res.json())
             //...errors if any
@@ -50,20 +32,19 @@ export class SemesterService {
                 return Observable.throw(error || 'Server error');
             });
     }
+
     
-    public addSemesterUrl = this.appConfig.apiHost + '/semester/create';
-    public addSemester(name, start_date, end_date, vacation_time): Observable < { result: string, message: string } > {
+    public addProgramUrl = this.appConfig.apiHost + '/program/create';
+    public addProgram(name, code): Observable < { result: string, message: string } > {
         var params = {
             'name': name,
-            'start_date': start_date,
-            'end_date': end_date,
-            'vacation_time': vacation_time
+            'code': code,
         };
         let authToken = this.authService.token;
         let headers = new Headers();
         headers.append('x-access-token', `${authToken}`);
         let options = new RequestOptions({ headers: headers });
-        return this.http.post(this.addSemesterUrl, params, options)
+        return this.http.post(this.addProgramUrl, params, options)
             // ...and calling .json() on the response to return data
             .map((res: Response) => res.json())
             //...errors if any

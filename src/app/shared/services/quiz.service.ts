@@ -13,7 +13,7 @@ export class QuizService {
     public constructor(public  http: Http,public  appService: AppService,public  appConfig:AppConfig, public  authService: AuthService,public  router:Router) {}
 
     public getQuizByCourseAndClassUrl = this.appConfig.apiHost + '/quiz/list';
-    public getQuizByCourseAndClass(course_id: number,class_id: number): Observable < { result: string, quiz_list: Array<any>, message:string} > {
+    public getQuizByCourseAndClass(course_id: number,class_id: number): Observable < { result: string, quiz_list: Array<any>, quiz_code:string, message:string} > {
         var params = {
             'course_id': course_id,
             'class_id' : class_id,

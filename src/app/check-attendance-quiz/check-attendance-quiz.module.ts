@@ -12,6 +12,7 @@ import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
 import {FileUploadModule} from "ng2-file-upload";
 import { SharedModule } from '../shared/shared.module';
+import { AutosizeModule } from '../shared/module/autosize/autosize.module';
 const Routes: Routes = [
   { path: '',  component: CheckAttendanceQuizComponent },
 ];
@@ -26,12 +27,13 @@ const Routes: Routes = [
     PaginationModule.forRoot(),
     TabsModule.forRoot(),
     SharedModule,
-    TextMaskModule
+    TextMaskModule,
+    AutosizeModule
   ],
   declarations: [
     CheckAttendanceQuizComponent,
     CheckAttendanceQuizStudentComponent,
-    CheckAttendanceQuizTeacherComponent
+    CheckAttendanceQuizTeacherComponent,
   ],
   providers: []
 })

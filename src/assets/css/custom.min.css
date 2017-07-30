@@ -3681,7 +3681,8 @@ ul.project_files li a i {
 
 .thumbnail .image {
     height: 120px;
-    overflow: hidden
+    overflow: hidden;
+    position: relative;
 }
 
 .caption {
@@ -3694,7 +3695,6 @@ ul.project_files li a i {
 }
 
 .thumbnail {
-    height: 190px;
     overflow: hidden;
     padding: 0px;
 }
@@ -5089,10 +5089,23 @@ table td {
     width: 1200px !important;
 }
 
-.mask .a {
+.student_interaction {
+    font-size: 17px;
+    border-bottom: 1px solid #e6e9ed;
+}
+.student_interaction label{
     cursor: pointer !important; 
     cursor: hand !important; 
 }
+.caption label{
+    margin: 0;
+}
 .note {
-    text-decoration: italic;
+    font-style: italic;
+}
+.green_text{
+    color:green;
+}
+.nav-justified > li > a{
+    border: 1px solid #ddd;
 }

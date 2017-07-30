@@ -143,14 +143,14 @@ router.post('/add', function(req, res, next) {
             }
             //new teacher data
             var new_password = new_email.split('@')[0];
-            var new_user = [
+            var new_user = [[
                 new_first_name,
                 new_last_name,
                 new_email,
                 new_phone,
                 bcrypt.hashSync(new_password, 10),
                 _global.role.teacher
-            ];
+            ]];
             //begin adding teacher
             connection.query('BEGIN', function(error) {
                 if (error) {
@@ -295,14 +295,14 @@ router.post('/import', function(req, res, next) {
                         } else {
                             if (result.rowCount == 0) {
                                 //new teacher to system
-                                var new_user = [
+                                var new_user = [[
                                     teacher.first_name,
                                     teacher.last_name,
                                     teacher.email,
                                     teacher.phone,
                                     _global.role.teacher,
                                     bcrypt.hashSync(teacher.email.split('@')[0], 10),
-                                ];
+                                ]];
                                 connection.query(format(`INSERT INTO users (first_name,last_name,email,phone,role_id,password) VALUES %L`, new_user), function(error, result, fields) {
                                     if (error) {
                                         callback(error);

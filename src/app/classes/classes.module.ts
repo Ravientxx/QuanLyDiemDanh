@@ -7,6 +7,9 @@ import { ClassesComponent } from './classes.component';
 import { TooltipModule } from 'ngx-bootstrap';
 import { SharedModule } from '../shared/shared.module';
 
+import { PaginationModule } from 'ngx-bootstrap/pagination';
+import { TabsModule } from 'ngx-bootstrap/tabs';
+import {FileUploadModule} from "ng2-file-upload";
 const homeRoutes: Routes = [
   {
     path: '',
@@ -20,7 +23,10 @@ const homeRoutes: Routes = [
     FormsModule,
     RouterModule.forChild(homeRoutes),
     SharedModule,
-    TooltipModule.forRoot()
+    TooltipModule.forRoot(),
+    FileUploadModule,
+    PaginationModule.forRoot(),
+    
   ],
   declarations: [
     ClassesComponent

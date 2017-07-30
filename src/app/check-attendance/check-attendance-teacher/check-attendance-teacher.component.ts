@@ -279,6 +279,7 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
                         student.presentations++;
                         break;
                 }
+                this.appService.showPNotify('success',"Successfully update student interaction!",'success');
             }
         },error=>{this.appService.showPNotify('failure',"Server Error! Can't update student interaction",'error');});
     }

@@ -19,6 +19,11 @@ export class QuizTeacherComponent implements OnInit {
         title: '',
         questions: [{
             text: '',
+            option_a: '',
+            option_b: '',
+            option_c: '',
+            option_d: '',
+            correct_option: null,
             answers: []
         }]
     };
@@ -59,6 +64,19 @@ export class QuizTeacherComponent implements OnInit {
         },error=>{this.appService.showPNotify('failure',"Server Error! Can't get quiz list",'error');});
     }
     public onAddQuiz(){
+        this.quiz = {
+            id: 0,
+            title: '',
+            questions: [{
+                text: '',
+                option_a: '',
+                option_b: '',
+                option_c: '',
+                option_d: '',
+                correct_option: null,
+                answers: []
+            }]
+        };
         jQuery('#addQuizModal').modal('show');
     }
     public addQuiz(){
@@ -77,12 +95,22 @@ export class QuizTeacherComponent implements OnInit {
     public onAddQuestion() {
         this.quiz.questions.push({
             text: '',
+            option_a: '',
+            option_b: '',
+            option_c: '',
+            option_d: '',
+            correct_option: null,
             answers: []
         });
     }
     public onRemoveQuestion(index: number) {
         for (var i = index; i < this.quiz.questions.length - 1; i++) {
             this.quiz.questions[i].text = this.quiz.questions[i + 1].text;
+            this.quiz.questions[i].option_a = this.quiz.questions[i + 1].option_a;
+            this.quiz.questions[i].option_b = this.quiz.questions[i + 1].option_b;
+            this.quiz.questions[i].option_c = this.quiz.questions[i + 1].option_c;
+            this.quiz.questions[i].option_d = this.quiz.questions[i + 1].option_d;
+            this.quiz.questions[i].correct_option = this.quiz.questions[i + 1].correct_option;
         }
         this.quiz.questions.pop();
     }
@@ -101,5 +129,24 @@ export class QuizTeacherComponent implements OnInit {
                 this.appService.showPNotify(this.apiResult,this.apiResultMessage,'success');
             }
         },error=>{this.appService.showPNotify('failure',"Server Error! Can't delete quiz",'error');});
+    }
+
+
+    public onTabInTextarea(event){
+        if(event.keyCode === 9) { // tab was pressed
+            // // get caret position/selection
+            var start = event.target.selectionStart;
+            var end = event.target.selectionEnd;
+
+            var value = event.target.value;
+
+            // set textarea value to: text before caret + tab + text after caret
+            event.target.value = value.substring(0, start)+ "\t" + value.substring(end);
+
+            // put caret at right position again (add one for the tab)
+            event.target.selectionStart = event.target.selectionEnd = start + 1;
+            // prevent the focus lose
+            event.preventDefault();
+        }
     }
 }

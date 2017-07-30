@@ -2,27 +2,32 @@ import { NgModule }       from '@angular/core';
 import { CommonModule }   from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
-
 import { QuizTeacherComponent }    from './quiz-teacher.component';
+import { QuizDisplayComponent }    from './quiz-display.component';
 import { TabsModule,AccordionModule ,PaginationModule } from 'ngx-bootstrap';
-
+import { AutosizeModule } from '../shared/module/autosize/autosize.module';
 import { SharedModule } from '../shared/shared.module';
-const studentsRoutes: Routes = [
+import { TooltipModule } from 'ngx-bootstrap';
+const Routes: Routes = [
   { path: '',  component: QuizTeacherComponent },
+  { path: '/display',  component: QuizDisplayComponent },
 ];
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
-    RouterModule.forChild(studentsRoutes),
+    RouterModule.forChild(Routes),
     PaginationModule.forRoot(),
+    TooltipModule.forRoot(),
     AccordionModule.forRoot(),
     TabsModule.forRoot(),
-    SharedModule
+    SharedModule,
+    AutosizeModule
   ],
   declarations: [
-    QuizTeacherComponent
+    QuizTeacherComponent,
+    QuizDisplayComponent
   ],
   providers: []
 })

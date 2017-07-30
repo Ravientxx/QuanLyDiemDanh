@@ -28,7 +28,6 @@
     "@types/socket.io-client": "^1.4.29",
     "@types/xlsx": "0.0.34",
     "angular-2-local-storage": "^1.0.1",
-    "angular2-autosize": "^1.0.1",
     "angular2-qrcode": "^2.0.1",
     "angular2-text-mask": "^8.0.2",
     "async": "^2.4.1",

@@ -4,12 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 import { RouterModule, Routes } from '@angular/router';
 import { FileUploadModule } from "ng2-file-upload";
-import { Autosize } from 'angular2-autosize/angular2-autosize';
 import { AppComponent } from './app.component';
 import { LoginComponent } from './login.component';
 import { LogoutComponent } from './logout.component';
 import { ForgotPasswordComponent } from './forgot-password.component';
 import { SharedModule, PageNotFoundComponent, QRCodeComponent, AuthService, AuthGuardService } from './shared/shared.module';
+
 
 const ROUTES = [
     { path: '', loadChildren: 'app/layout/layout.module#LayoutModule' }, 
@@ -27,7 +27,6 @@ const ROUTES = [
         LoginComponent,
         ForgotPasswordComponent,
         LogoutComponent,
-        Autosize
     ],
     imports: [
         BrowserModule,

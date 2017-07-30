@@ -30,15 +30,24 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
     public apiResultMessage;
     public selected_attendance = {};
     public quizzes = [];
+    public quiz_types = [];
     public selected_quiz = 0;
+    public selected_quiz_type = 1;
     public quiz = {
         id: 0,
         code: '',
+        is_show_question_text: true,
+        is_show_one_question: true,
         is_use_timer: true,
-        timer: '15:00',
+        timer: '00:00',
         title: '',
         questions: [{
             text: '',
+            option_a: '',
+            option_b: '',
+            option_c: '',
+            option_d: '',
+            correct_option: null,
             answers: []
         }]
     };
@@ -56,19 +65,14 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
             } else {
                 if (result.quiz != undefined) {
                     this.quiz = result.quiz;
-                    var interval = setInterval(() => {
-                        var time_left = (new Date(this.quiz['ended_at']).getTime() - new Date().getTime()) / 1000;
-                        var second = Math.floor(time_left % 60);
-                        var minute = Math.floor(time_left / 60);
-                        if (second == 0 && minute == 0) {
-                            clearInterval(interval);
-                            this.stopQuiz();
-                        }
-                        this.quiz.timer = (minute > 9 ? minute : '0' + minute) + ':' + (second > 9 ? second : '0' + second);
-                    }, 1000);
                     this.is_started = true;
+                    //display quiz if choose to hide question text from student
+                    if(!this.quiz.is_show_question_text){
+                         this.localStorage.set('displayQuizId',this.quiz.id);
+                        window.open(this.appConfig.host + '/quiz/display', '_blank', 'scrollbars=yes,status=0,toolbar=0,menubar=0,location=0');
+                    }
                 } else {
-                    this.getQuiz();
+                    this.getQuizList();
                 }
             }
         }, error => { this.appService.showPNotify('failure', "Server Error! Can't get opening quiz", 'error'); });
@@ -76,22 +80,38 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
     public ngOnInit() {
         this.selected_attendance = this.localStorage.get('selected_attendance');
         this.getOpeningQuiz();
+        this.quiz_types.push(this.appService.quiz_type.miscellaneous);
+        this.quiz_types.push(this.appService.quiz_type.academic);
     }
     public onAddQuestion() {
         this.quiz.questions.push({
             text: '',
+            option_a: '',
+            option_b: '',
+            option_c: '',
+            option_d: '',
+            correct_option: null,
             answers: []
         });
     }
     public onRemoveQuestion(index: number) {
         for (var i = index; i < this.quiz.questions.length - 1; i++) {
             this.quiz.questions[i].text = this.quiz.questions[i + 1].text;
+            this.quiz.questions[i].option_a = this.quiz.questions[i + 1].option_a;
+            this.quiz.questions[i].option_b = this.quiz.questions[i + 1].option_b;
+            this.quiz.questions[i].option_c = this.quiz.questions[i + 1].option_c;
+            this.quiz.questions[i].option_d = this.quiz.questions[i + 1].option_d;
+            this.quiz.questions[i].correct_option = this.quiz.questions[i + 1].correct_option;
         }
         this.quiz.questions.pop();
     }
-    public onUserTimer() {
+    public onUseTimer() {
         if (this.quiz.is_use_timer) {
-            this.quiz.timer = '15:00';
+            if(this.quiz.is_show_one_question){
+                this.quiz.timer = '00:10';
+            }else{
+                this.quiz.timer = '15:00';
+            }
         } else {
             this.quiz.timer = '00:00';
         }
@@ -104,22 +124,26 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
                 this.appService.showPNotify('failure', this.apiResultMessage, 'error');
             } else {
                 this.quiz.id = result.quiz_id;
-                this.quiz.code = result.code;
-                if(this.quiz.is_use_timer){
-                    var temp = this.quiz.timer.split(':');
-                    var time_left = (+temp[0]*60 + (+temp[1]));
-                    var interval = setInterval(() => {
-                        var second = Math.floor(time_left % 60);
-                        var minute = Math.floor(time_left / 60);
-                        if (second == 0 && minute == 0) {
-                            clearInterval(interval);
-                            this.stopQuiz();
-                        }
-                        this.quiz.timer = (minute > 9 ? minute : '0' + minute) + ':' + (second > 9 ? second : '0' + second);
-                        time_left--;
-                    }, 1000);
-                }
+                // if(this.quiz.is_use_timer){
+                //     var temp = this.quiz.timer.split(':');
+                //     var time_left = (+temp[0]*60 + (+temp[1]));
+                //     var interval = setInterval(() => {
+                //         var second = Math.floor(time_left % 60);
+                //         var minute = Math.floor(time_left / 60);
+                //         if (second == 0 && minute == 0) {
+                //             clearInterval(interval);
+                //             this.stopQuiz();
+                //         }
+                //         this.quiz.timer = (minute > 9 ? minute : '0' + minute) + ':' + (second > 9 ? second : '0' + second);
+                //         time_left--;
+                //     }, 1000);
+                // }
                 this.is_started = true;
+                //display quiz if choose to hide question text from student
+                if(!this.quiz.is_show_question_text){
+                    this.localStorage.set('displayQuizId',this.quiz.id);
+                    window.open(this.appConfig.host + '/quiz/display', '_blank', 'scrollbars=yes,status=0,toolbar=0,menubar=0,location=0');
+                }
             }
         }, error => { this.appService.showPNotify('failure', "Server Error! Can't start quiz", 'error'); });
     }
@@ -152,6 +176,11 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
                 for(var j = 0; j < this.quizzes[i].questions.length; j++){
                     this.quiz.questions.push({
                         text : this.quizzes[i].questions[j].text,
+                        option_a : this.quizzes[i].questions[j].option_a,
+                        option_b : this.quizzes[i].questions[j].option_b,
+                        option_c : this.quizzes[i].questions[j].option_c,
+                        option_d : this.quizzes[i].questions[j].option_d,
+                        correct_option : this.quizzes[i].questions[j].correct_option,
                         answers: []
                     });
                 }
@@ -159,7 +188,10 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
             }
         }
     }
-    public getQuiz(){
+    public onChangeQuizType(){
+
+    }
+    public getQuizList(){
         this.quizService.getQuizByCourseAndClass(this.selected_attendance['course_id'], this.selected_attendance['class_id']).subscribe(result=>{
             this.apiResult = result.result;
             this.apiResultMessage = result.message;
@@ -169,12 +201,17 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
                 this.quizzes = result.quiz_list;
                 this.quizzes.unshift({
                     id: 0,
-                    code: '',
+                    code: result.quiz_code,
                     is_use_timer: true,
                     timer: '15:00',
-                    title: 'New Quiz',
+                    title: 'New quiz',
                     questions: [{
                         text: '',
+                        option_a: '',
+                        option_b: '',
+                        option_c: '',
+                        option_d: '',
+                        correct_option: null,
                         answers: []
                     }]
                 });

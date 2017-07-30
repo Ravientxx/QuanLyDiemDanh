@@ -7,14 +7,6 @@ import { LayoutComponent } from './layout.component';
 import { ChangePasswordComponent } from '../change-password/change-password.component';
 
 import { SharedModule } from '../shared/shared.module';
-import { DashboardModule } from '../dashboard/dashboard.module';
-import { StudentsModule } from '../students/students.module';
-import { CoursesModule } from '../courses/courses.module';
-import { TeachersModule } from '../teachers/teachers.module';
-import { ScheduleModule } from '../schedule/schedule.module';
-import { AbsenceRequestsModule } from '../absence-requests/absence-requests.module';
-import { FeedbackModule } from '../feedback/feedback.module';
-
 import { AuthGuardService } from '../shared/shared.module';
 const ROUTES = [{
     path: '',
@@ -42,7 +34,7 @@ const ROUTES = [{
 @NgModule({
     declarations: [
         LayoutComponent,
-        ChangePasswordComponent
+        ChangePasswordComponent,
     ],
     imports: [
         FormsModule,

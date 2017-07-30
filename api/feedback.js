@@ -100,12 +100,12 @@ router.post('/send', function(req, res, next) {
         _global.sendError(res, null, "content is required");
         return;
     }
-    var feedback = [
+    var feedback = [[
         req.body.title,
         req.body.content,
         (req.body.isAnonymous ? null : req.decoded.id),
         (req.body.isAnonymous ? 3 : (req.decoded.role_id == _global.role.student ? 1 : 2)),
-    ];
+    ]];
     pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);

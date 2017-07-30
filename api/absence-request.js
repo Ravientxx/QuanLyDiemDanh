@@ -165,13 +165,12 @@ router.post('/create', function(req, res, next) {
     var current_user = req.decoded;
 
     pool_postgres.connect(function(error, connection, done) {
-        var absence_request = [
+        var absence_request = [[
             current_user.id,
             reason,
             start_date,
             end_date,
-
-        ];
+        ]];
         connection.query(format(`INSERT INTO absence_requests (student_id,reason,start_date,end_date) VALUES %L`, absence_request), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
