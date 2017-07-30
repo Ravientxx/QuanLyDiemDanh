@@ -742,11 +742,29 @@ router.post('/check-attendance', function(req, res, next) {
             return console.log(message);
         }
 
-        connection.query(format(`SELECT students.id as id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name, attendance_detail.attendance_type as status, users.avatar as avatar 
-            FROM users, attendance_detail, students 
+        var class_has_course_id = 0;
+        connection.query(format(`SELECT class_has_course.id 
+            FROM class_has_course, attendance
+            WHERE attendance.class_id = class_has_course.class_id
+            AND attendance.course_id = class_has_course.course_id
+            AND attendance.id = %L`, attendance_id), function(error, result, fields) {
+
+            if (error) {
+                var message = error.message + ' at get class_has_course_id';
+                _global.sendError(res, message);
+                done();
+                return console.log(message);
+            }
+
+            class_has_course_id = result.rows[0].id;
+
+            connection.query(format(`SELECT presentations, discussions, answered_questions, students.id as id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name, attendance_detail.attendance_type as status, users.avatar as avatar 
+            FROM users, attendance_detail, students, student_enroll_course 
             WHERE users.id = students.id
             AND attendance_detail.student_id = students.id
-            AND attendance_detail.attendance_id = %L`, attendance_id), function(error, result, fields) {
+            AND student_enroll_course.class_has_course_id = %L
+            AND students.id = student_enroll_course.student_id
+            AND attendance_detail.attendance_id = %L`, class_has_course_id, attendance_id), function(error, result, fields) {
 
             if (error) {
                 var message = error.message + ' at get student_list by course';
@@ -763,9 +781,9 @@ router.post('/check-attendance', function(req, res, next) {
                 check_attendance_list: result.rows
             });
 
-            done();
+                done();
+            });
         });
-
     });
 });
 
