@@ -34,6 +34,36 @@ export class AppService {
             title: 'Miscellaneous'
         }
     };
+    public timers = [
+        {
+            id: 5,
+            text: '5s'
+        },
+        {
+            id: 10,
+            text: '10s'
+        },
+        {
+            id: 20,
+            text: '20s'
+        },
+        {
+            id: 30,
+            text: '30s'
+        },
+        {
+            id: 60,
+            text: '60s'
+        },
+        {
+            id: 90,
+            text: '90s'
+        },
+        {
+            id:120,
+            text: '120s'
+        }
+    ];
     public absence_request_status = {
         new: {
             id: 0,
@@ -47,7 +77,14 @@ export class AppService {
             id: 2,
             title: 'Rejected'
         },
-    }
+    };
+    public notification_type = {
+        send_feedback:0,
+        reply_feedback:1,
+        send_absence_request:2,
+        accept_absence_request:3,
+        reject_absence_request:4,
+    };
     public student_interaction_type = {answer_question: 0,discuss: 1, present: 2};
     public import_export_type = { student: 0, teacher: 1, course: 2, schedule: 3, examinees: 4, attendance_summary: 5, class:6};
     public enrollment_status = { compulsory: 0, elective: 1 };

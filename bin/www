@@ -65,6 +65,18 @@ io.sockets.on('connection', function(socket){
     console.log(quizAnswered);
     io.emit('quizAnswered', quizAnswered);
   });
+
+  // Socket event for notification pushed
+  socket.on('notificationPushed', function(notificationPushed){
+    console.log('notificationPushed');
+    console.log(notificationPushed);
+    io.emit('notificationPushed', notificationPushed);
+  });
+
+
+  socket.on('disconnect', function() {
+      console.log('Socket disconnect!');
+   });
 });
 /**
  * Listen on provided port, on all network interfaces.

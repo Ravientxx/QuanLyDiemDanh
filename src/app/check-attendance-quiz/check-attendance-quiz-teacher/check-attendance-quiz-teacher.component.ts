@@ -13,19 +13,19 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
     public constructor(public quizService: QuizService, public location: Location, public checkAttendanceService: CheckAttendanceService,
         public appConfig: AppConfig, public socketService: SocketService,
         public authService: AuthService, public attendanceService: AttendanceService, public localStorage: LocalStorageService, public appService: AppService, public router: Router) {
-        socketService.consumeEventOnQuizAnswered();
-        socketService.invokeQuizAnswered.subscribe(result => {
-            this.getOpeningQuiz();
-        });
-        socketService.consumeEventOnQuizStopped();
-        socketService.invokeQuizStopped.subscribe(result => {
-            if (this.quiz.id == result['quiz_id']) {
-                this.stopped_modal_message = "Quiz is " + result['message'];
-                jQuery('#quizStoppedModal').modal({ backdrop: 'static', keyboard: false });
-            }
-        });
+        // socketService.consumeEventOnQuizAnswered();
+        // socketService.invokeQuizAnswered.subscribe(result => {
+        //     this.getOpeningQuiz();
+        // });
+        // socketService.consumeEventOnQuizStopped();
+        // socketService.invokeQuizStopped.subscribe(result => {
+        //     if (this.quiz.id == result['quiz_id']) {
+        //         this.stopped_modal_message = "Quiz is " + result['message'];
+        //         jQuery('#quizStoppedModal').modal({ backdrop: 'static', keyboard: false });
+        //     }
+        // });
     }
-    public is_started = false;
+    public is_published = false;
     public apiResult;
     public apiResultMessage;
     public selected_attendance = {};
@@ -36,10 +36,8 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
     public quiz = {
         id: 0,
         code: '',
-        is_show_question_text: true,
-        is_show_one_question: true,
-        is_use_timer: true,
-        timer: '00:00',
+        is_randomize_questions: true,
+        is_randomize_answers: true,
         title: '',
         questions: [{
             text: '',
@@ -48,6 +46,7 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
             option_c: '',
             option_d: '',
             correct_option: null,
+            timer: 10,
             answers: []
         }]
     };
@@ -65,12 +64,6 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
             } else {
                 if (result.quiz != undefined) {
                     this.quiz = result.quiz;
-                    this.is_started = true;
-                    //display quiz if choose to hide question text from student
-                    if(!this.quiz.is_show_question_text){
-                         this.localStorage.set('displayQuizId',this.quiz.id);
-                        window.open(this.appConfig.host + '/quiz/display', '_blank', 'scrollbars=yes,status=0,toolbar=0,menubar=0,location=0');
-                    }
                 } else {
                     this.getQuizList();
                 }
@@ -91,6 +84,7 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
             option_c: '',
             option_d: '',
             correct_option: null,
+            timer: 10,
             answers: []
         });
     }
@@ -102,67 +96,36 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
             this.quiz.questions[i].option_c = this.quiz.questions[i + 1].option_c;
             this.quiz.questions[i].option_d = this.quiz.questions[i + 1].option_d;
             this.quiz.questions[i].correct_option = this.quiz.questions[i + 1].correct_option;
+            this.quiz.questions[i].timer = this.quiz.questions[i + 1].timer;
         }
         this.quiz.questions.pop();
     }
-    public onUseTimer() {
-        if (this.quiz.is_use_timer) {
-            if(this.quiz.is_show_one_question){
-                this.quiz.timer = '00:10';
-            }else{
-                this.quiz.timer = '15:00';
-            }
-        } else {
-            this.quiz.timer = '00:00';
-        }
-    }
-    public onStartQuiz() {
-        this.quizService.startQuiz(this.selected_attendance['course_id'], this.selected_attendance['class_id'], this.quiz).subscribe(result => {
+    public onPublishQuiz() {
+        this.quizService.publishQuiz(this.selected_attendance['course_id'], this.selected_attendance['class_id'], this.quiz).subscribe(result => {
             this.apiResult = result.result;
             this.apiResultMessage = result.message;
             if (this.apiResult == 'failure') {
                 this.appService.showPNotify('failure', this.apiResultMessage, 'error');
             } else {
                 this.quiz.id = result.quiz_id;
-                // if(this.quiz.is_use_timer){
-                //     var temp = this.quiz.timer.split(':');
-                //     var time_left = (+temp[0]*60 + (+temp[1]));
-                //     var interval = setInterval(() => {
-                //         var second = Math.floor(time_left % 60);
-                //         var minute = Math.floor(time_left / 60);
-                //         if (second == 0 && minute == 0) {
-                //             clearInterval(interval);
-                //             this.stopQuiz();
-                //         }
-                //         this.quiz.timer = (minute > 9 ? minute : '0' + minute) + ':' + (second > 9 ? second : '0' + second);
-                //         time_left--;
-                //     }, 1000);
-                // }
-                this.is_started = true;
-                //display quiz if choose to hide question text from student
-                if(!this.quiz.is_show_question_text){
-                    this.localStorage.set('displayQuizId',this.quiz.id);
-                    window.open(this.appConfig.host + '/quiz/display', '_blank', 'scrollbars=yes,status=0,toolbar=0,menubar=0,location=0');
-                }
             }
-        }, error => { this.appService.showPNotify('failure', "Server Error! Can't start quiz", 'error'); });
+        }, error => { this.appService.showPNotify('failure', "Server Error! Can't publish quiz", 'error'); });
     }
     public onStopQuiz() {
         jQuery('#confirmStopQuizModal').modal('show');
     }
-    public stopQuiz() {
-        this.quizService.stopQuiz(this.quiz.id).subscribe(result => {
-            this.apiResult = result.result;
-            this.apiResultMessage = result.message;
-            if (this.apiResult == 'failure') {
-                this.appService.showPNotify('failure', this.apiResultMessage, 'error');
-            } else {
-                this.is_started = false;
-                this.socketService.emitEventOnQuizStopped({ quiz_id: this.quiz.id, message: ' stopped by ' + this.authService.current_user.first_name + ' ' + this.authService.current_user.last_name });
-                this.router.navigate(['/check-attendance']);
-            }
-        }, error => { this.appService.showPNotify('failure', "Server Error! Can't stop quiz", 'error'); });
-    }
+    // public stopQuiz() {
+    //     this.quizService.stopQuiz(this.quiz.id).subscribe(result => {
+    //         this.apiResult = result.result;
+    //         this.apiResultMessage = result.message;
+    //         if (this.apiResult == 'failure') {
+    //             this.appService.showPNotify('failure', this.apiResultMessage, 'error');
+    //         } else {
+    //             this.socketService.emitEventOnQuizStopped({ quiz_id: this.quiz.id, message: ' stopped by ' + this.authService.current_user.first_name + ' ' + this.authService.current_user.last_name });
+    //             this.router.navigate(['/check-attendance']);
+    //         }
+    //     }, error => { this.appService.showPNotify('failure', "Server Error! Can't stop quiz", 'error'); });
+    // }
     public onBack() {
         this.location.back();
     }
@@ -181,6 +144,7 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
                         option_c : this.quizzes[i].questions[j].option_c,
                         option_d : this.quizzes[i].questions[j].option_d,
                         correct_option : this.quizzes[i].questions[j].correct_option,
+                        timer : this.quizzes[i].questions[j].timer,
                         answers: []
                     });
                 }
@@ -212,6 +176,7 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
                         option_c: '',
                         option_d: '',
                         correct_option: null,
+                        timer: 10,
                         answers: []
                     }]
                 });

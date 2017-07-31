@@ -43,31 +43,49 @@ export class DashboardStaffComponent implements OnInit {
 	}
 	public onSaveEditProfile(){
 		jQuery('#progressModal').modal({backdrop: 'static', keyboard: false});
-        this.appService.uploadAvatar(this.uploaded_avatar).subscribe(result=>{
-			var avatar_link = result['data'].link;
-			this.teacherService.updateTeacher(this.authService.current_user.id, this.editing_name, this.editing_mail, this.editing_phone, avatar_link)
+        if(this.uploaded_avatar != null){
+            this.appService.uploadAvatar(this.uploaded_avatar).subscribe(result=>{
+                var avatar_link = result['data'].link;
+                this.teacherService.updateTeacher(this.authService.current_user.id, this.editing_name, this.editing_mail, this.editing_phone, avatar_link)
+                .subscribe(result => {
+                    jQuery('#progressModal').modal('hide');
+                    this.apiResult = result.result;
+                    this.apiResultMessage = result.message;
+                    this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
+                    if (result.result == 'success') {
+                        this.isEditingProfile = false;
+                        this.authService.current_user.email = this.editing_mail;
+                        this.authService.current_user.phone = this.editing_phone;
+                        this.authService.current_user.avatar = avatar_link;
+                        this.authService.saveCurrentUserToLocal();
+                        var image = this.element.nativeElement.querySelector('#topNavPic');
+                        image.src = this.authService.current_user.avatar;
+                    }
+                }, error => { 
+                    jQuery('#progressModal').modal('hide');
+                    this.appService.showPNotify('failure', "Server Error! Can't edit profile", 'error');
+                });
+            },error=>{
+                jQuery('#progressModal').modal('hide');
+                this.appService.showPNotify('failure', "Error! Can't upload new profile picture", 'error');
+            });
+        }else{
+            this.teacherService.updateTeacher(this.authService.current_user.id, this.editing_name, this.editing_mail, this.editing_phone, null)
             .subscribe(result => {
+                jQuery('#progressModal').modal('hide');
                 this.apiResult = result.result;
                 this.apiResultMessage = result.message;
                 this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
                 if (result.result == 'success') {
-					jQuery('#progressModal').modal('hide');
                     this.isEditingProfile = false;
                     this.authService.current_user.email = this.editing_mail;
                     this.authService.current_user.phone = this.editing_phone;
-                    this.authService.current_user.avatar = avatar_link;
-                    this.authService.saveCurrentUserToLocal();
-                    var image = this.element.nativeElement.querySelector('#topNavPic');
-					image.src = this.authService.current_user.avatar;
                 }
             }, error => { 
-            	this.appService.showPNotify('failure', "Server Error! Can't edit profile", 'error');
-            	jQuery('#progressModal').modal('hide');
-    		});
-		},error=>{
-			this.appService.showPNotify('failure', "Error! Can't upload new profile picture", 'error');
-			jQuery('#progressModal').modal('hide');
-		});
+                jQuery('#progressModal').modal('hide');
+                this.appService.showPNotify('failure', "Server Error! Can't edit profile", 'error');
+            });
+        }
 	}
 	public onChangePassword(){
 		this.router.navigate(['/change-password']);

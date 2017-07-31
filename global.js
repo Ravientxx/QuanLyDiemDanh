@@ -32,12 +32,20 @@ module.exports = {
             ciphers: 'SSLv3'
         }
     },
+    notification_type:{
+        send_feedback:0,
+        reply_feedback:1,
+        send_absence_request:2,
+        accept_absence_request:3,
+        reject_absence_request:4,
+    },
     attendance_type:{
+        permited_absent: -1,
         absent: 0,
         checklist: 1,
         qr: 2,
         quiz: 3,
-        face: 4
+        face: 4,
     },
     quiz_type:{
         academic: 0,

@@ -74,8 +74,8 @@ export class QuizService {
                 return Observable.throw(error || 'Server error');
             });
     }
-    public startQuizUrl = this.appConfig.apiHost + '/quiz/start';
-    public startQuiz(course_id: number,class_id: number,quiz: any): Observable < { result: string,quiz_id:number, code:string , message:string} > {
+    public publishQuizUrl = this.appConfig.apiHost + '/quiz/start';
+    public publishQuiz(course_id: number,class_id: number,quiz: any): Observable < { result: string,quiz_id:number, code:string , message:string} > {
         var params = {
             'course_id': course_id,
             'class_id' : class_id,
@@ -85,7 +85,7 @@ export class QuizService {
         let headers = new Headers();
         headers.append('x-access-token', `${authToken}`);
         let options = new RequestOptions({ headers: headers });
-        return this.http.post(this.startQuizUrl,params,options)
+        return this.http.post(this.publishQuizUrl,params,options)
             // ...and calling .json() on the response to return data
             .map((res: Response) => res.json())
             //...errors if any

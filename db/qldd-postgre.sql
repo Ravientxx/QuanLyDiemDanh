@@ -265,10 +265,9 @@ CREATE TABLE quiz (
   created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
   started_at timestamp with time zone DEFAULT NULL,
   ended_at timestamp with time zone DEFAULT NULL,
-  is_show_question_text boolean DEFAULT TRUE,
-  is_show_one_question boolean DEFAULT TRUE,
-  is_use_timer boolean DEFAULT TRUE,
-  timer varchar(255) DEFAULT NULL,
+  is_randomize_answers boolean DEFAULT TRUE,
+  is_randomize_questions boolean DEFAULT TRUE,
+  is_template boolean DEFAULT FALSE,
   code varchar(7) DEFAULT NULL,
   type smallint DEFAULT NULL,
   PRIMARY KEY (id,class_has_course_id)
@@ -287,6 +286,7 @@ CREATE TABLE quiz_questions (
   option_c varchar(255) DEFAULT NULL,
   option_d varchar(255) DEFAULT NULL,
   correct_option varchar(255) DEFAULT NULL,
+  timer int DEFAULT NULL,
   PRIMARY KEY (id,quiz_id)
 );
 
@@ -309,11 +309,13 @@ CREATE TABLE quiz_answers (
 DROP TABLE IF EXISTS notifications;
 CREATE TABLE notifications (
   id serial NOT NULL,
-  to_id int NOT NULL,
+  to_id int NULL,
+  from_id int NOT NULL,
   message text DEFAULT NULL,
   object_id int NOT NULL,
-  object_type smallint DEFAULT NULL,
+  type smallint DEFAULT NULL,
   read boolean DEFAULT FALSE,
+  created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id)
 );
 

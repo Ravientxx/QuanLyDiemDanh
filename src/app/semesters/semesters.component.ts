@@ -25,6 +25,9 @@ export class SemestersComponent implements OnInit {
 
 	public ngOnInit() {
 		this.getSemesterList();
+        jQuery('#from_to').daterangepicker(null, function(start, end, label) {
+
+        });
 	}
 	public semesters = [];
 	public getSemesterList() {

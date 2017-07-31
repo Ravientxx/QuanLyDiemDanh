@@ -1128,11 +1128,11 @@ var insert_attendance_detail = [
 ];
 //[from_id, to_id, title, content, type]
 var insert_feeback = [
-    [null, null, 'Phòng học kém chất lương', 'Máy lạnh nóng quớ', 3],
-    [63, 1, 'Thầy dạy quá nhanh', 'Thầy có thể dạy chậm lại cho em dễ hiểu ?', 1],
-    [null, 2, 'Cô hớt tóc mới', 'Tóc mới của cô làm em khó tập trung quá!', 3],
-    [63, null, 'Ổ điện hỏng', 'Ổ điện thứ 3 từ trên xuống của dãy giữa phòng I44 bị hỏng, cô hãy fix giúp tụi em', 1],
-    [1, null, 'Lớp 13CLC hư', 'Lớp 13CLC nói chuyện quá nhiều trong giờ học, dẫn đến khó dạy.', 2]
+    [null, null, 'Phòng học kém chất lương', 'Máy lạnh nóng quớ', 3],//1
+    [63, 1, 'Thầy dạy quá nhanh', 'Thầy có thể dạy chậm lại cho em dễ hiểu ?', 1],//2
+    [null, 2, 'Cô hớt tóc mới', 'Tóc mới của cô làm em khó tập trung quá!', 3],//3
+    [63, null, 'Ổ điện hỏng', 'Ổ điện thứ 3 từ trên xuống của dãy giữa phòng I44 bị hỏng, cô hãy fix giúp tụi em', 1],//4
+    [1, null, 'Lớp 13CLC hư', 'Lớp 13CLC nói chuyện quá nhiều trong giờ học, dẫn đến khó dạy.', 2]//5
 ];
 //[title, class_has_course_id, closed, created_by]
 var insert_quiz = [
@@ -1152,6 +1152,10 @@ var insert_quiz_answer = [
     [2, `C`, 115], //4
     [3, `C`, 116], //3
     [3, `A`, 117], //4
+];
+//[to_id, message, object_id, type]
+var insert_notifications = [
+    [null,1, `Đinh Bá Tiến sent you a feedback`,5,_global.notification_type.sent_feedback], //1
 ];
 
 var seeding_mysql = function(res) {
@@ -1495,6 +1499,15 @@ var seeding_postgres = function(res) {
             },
             function(callback) {
                 connection.query(format('INSERT INTO quiz_answers (quiz_question_id, selected_option ,answered_by) VALUES %L', insert_quiz_answer), function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query(format('INSERT INTO notifications (to_id,from_id, message ,object_id, type) VALUES %L', insert_notifications), function(error, results, fields) {
                     if (error) {
                         callback(error);
                     } else {

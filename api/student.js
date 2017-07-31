@@ -280,7 +280,7 @@ router.put('/update', function(req, res, next) {
     var new_email = req.body.email;
     var new_phone = req.body.phone;
     var new_status = req.body.status ? req.body.status : 0;
-    var new_avatar = req.body.avatar ? req.body.avatar : 'http://i.imgur.com/FTa2JWD.png';
+    var new_avatar = req.body.avatar;
     pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
@@ -309,14 +309,25 @@ router.put('/update', function(req, res, next) {
             },
             //update user table
             function(callback) {
-                connection.query(format(`UPDATE users SET first_name = %L, last_name = %L, email = %L, phone = %L ,avatar = %L WHERE id = %L`, new_first_name, new_last_name, new_email, new_phone, new_avatar, user_id), function(error, result, fields) {
-                    if (error) {
-                        console.log(error.message + ' at Update Users info');
-                        callback(error);
-                    } else {
-                        callback();
-                    }
-                });
+                if(new_avatar != null){
+                    connection.query(format(`UPDATE users SET first_name = %L, last_name = %L, email = %L, phone = %L ,avatar = %L WHERE id = %L`, new_first_name, new_last_name, new_email, new_phone, new_avatar, user_id), function(error, result, fields) {
+                        if (error) {
+                            console.log(error.message + ' at Update Users info');
+                            callback(error);
+                        } else {
+                            callback();
+                        }
+                    });
+                }else{
+                    connection.query(format(`UPDATE users SET first_name = %L, last_name = %L, email = %L, phone = %L WHERE id = %L`, new_first_name, new_last_name, new_email, new_phone, user_id), function(error, result, fields) {
+                        if (error) {
+                            console.log(error.message + ' at Update Users info');
+                            callback(error);
+                        } else {
+                            callback();
+                        }
+                    });
+                }
             },
             //Commit transaction
             function(callback) {

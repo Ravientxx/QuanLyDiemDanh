@@ -56,6 +56,7 @@ router.use('/check-attendance', require('./check-attendance'));
 router.use('/quiz', require('./quiz'));
 router.use('/class', require('./classes'));
 router.use('/program', require('./program'));
+router.use('/notification', require('./notification'));
 
 router.get('/semesters-programs-classes', function(req, res, next) {
     var program_id = req.body.program_id;
@@ -87,10 +88,4 @@ router.get('/semesters-programs-classes', function(req, res, next) {
         });
     });
 });
-
-
-
-
-
-
 module.exports = router;

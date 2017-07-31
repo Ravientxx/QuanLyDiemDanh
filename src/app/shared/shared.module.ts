@@ -63,6 +63,8 @@ import {ClassesService} from './services/classes.service';
 export {ClassesService};
 import {ProgramsService} from './services/programs.service';
 export {ProgramsService};
+import {NotificationService} from './services/notification.service';
+export {NotificationService};
 /**
  * Do not specify providers for modules that might be imported by a lazy loaded module.
  */
@@ -124,7 +126,8 @@ export {ProgramsService};
     SocketService,
     QuizService,
     ClassesService,
-    ProgramsService
+    ProgramsService,
+    NotificationService
   ]
 })
 export class SharedModule {}

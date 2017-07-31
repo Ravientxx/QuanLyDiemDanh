@@ -19,7 +19,7 @@ router.put('/update/', function(req, res, next) {
     } else {
         classes.push(req.body.classes);
     }
-    pool.getConnection(function(error, connection) {
+    pool_postgres.connect(function(error, connection, done) {
         async.each(classes, function(_class, callback) {
             connection.query(format(`UPDATE class_has_course SET schedules = %L WHERE class_id = %L AND course_id = %L`,_class.schedules, _class.class_id, _class.course_id), function(error, result, fields) {
                 if (error) {
@@ -56,7 +56,7 @@ router.post('/schedules-and-courses/', function(req, res, next) {
     var program_id = req.body.program_id;
     var semester_id = req.body.semester_id;
     var class_id = req.body.class_id ? req.body.class_id : 0;
-    pool.getConnection(function(error, connection) {
+    pool_postgres.connect(function(error, connection, done) {
         if (class_id == 0) {
             connection.query(format(`SELECT courses.*,class_has_course.schedules,classes.name as class_name,
                                     (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name)), E'\r\n')
@@ -111,7 +111,7 @@ router.post('/schedules-and-courses/', function(req, res, next) {
 
 router.get('/schedules-and-courses-by-student/', function(req, res, next) {
     var student_id = req.decoded.id;
-    pool.getConnection(function(error, connection) {
+    pool_postgres.connect(function(error, connection, done) {
         connection.query(format(`SELECT courses.*,class_has_course.schedules,classes.name as class_name,
                                     (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name)), E'\r\n')
                                     FROM teacher_teach_course,users 
@@ -142,7 +142,7 @@ router.get('/schedules-and-courses-by-student/', function(req, res, next) {
 
 router.get('/schedules-and-courses-by-teacher/', function(req, res, next) {
     var teacher_id = req.decoded.id;
-    pool.getConnection(function(error, connection) {
+    pool_postgres.connect(function(error, connection, done) {
         connection.query(format(`SELECT courses.*,class_has_course.schedules,classes.name as class_name,
                             (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name)), E'\r\n')
                             FROM teacher_teach_course,users 
