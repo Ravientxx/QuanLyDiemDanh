@@ -194,7 +194,7 @@ router.post('/remove-staff', function(req, res, next) {
             return console.log(error);
         }
          
-        connection.query(format(`DELETE FROM users WHERE email = %L LIMIT 1`, email), function(error, result, fields) {
+        connection.query(format(`DELETE FROM users WHERE email = %L`, [email]), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, null, 'error at delete staff');
                 done();
