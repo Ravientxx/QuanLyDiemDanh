@@ -89,7 +89,7 @@ export class AppService {
     public import_export_type = { student: 0, teacher: 1, course: 2, schedule: 3, examinees: 4, attendance_summary: 5, class:6};
     public enrollment_status = { compulsory: 0, elective: 1 };
     public attendance_status = { normal: 0, exemption: 1 };
-    public userType = { admin: 0, student: 1, teacher: 2, staff: 3 };
+    public userType = { admin: 4, student: 1, teacher: 2, staff: 3 };
     public attendance_type = { absent: 0, checklist: 1, qr: 2, quiz: 3, face: 4 };
     
     public getSemesterProgramClassUrl = this.appConfig.apiHost + '/semesters-programs-classes';
@@ -168,5 +168,94 @@ export class AppService {
             buttons: { closer: true, sticker: false },
             stack: { "dir1": "down", "dir2": "right", "firstpos1": 25, "firstpos2": (jQuery(window).width() / 2) - (Number(PNotify.prototype.options.width.replace(/\D/g, '')) / 2) },
         });
+    }
+
+    public getStaffsUrl = this.appConfig.apiHost + '/staffs';
+    public getStaffs(): Observable < { result: any, staffs : any, message: string} > {
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.get(this.getStaffsUrl, options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            //.catch((error: any) => Observable.throw(error || 'Server error'));
+            .catch((error: any) => {
+                if (error.status == 401) {
+                    this.authService.tokenExpired(this.router.url);
+                }
+                return Observable.throw(error || 'Server error');
+            });
+    }
+
+    public addStaffUrl = this.appConfig.apiHost + '/add-staff';
+    public addStaff(email : string, phone : string, first_name : string, last_name : string): Observable < { result: any, staff : any, message: string} > {
+        var params = {
+            'email': email,
+            'phone': phone,
+            'first_name': first_name,
+            'last_name': last_name
+        };
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.addStaffUrl, params, options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            //.catch((error: any) => Observable.throw(error || 'Server error'));
+            .catch((error: any) => {
+                if (error.status == 401) {
+                    this.authService.tokenExpired(this.router.url);
+                }
+                return Observable.throw(error || 'Server error');
+            });
+    }
+
+    public removeStaffUrl = this.appConfig.apiHost + '/remove-staff';
+    public removeStaff(email : string): Observable < { result: any, message: string} > {
+        var params = {
+            'email': email,
+        };
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.removeStaffUrl, params, options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            //.catch((error: any) => Observable.throw(error || 'Server error'));
+            .catch((error: any) => {
+                if (error.status == 401) {
+                    this.authService.tokenExpired(this.router.url);
+                }
+                return Observable.throw(error || 'Server error');
+            });
+    }
+
+    public sendReplyUrl = this.appConfig.apiHost + '/feedback/send-reply';
+    public sendReply(content : string, id: number): Observable < { result: any, message: string} > {
+        var params = {
+            'content': content,
+            'id': id
+        };
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.sendReplyUrl, params, options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            //.catch((error: any) => Observable.throw(error || 'Server error'));
+            .catch((error: any) => {
+                if (error.status == 401) {
+                    this.authService.tokenExpired(this.router.url);
+                }
+                return Observable.throw(error || 'Server error');
+            });
     }
 }

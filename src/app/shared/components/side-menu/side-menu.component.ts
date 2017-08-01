@@ -26,6 +26,11 @@ export class SideMenuComponent implements OnInit {
 
     public sideMenu: Array < any > = [];
 
+    public adminMenu = [
+        { title: 'Dashboard', url: '/', icon: 'fa-home' },
+        { title: 'Logout', url: '/logout', icon: 'fa-sign-out' }
+    ];
+
     public staffMenu = [
         { title: 'Dashboard', url: '/', icon: 'fa-home' },
         { title: 'Statistic', url: '/statistic', icon: 'fa-line-chart' }, 
@@ -55,6 +60,7 @@ export class SideMenuComponent implements OnInit {
         { title: 'Attendance - Checklist',url: '/check-attendance',icon: 'fa-check-square-o' },
         { title: 'Attendance - Quiz',url: '/check-attendance/quiz',icon: 'fa-question-circle' },
         { title: 'Schedule', url: '/schedule', icon: 'fa-calendar' },
+        { title: 'Feedbacks', url: '/feedbacks', icon: 'fa-comments' },
         { title: 'Absence Requests', url: '/absence-requests', icon: 'fa-envelope' },
         { title: 'Logout', url: '/logout', icon: 'fa-sign-out' }
     ];
@@ -64,6 +70,7 @@ export class SideMenuComponent implements OnInit {
         { title: 'Check Attendance',url: '/check-attendance',icon: 'fa-check-square-o' },
         { title: 'Quiz',url: '/quiz',icon: 'fa-question-circle' },
         { title: 'Schedule', url: '/schedule', icon: 'fa-calendar' },
+        { title: 'Feedbacks', url: '/feedbacks', icon: 'fa-comments' },
         { title: 'Logout', url: '/logout', icon: 'fa-sign-out' }
     ];
 }

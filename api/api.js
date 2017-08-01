@@ -88,4 +88,123 @@ router.get('/semesters-programs-classes', function(req, res, next) {
         });
     });
 });
+
+router.get('/staffs', function(req, res, next) {
+    pool_postgres.connect(function(error, connection, done) {
+        connection.query(`SELECT * FROM users WHERE role_id = 3`, function(error, result, fields) {
+            if (error) {
+                done(error);
+                return console.log(error);
+            }
+    
+            res.send({ result: 'success', staffs: result.rows });
+            done();
+        }); 
+    });
+});
+
+router.post('/add-staff', function(req, res, next) {
+    if (req.body.first_name == undefined || req.body.first_name == '') {
+        _global.sendError(res, null, "First name is required");
+        return;
+    }
+    if (req.body.last_name == undefined || req.body.last_name == '') {
+        _global.sendError(res, null, "Last name is required");
+        return;
+    }
+    if (req.body.email == undefined || req.body.email == '') {
+        _global.sendError(res, null, "Email is required");
+        return;
+    }
+    if (req.body.email.indexOf('@') == -1) {
+        _global.sendError(res, null, "Invalid Email");
+        return;
+    }
+    if (req.body.phone == undefined || isNaN(req.body.phone)) {
+        _global.sendError(res, null, "Invalid Phone Number");
+        return;
+    }
+
+    var new_first_name = req.body.first_name;
+    var new_last_name = req.body.last_name;
+    var new_email = req.body.email;
+    var new_phone = req.body.phone;
+
+    pool_postgres.connect(function(error, connection, done) {
+        if (error) {
+            _global.sendError(res, error.message);
+            done();
+            return console.log(error);
+        }
+
+            connection.query(format(`SELECT email FROM users WHERE email = %L LIMIT 1`, new_email), function(error, result, fields) {
+                if (error) {
+                    _global.sendError(res, error.message);
+                    done();
+                    return console.log(error);
+                }
+                //check email exist
+                if (result.rowCount > 0) {
+                    _global.sendError(res, "Email already existed");
+                    done();
+                    return console.log("Email already existed");
+                }
+                //new data to users table
+                var new_password = new_email.split('@')[0];
+                var new_user = [[
+                    new_first_name,
+                    new_last_name,
+                    new_email,
+                    new_phone,
+                    bcrypt.hashSync(new_password, 10),
+                    _global.role.staff
+                ]];
+                
+                connection.query(format('INSERT INTO users (first_name,last_name,email,phone,password,role_id) VALUES %L RETURNING id', new_user), function(error, result, fields) {
+                    if (error) {
+                        _global.sendError(res, "Email already existed");
+                        done();
+                        return console.log("Email already existed");
+                    }else{
+                        res.send({ result: 'success',  message : "ok" });
+                        done();
+                    }
+                });
+                
+        });
+    });
+});
+
+router.post('/remove-staff', function(req, res, next) {
+    if (req.body.email == undefined || req.body.email == '') {
+        _global.sendError(res, null, "Email is required");
+        return;
+    }
+    if (req.body.email.indexOf('@') == -1) {
+        _global.sendError(res, null, "Invalid Email");
+        return;
+    }
+    
+    var email = req.body.email;
+    
+    pool_postgres.connect(function(error, connection, done) {
+        if (error) {
+            _global.sendError(res, error.message);
+            done();
+            return console.log(error);
+        }
+         
+        connection.query(format(`DELETE FROM users WHERE email = %L LIMIT 1`, email), function(error, result, fields) {
+            if (error) {
+                _global.sendError(res, null, 'error at delete staff');
+                done();
+                return console.log(error.message + ' at delete staff');
+            } else {
+                res.send({ result: 'success' });
+                done();
+            }
+        });
+    });
+});
+
 module.exports = router;

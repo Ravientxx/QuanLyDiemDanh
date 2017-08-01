@@ -45,6 +45,9 @@ export class FeedbackStaffComponent implements OnInit {
     public selected_feedback;
     public feedback_title = '';
     public feedback_content = '';
+    public feedback_from = '';
+    public feedback_id: number;
+    public reply_content = '';
     public pageNumber: number = 1;
     public limit: number = 15;
     public currentPage: number = 1;
@@ -59,6 +62,8 @@ export class FeedbackStaffComponent implements OnInit {
     }
     public onClickFeedback(index){
         this.selected_feedback = index;
+        this.feedback_id = this.feedbacks[index].id;
+        this.feedback_from = this.feedbacks[index]._from;
         this.feedback_content = this.feedbacks[index].content;
         this.feedback_title = this.feedbacks[index].title;
         this.feebackService.readFeedbacks(this.feedbacks[index].id).subscribe(result=>{
@@ -71,7 +76,13 @@ export class FeedbackStaffComponent implements OnInit {
             this.getFeedbacks();
         }
     }
-    public replyFeedback(){
-        
+    
+    public sendReply(){
+        this.appService.sendReply(this.reply_content, this.feedback_id).subscribe(result=>{
+            jQuery('#feedbackDetailModal').modal('hide');
+            this.reply_content = '';
+            this.feedback_id = null;
+            this.getFeedbacks();
+        },error=>{this.appService.showPNotify('failure', "Server Error! Can't read feedbacks", 'error');});
     }
 }
