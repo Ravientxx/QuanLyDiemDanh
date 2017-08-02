@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { AppService, FeedbackService } from '../../shared/shared.module';
+import { AppService, FeedbackService, SendFeedbackModalComponent } from '../../shared/shared.module';
 declare var jQuery:any;
 @Component({
     selector: 'app-feedback-history',
@@ -47,5 +47,14 @@ export class FeedbackHistoryComponent implements OnInit {
         if(this.search_text.length > 3 || this.search_text.length == 0){
             this.getFeedbacks();
         }
+    }
+
+    @ViewChild(SendFeedbackModalComponent)
+    public  sendFeedbackModal: SendFeedbackModalComponent;
+    public onSendFeedback() {
+        this.sendFeedbackModal.onOpenModal();
+    }
+    public onFeedbackSent(result:string){
+        this.getFeedbacks();
     }
 }
