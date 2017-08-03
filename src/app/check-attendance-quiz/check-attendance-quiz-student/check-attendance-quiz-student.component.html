@@ -156,12 +156,17 @@
                         <div class="row text-center">
                             <h2>Result: {{correct_answers}} out of {{quiz['questions']['length']}}</h2>
                         </div>
-                        <div *ngIf="quiz['type'] == appService.quiz_type.academic.id || correct_answers == quiz['questions']['length']" class="row text-center green_text">
-                            <h2>Your Attendance is checked</h2>
+                        <div *ngIf="no_answer" class="row text-center red_text">
+                            <h2>Your Attendance is not checked. You didn't answer any question.</h2>
                         </div>
-                        <div *ngIf="quiz['type'] == appService.quiz_type.miscellaneous.id && correct_answers != quiz['questions']['length']" class="row text-center red_text">
-                            <h2>Your Attendance is not checked. Miscellaneous quiz requires you to be 100% correct to be checked</h2>
-                        </div>
+                        <ng-container *ngIf="!no_answer">
+                            <div *ngIf="quiz['type'] == appService.quiz_type.academic.id || correct_answers == quiz['questions']['length']" class="row text-center green_text">
+                                <h2>Your Attendance is checked</h2>
+                            </div>
+                            <div *ngIf="quiz['type'] == appService.quiz_type.miscellaneous.id && correct_answers != quiz['questions']['length']" class="row text-center red_text">
+                                <h2>Your Attendance is not checked. Miscellaneous quiz requires you to be 100% correct to be checked</h2>
+                            </div>
+                        </ng-container>
                         <div class="container-fluid">
                             <ng-container *ngFor="let question of this.quiz.questions">
                                 <div class="row">

@@ -10,6 +10,12 @@
                 <ng-container *ngIf="is_started && !is_ended && !is_ready">
                     <button type="button" class="btn btn-primary btn-lg" (click)="onNextQuestion()">Next</button>
                 </ng-container>
+                <ng-container *ngIf="is_save_quiz_error">
+                    <button class="btn btn-primary btn-lg" (click)="onSaveQuiz()">Save Quiz</button>
+                </ng-container>
+                <ng-container *ngIf="!is_started && is_ended && !is_ready">
+                    <button class="btn btn-primary btn-lg" (click)="onReturn()">Close</button>
+                </ng-container>
             </div>
             <div class="clearfix"></div>
         </div>
@@ -50,12 +56,12 @@
                 </div>
                 <div class="container-fluid">
                     <div class="row">
-                        <button class="col-xs-5 btn btn-primary" disabled>A. {{quiz['questions'][current_question_index]['option_a']}}</button>
-                        <button class="col-xs-5 col-xs-offset-1 btn btn-primary" disabled>B. {{quiz['questions'][current_question_index]['option_b']}}</button>
+                        <button class="col-xs-5 btn btn-primary" disabled><h3>A. {{quiz['questions'][current_question_index]['option_a']}}</h3></button>
+                        <button class="col-xs-5 col-xs-offset-1 btn btn-primary" disabled><h3>B. {{quiz['questions'][current_question_index]['option_b']}}</h3></button>
                     </div>
                     <div class="row">
-                        <button class="col-xs-5 btn btn-primary" disabled>C. {{quiz['questions'][current_question_index]['option_c']}}</button>
-                        <button class="col-xs-5 col-xs-offset-1 btn btn-primary" disabled>D. {{quiz['questions'][current_question_index]['option_d']}}</button>
+                        <button class="col-xs-5 btn btn-primary" disabled><h3>C. {{quiz['questions'][current_question_index]['option_c']}}</h3></button>
+                        <button class="col-xs-5 col-xs-offset-1 btn btn-primary" disabled><h3>D. {{quiz['questions'][current_question_index]['option_d']}}</h3></button>
                     </div>
                 </div>
                 <div class="col-xs-12">
@@ -66,7 +72,39 @@
             </div>
             <div *ngIf="!is_started && is_ended  && !is_ready" class="row">
                 <div class="col-xs-12 text-center">
-                    <h2>Quiz is finished</h2>
+                    <h2>Quiz is finished. Total student in course : {{student_list.length}}, {{quiz['participants']['length']}} participated</h2>
+                </div>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-sm-6 col-xs-12 text-center">
+                            <h3 class="green_text">Attendance Checked : {{attendance_checked_list.length}}</h3>
+                            <div style="overflow:auto; max-height:300px;">
+                                <table class="table table-striped table-bordered">
+                                    <tbody>
+                                        <tr *ngFor="let student of attendance_checked_list">
+                                            <td>{{student.code}}</td>
+                                            <td>{{student.name}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-xs-12 text-center">
+                            <h3 class="red_text">Attendance Not Checked : {{attendance_not_checked_list.length}}</h3>
+                            <div style="overflow:auto; max-height:300px;">
+                                <table class="table table-striped table-bordered">
+                                    <tbody>
+                                        <tr *ngFor="let student of attendance_not_checked_list">
+                                            <td>{{student.code}}</td>
+                                            <td>{{student.name}}</td>
+                                            <td>{{student.reason}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <hr/>
+                    </div>
                 </div>
                 <div class="container-fluid">
                     <ng-container  *ngFor="let question of quiz.questions">
@@ -108,6 +146,8 @@
 </div>
 <div *ngIf="get_published_quiz_error" class="col-md-12 col-sm-12 col-xs-12">
     <div class="x_panel">
+        <div class="x_title">
+        </div>
         <div class="x_content">
             <div class="row text-center">
                 <h2>{{get_published_quiz_error}}</h2>

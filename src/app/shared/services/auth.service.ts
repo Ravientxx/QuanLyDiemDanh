@@ -20,6 +20,7 @@ export class AuthService {
         this.redirectUrl = redirectUrl;
         this.redirectMessage = 'Your session is expired. Please login again!';
         this.logout();
+        this.router.navigate(['/login']);
     }
 
     public loginUrl = this.appConfig.host + '/authenticate/login';

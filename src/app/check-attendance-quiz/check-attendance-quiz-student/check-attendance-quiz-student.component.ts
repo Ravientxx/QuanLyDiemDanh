@@ -28,6 +28,7 @@ export class CheckAttendanceQuizStudentComponent implements OnInit, OnDestroy {
     public ready_time = 5;
     public selected_option;
     public correct_answers = 0;
+    public no_answer = false;
 
     public constructor(public quizService: QuizService, public checkAttendanceService: CheckAttendanceService,
         public appConfig: AppConfig, public socketService: SocketService, public authService: AuthService,
@@ -119,11 +120,20 @@ export class CheckAttendanceQuizStudentComponent implements OnInit, OnDestroy {
                     if (this.quiz_code == result['quiz_code']) {
                         this.is_started = false;
                         this.is_ready = true;
+                        this.correct_answers = 0;
+                        var check_no_answer = 0;
                         for(var i = 0 ; i < this.quiz['questions']['length']; i++){
-                            var selected_answers = this.quiz['questions'][i]['option_' + this.quiz['questions'][i]['answers']];
-                            if(this.quiz['questions'][i]['correct_option'] == selected_answers){
-                                this.correct_answers++;
+                            if(this.quiz['questions'][i]['answers'] == 0){
+                                check_no_answer++;
+                            }else{
+                                var selected_answers = this.quiz['questions'][i]['option_' + this.quiz['questions'][i]['answers']];
+                                if(this.quiz['questions'][i]['correct_option'] == selected_answers){
+                                    this.correct_answers++;
+                                }
                             }
+                        }
+                        if(check_no_answer == this.quiz['questions']['length']){
+                            this.no_answer = true;
                         }
                     }
                 });
@@ -164,6 +174,9 @@ export class CheckAttendanceQuizStudentComponent implements OnInit, OnDestroy {
             this.apiResultMessage = result.message;
             if (this.apiResult == 'success') {
                 this.quiz = result.quiz;
+                for(var i = 0 ; i < this.quiz['questions'].length; i++){
+                    this.quiz['questions'][i]['answers'] = 0;
+                }
             } else {
                 this.appService.showPNotify(this.apiResult, this.apiResultMessage, 'error');
             }

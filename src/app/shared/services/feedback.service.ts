@@ -29,9 +29,10 @@ export class FeedbackService {
             .map((res: Response) => res.json())
             //...errors if any
             .catch((error: any) => {
-                if(error.status == 401){
+                if (error.status == 401) {
                     this.authService.tokenExpired(this.router.url);
                 }
+                //this.authService.tokenExpired(this.router.url);
                 return Observable.throw(error || 'Server error');
             });
     }
@@ -49,9 +50,10 @@ export class FeedbackService {
             .map((res: Response) => res.json())
             //...errors if any
             .catch((error: any) => {
-                if(error.status == 401){
+                if (error.status == 401) {
                     this.authService.tokenExpired(this.router.url);
                 }
+                //this.authService.tokenExpired(this.router.url);
                 return Observable.throw(error || 'Server error');
             });
     }
@@ -71,9 +73,10 @@ export class FeedbackService {
             .map((res: Response) => res.json())
             //...errors if any
             .catch((error: any) => {
-                if(error.status == 401){
+                if (error.status == 401) {
                     this.authService.tokenExpired(this.router.url);
                 }
+                //this.authService.tokenExpired(this.router.url);
                 return Observable.throw(error || 'Server error');
             });
     }
@@ -94,9 +97,10 @@ export class FeedbackService {
             .map((res: Response) => res.json())
             //...errors if any
             .catch((error: any) => {
-                if(error.status == 401){
+                if (error.status == 401) {
                     this.authService.tokenExpired(this.router.url);
                 }
+                //this.authService.tokenExpired(this.router.url);
                 return Observable.throw(error || 'Server error');
             });
     }

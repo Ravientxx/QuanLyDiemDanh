@@ -29,9 +29,10 @@ export class QuizService {
             .map((res: Response) => res.json())
             //...errors if any
             .catch((error: any) => {
-                if(error.status == 401){
+                if (error.status == 401) {
                     this.authService.tokenExpired(this.router.url);
                 }
+                //this.authService.tokenExpired(this.router.url);
                 return Observable.throw(error || 'Server error');
             });
     }
@@ -51,9 +52,10 @@ export class QuizService {
             .map((res: Response) => res.json())
             //...errors if any
             .catch((error: any) => {
-                if(error.status == 401){
+                if (error.status == 401) {
                     this.authService.tokenExpired(this.router.url);
                 }
+                //this.authService.tokenExpired(this.router.url);
                 return Observable.throw(error || 'Server error');
             });
     }
@@ -73,31 +75,10 @@ export class QuizService {
             .map((res: Response) => res.json())
             //...errors if any
             .catch((error: any) => {
-                if(error.status == 401){
+                if (error.status == 401) {
                     this.authService.tokenExpired(this.router.url);
                 }
-                return Observable.throw(error || 'Server error');
-            });
-    }
-
-    public getOpeningQuizByCourseAndClassUrl = this.appConfig.apiHost + '/quiz/opening';
-    public getOpeningQuizByCourseAndClass(course_id: number,class_id: number): Observable < { result: string, quiz: any, message:string} > {
-        var params = {
-            'course_id': course_id,
-            'class_id' : class_id,
-        };
-        let authToken = this.authService.token;
-        let headers = new Headers();
-        headers.append('x-access-token', `${authToken}`);
-        let options = new RequestOptions({ headers: headers });
-        return this.http.post(this.getOpeningQuizByCourseAndClassUrl,params,options)
-            // ...and calling .json() on the response to return data
-            .map((res: Response) => res.json())
-            //...errors if any
-            .catch((error: any) => {
-                if(error.status == 401){
-                    this.authService.tokenExpired(this.router.url);
-                }
+                //this.authService.tokenExpired(this.router.url);
                 return Observable.throw(error || 'Server error');
             });
     }
@@ -119,9 +100,10 @@ export class QuizService {
             .map((res: Response) => res.json())
             //...errors if any
             .catch((error: any) => {
-                if(error.status == 401){
+                if (error.status == 401) {
                     this.authService.tokenExpired(this.router.url);
                 }
+                //this.authService.tokenExpired(this.router.url);
                 return Observable.throw(error || 'Server error');
             });
     }
@@ -141,9 +123,10 @@ export class QuizService {
             .map((res: Response) => res.json())
             //...errors if any
             .catch((error: any) => {
-                if(error.status == 401){
+                if (error.status == 401) {
                     this.authService.tokenExpired(this.router.url);
                 }
+                //this.authService.tokenExpired(this.router.url);
                 return Observable.throw(error || 'Server error');
             });
     }
@@ -163,9 +146,10 @@ export class QuizService {
             .map((res: Response) => res.json())
             //...errors if any
             .catch((error: any) => {
-                if(error.status == 401){
+                if (error.status == 401) {
                     this.authService.tokenExpired(this.router.url);
                 }
+                //this.authService.tokenExpired(this.router.url);
                 return Observable.throw(error || 'Server error');
             });
     }
@@ -187,9 +171,10 @@ export class QuizService {
             .map((res: Response) => res.json())
             //...errors if any
             .catch((error: any) => {
-                if(error.status == 401){
+                if (error.status == 401) {
                     this.authService.tokenExpired(this.router.url);
                 }
+                //this.authService.tokenExpired(this.router.url);
                 return Observable.throw(error || 'Server error');
             });
     }
@@ -209,9 +194,10 @@ export class QuizService {
             .map((res: Response) => res.json())
             //...errors if any
             .catch((error: any) => {
-                if(error.status == 401){
+                if (error.status == 401) {
                     this.authService.tokenExpired(this.router.url);
                 }
+                //this.authService.tokenExpired(this.router.url);
                 return Observable.throw(error || 'Server error');
             });
     }
@@ -231,32 +217,34 @@ export class QuizService {
             .map((res: Response) => res.json())
             //...errors if any
             .catch((error: any) => {
-                if(error.status == 401){
+                if (error.status == 401) {
                     this.authService.tokenExpired(this.router.url);
                 }
+                //this.authService.tokenExpired(this.router.url);
                 return Observable.throw(error || 'Server error');
             });
     }
 
     //Student submit quiz
-    public submitQuizUrl = this.appConfig.apiHost + '/quiz/submit';
-    public submitQuiz(student_id: number,quiz: any): Observable < { result: string, message:string} > {
+    public saveQuizUrl = this.appConfig.apiHost + '/quiz/save';
+    public saveQuiz(quiz: any,checked_student_list: any): Observable < { result: string, message:string} > {
         var params = {
-            'student_id' : student_id,
+            'checked_student_list' : checked_student_list,
             'quiz': quiz
         };
-        let authToken = this.authService.token;
+        let authToken = this.authService.token ? this.authService.token : this.localStorage.get('token');
         let headers = new Headers();
         headers.append('x-access-token', `${authToken}`);
         let options = new RequestOptions({ headers: headers });
-        return this.http.post(this.submitQuizUrl,params,options)
+        return this.http.post(this.saveQuizUrl,params,options)
             // ...and calling .json() on the response to return data
             .map((res: Response) => res.json())
             //...errors if any
             .catch((error: any) => {
-                if(error.status == 401){
+                if (error.status == 401) {
                     this.authService.tokenExpired(this.router.url);
                 }
+                //this.authService.tokenExpired(this.router.url);
                 return Observable.throw(error || 'Server error');
             });
     }

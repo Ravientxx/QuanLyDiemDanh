@@ -1,7 +1,7 @@
 import { Component, OnInit,HostListener,OnDestroy } from '@angular/core';
 import { LocalStorageService } from 'angular-2-local-storage';
 import { Router } from '@angular/router';
-import { StudentService, AppService, CourseService,AuthService,QuizService,SocketService } from '../../shared.module';
+import { StudentService, AppService, CourseService,AuthService,QuizService,SocketService} from '../../shared.module';
 declare var jQuery:any;
 @Component({
   selector: 'app-quiz-display',
@@ -39,6 +39,12 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
 	public ready_progress = 0;
 	public interval;
 	public ready_time = 5;
+	public selected_attendance;
+	public student_list = [];
+	public attendance_checked_list = [];
+	public attendance_not_checked_list = [];
+	public miscellaneous_threshold = 0;
+	public is_save_quiz_error = false;
 
 	@HostListener('window:unload', ['$event'])
 	public onWindowUnload(event: Event) {
@@ -50,11 +56,16 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
 	}
 	@HostListener('window:beforeunload', ['$event'])
 	public onWindowBeforeUnload(event: Event) {
-		return false;
+		if(this.is_ended){
+			return true;
+		}else{
+			return false;
+		}
+		
 	}
 
 	public constructor(public  localStorage: LocalStorageService,public  router: Router,public quizService: QuizService,
-		public appService: AppService,public socketService: SocketService) {
+		public appService: AppService,public socketService: SocketService,public studentService: StudentService) {
 		socketService.consumeEventOnJoinedQuiz();
         socketService.invokeJoinedQuiz.subscribe(result => {
             if (this.quiz_code == result['quiz_code']) {
@@ -89,6 +100,7 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
 		this.quizService.getPublishedQuiz(this.quiz_code).subscribe(result=>{
 			if(result.result == 'success'){
 				this.quiz = result.quiz;
+				this.miscellaneous_threshold = this.quiz['questions'].length;
 			}
 			else{
 				this.appService.showPNotify('failure',result.message,'error');
@@ -110,6 +122,7 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
 		if(next_question_index == this.quiz['questions'].length){
 			this.is_ended = true;
 			this.is_ready = this.is_started = false;
+			this.onEndQuiz();
 			this.socketService.emitEventOnQuizEnded({'quiz_code': this.quiz_code});
 			this.closeSocket();
 			return;
@@ -135,6 +148,7 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
 	public onStartQuiz(){
 		this.quizService.startQuiz(this.quiz_code).subscribe(result=>{
 			if(result.result == 'success'){
+				this.quiz['started_at'] = new Date();
 				this.socketService.consumeEventOnAnsweredQuiz();
 			    this.socketService.invokeAnsweredQuiz.subscribe(result => {
 			        if (this.quiz_code == result['quiz_code']) {
@@ -166,6 +180,92 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
 		},error=>{this.appService.showPNotify('failure',"Server Error! Can't start quiz",'error');});
 	}
 
+	public onSaveQuiz(){
+		this.quizService.saveQuiz(this.quiz,this.attendance_checked_list).subscribe(result=>{
+			if(result.result == 'failure'){
+				this.is_save_quiz_error = true;
+			}
+		},error=>{
+			this.is_save_quiz_error = true;
+			this.appService.showPNotify('failure',"Server Error! Can't save quiz and attendance info",'error');
+		});
+	}
+	public onEndQuiz(){
+		this.selected_attendance = this.localStorage.get('selected_attendance');
+		this.studentService.getStudentByCourse(this.selected_attendance['course_id'],this.selected_attendance['class_id']).subscribe(result=>{
+			if(result.result == 'success'){
+				this.student_list = result.student_list;
+				for(var i = 0 ; i < this.student_list.length; i++){
+					var check_no_participated = 0;
+					for(var j = 0 ; j < this.quiz['participants']['length']; j++){
+						if(this.student_list[i]['id'] == this.quiz['participants'][j]['id']){
+							//Có tham gia quiz
+							for(var k = 0; k < this.quiz['questions'].length; k++){
+								var check_no_answer = 0;
+								var check_right_answer = 0;
+								for(var l = 0; l < this.quiz['questions'][k]['answers'].length; l++){
+									if(this.quiz['questions'][k]['answers'][l]['answered_by'] == this.student_list[i]['id']){
+										if(this.quiz['questions'][k]['correct_option'] == this.quiz['questions']['option_' + this.quiz['questions'][k]['answers'][l]['selected_option'].toLowerCase()]){
+											check_right_answer++;
+										}
+									}else{
+										check_no_answer++;
+									}
+								}
+							}
+							if(this.quiz['questions']['length'] == check_no_answer){
+									//Ko trả lời câu nào
+									this.attendance_not_checked_list.push({
+										id : this.student_list[i]['id'],
+										code : this.student_list[i]['code'],
+										name : this.student_list[i]['name'],
+										reason : "Didn't answer any question"
+									});
+							}else{
+								if(this.quiz['type'] == this.appService.quiz_type.academic.id){
+									this.attendance_checked_list.push({
+										id : this.student_list[i]['id'],
+										code : this.student_list[i]['code'],
+										name : this.student_list[i]['name']
+									});
+								}else{
+									if(check_right_answer < this.miscellaneous_threshold){
+										this.attendance_not_checked_list.push({
+											id : this.student_list[i]['id'],
+											code : this.student_list[i]['code'],
+											name : this.student_list[i]['name'],
+											reason : "Not enough correct answers"
+										});
+									}else{
+										this.attendance_checked_list.push({
+											id : this.student_list[i]['id'],
+											code : this.student_list[i]['code'],
+											name : this.student_list[i]['name']
+										});
+									}
+								}
+							}
+						}else{
+							//Ko tham gia quiz
+							check_no_participated++;
+						}
+					}
+					if(check_no_participated == this.quiz['participants']['length']){
+						this.attendance_not_checked_list.push({
+							id : this.student_list[i]['id'],
+							code : this.student_list[i]['code'],
+							name : this.student_list[i]['name'],
+							reason : 'Not participated'
+						});
+					}
+				}
+				this.onSaveQuiz();
+			}
+		},error=>{this.appService.showPNotify('failure',"Server Error! Can't get student list by course",'error');});
+	}
+	public onReturn(){
+		window.close();
+	}
 	public onNextQuestion(){
 		clearInterval(this.interval);
 		this.onReadyForNextQuestion(this.current_question_index++);

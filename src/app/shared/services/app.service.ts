@@ -104,9 +104,10 @@ export class AppService {
             //...errors if any
             //.catch((error: any) => Observable.throw(error || 'Server error'));
             .catch((error: any) => {
-                if (error.status == 401) {
+                if(error.status == 401){
                     this.authService.tokenExpired(this.router.url);
                 }
+                //this.authService.tokenExpired(this.router.url);
                 return Observable.throw(error || 'Server error');
             });
     }
@@ -129,9 +130,10 @@ export class AppService {
             //...errors if any
             //.catch((error: any) => Observable.throw(error || 'Server error'));
             .catch((error: any) => {
-                if (error.status == 401) {
+                if(error.status == 401){
                     this.authService.tokenExpired(this.router.url);
                 }
+                //this.authService.tokenExpired(this.router.url);
                 return Observable.throw(error || 'Server error');
             });
     }
@@ -149,9 +151,10 @@ export class AppService {
             //...errors if any
             //.catch((error: any) => Observable.throw(error || 'Server error'));
             .catch((error: any) => {
-                if (error.status == 401) {
+                if(error.status == 401){
                     this.authService.tokenExpired(this.router.url);
                 }
+                //this.authService.tokenExpired(this.router.url);
                 return Observable.throw(error || 'Server error');
             });
     }
@@ -185,6 +188,7 @@ export class AppService {
                 if (error.status == 401) {
                     this.authService.tokenExpired(this.router.url);
                 }
+                //this.authService.tokenExpired(this.router.url);
                 return Observable.throw(error || 'Server error');
             });
     }
@@ -207,9 +211,10 @@ export class AppService {
             //...errors if any
             //.catch((error: any) => Observable.throw(error || 'Server error'));
             .catch((error: any) => {
-                if (error.status == 401) {
+                if(error.status == 401){
                     this.authService.tokenExpired(this.router.url);
                 }
+                //this.authService.tokenExpired(this.router.url);
                 return Observable.throw(error || 'Server error');
             });
     }
@@ -229,9 +234,10 @@ export class AppService {
             //...errors if any
             //.catch((error: any) => Observable.throw(error || 'Server error'));
             .catch((error: any) => {
-                if (error.status == 401) {
+                if(error.status == 401){
                     this.authService.tokenExpired(this.router.url);
                 }
+                //this.authService.tokenExpired(this.router.url);
                 return Observable.throw(error || 'Server error');
             });
     }
@@ -252,9 +258,10 @@ export class AppService {
             //...errors if any
             //.catch((error: any) => Observable.throw(error || 'Server error'));
             .catch((error: any) => {
-                if (error.status == 401) {
+                if(error.status == 401){
                     this.authService.tokenExpired(this.router.url);
                 }
+                //this.authService.tokenExpired(this.router.url);
                 return Observable.throw(error || 'Server error');
             });
     }

@@ -964,4 +964,37 @@ router.post('/update-interaction', function(req, res, next) {
         });
     });
 });
+
+router.post('/list-by-course', function(req, res, next) {
+    if (req.body.course_id == null) {
+        _global.sendError(res, null, "Course id is required");
+        return console.log("Course_id is required");
+    }
+    if (req.body.class_id == null || req.body.class_id == 0) {
+        _global.sendError(res, null, "Classes id is required");
+        return console.log("Classes id is required");
+    }
+    var course_id = req.body.course_id;
+    var class_id = req.body.class_id;
+    pool_postgres.connect(function(error, connection, done) {
+        var student_list = [];
+        connection.query(format(`SELECT students.id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name
+            FROM users,student_enroll_course,students,class_has_course 
+            WHERE users.id = students.id AND users.id = student_enroll_course.student_id AND student_enroll_course.class_has_course_id = class_has_course.id AND class_has_course.course_id = %L AND class_has_course.class_id = %L`, course_id, class_id), function(error, result, fields) {
+                if (error) {
+                    var message = error.message + ' at get student_list by course';
+                    _global.sendError(res, message);
+                    done();
+                    return console.log(message);
+                }
+                var student_list = result.rows;
+                console.log('loaded student_list');
+                res.send({
+                    result: 'success',
+                    student_list: student_list
+                });
+                done();
+            });
+    });
+});
 module.exports = router;
