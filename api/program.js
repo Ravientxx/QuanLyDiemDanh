@@ -60,7 +60,7 @@ router.post('/list', function(req, res, next) {
             }
             done();
         };
-        connection.query(format(`SELECT * FROM programs`), return_function);
+        connection.query(format(`SELECT *, (SELECT count(*) FROM classes WHERE programs.id = classes.program_id) as total_class FROM programs`), return_function);
     });
 });
 

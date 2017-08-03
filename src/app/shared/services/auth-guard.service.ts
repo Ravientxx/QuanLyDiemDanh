@@ -25,9 +25,31 @@ export class AuthGuardService implements CanActivate, CanActivateChild, CanLoad 
         if(this.authService.current_user.role_id == this.appService.userType.teacher){
             switch (url) {
                 case "/courses":
+                case "/absence-requests":
+                case "/semesters":
+                case "/classes":
+                case "/teachers":
+                case "/programs":
+                case "/students":
+                case "/statistic":
+                case "/settings":
                     this.router.navigate(['/dashboard']);
                     return false;
-                case "/absence-requests":
+                default:
+                    return true;
+            }
+        }
+
+        if(this.authService.current_user.role_id == this.appService.userType.student){
+            switch (url) {
+                case "/courses":
+                case "/semesters":
+                case "/classes":
+                case "/teachers":
+                case "/programs":
+                case "/students":
+                case "/statistic":
+                case "/settings":
                     this.router.navigate(['/dashboard']);
                     return false;
                 default:

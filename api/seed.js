@@ -15,6 +15,7 @@ var insert_roles = [
     ['Student'],
     ['Teacher'],
     ['Staff'],
+    ['Admin']
 ];
 //[name, start_date, end_date, vacation_time]
 var insert_semesters = [
@@ -318,7 +319,7 @@ var insert_users = [
     ['Lê Anh', 'Thảo', 'lathao@fit.hcmus.edu.vn', '01228718705', bcrypt.hashSync('lathao', 10), 3], //168
     ['Nguyễn Thị Minh', 'Phúc', 'ntmphuc@fit.hcmus.edu.vn', '01228718705', bcrypt.hashSync('ntmphuc', 10), 3], //169
 
-    ['', 'Admin', 'admin@fit.hcmus.edu.vn', '01228718705', bcrypt.hashSync('admin', 10), 3], //170
+    ['Super', 'Admin', 'admin@fit.hcmus.edu.vn', '01228718705', bcrypt.hashSync('admin', 10), 4], //170
 
     ['Huỳnh Hữu', 'Nghĩa', '1353019@student.hcmus.edu.vn', '01228718705', bcrypt.hashSync('1353019', 10), 1], //171
 ];
@@ -1126,13 +1127,18 @@ var insert_attendance_detail = [
     [4, 134, 1],
     [4, 135, 0],
 ];
-//[from_id, to_id, title, content, type]
+//[from_id, to_id, title, content, type, read, replied]
 var insert_feeback = [
-    [null, null, 'Phòng học kém chất lương', 'Máy lạnh nóng quớ', 3],//1
-    [63, 1, 'Thầy dạy quá nhanh', 'Thầy có thể dạy chậm lại cho em dễ hiểu ?', 1],//2
-    [null, 2, 'Cô hớt tóc mới', 'Tóc mới của cô làm em khó tập trung quá!', 3],//3
-    [63, null, 'Ổ điện hỏng', 'Ổ điện thứ 3 từ trên xuống của dãy giữa phòng I44 bị hỏng, cô hãy fix giúp tụi em', 1],//4
-    [1, null, 'Lớp 13CLC hư', 'Lớp 13CLC nói chuyện quá nhiều trong giờ học, dẫn đến khó dạy.', 2]//5
+    [null, null, 'Phòng học kém chất lượng', 'Máy lạnh nóng quớ',                         3, false, false],//1
+    [171,     1, 'Thầy dạy quá nhanh',       'Thầy có thể dạy chậm lại cho em dễ hiểu ?', 1, false, false],//2
+    [171,     2, 'Cô hớt tóc mới',           'Tóc mới của cô làm em khó tập trung quá!',  1, false, false],//3
+    [171,  null, 'Ổ điện hỏng',              'Ổ điện dãy giữa phòng I44 bị hỏng',         1, true, true],//4
+    [171,  null, 'Lớp 13CLC hư',             'Lớp 13CLC nói chuyện quá nhiều trong giờ',  1, true, true],//5
+    [null, null, 'Phòng học chất lượng thấp','Khong co may lanh',                         3, false, false],//6
+    [171,     1, 'Thầy dạy quá khó hiểu',    'Thầy có thể dạy chậm lại cho em dễ hiểu ?',  1, false, false],//7
+    [171,     2, 'Cô hay đến lớp trễ',       'Tóc mới của cô làm em khó tập trung quá!',  1, false, false],//8
+    [1,    null, 'Ổ điện không mở được',     'Cô hãy fix giúp tụi em',                    1, true, true],//9
+    [1,    null, 'Lớp 13CLC cúp học cả lớp', 'Lớp 13CLC nói chuyện quá ',                 1, true, true]//10
 ];
 //[title, class_has_course_id, created_by,is_template]
 var insert_quiz = [
@@ -1157,6 +1163,195 @@ var insert_quiz_answer = [
 var insert_notifications = [
     [null,1, `Đinh Bá Tiến sent you a feedback`,5,_global.notification_type.sent_feedback], //1
 ];
+<<<<<<< HEAD
+=======
+
+var seeding_mysql = function(res) {
+    pool.getConnection(function(error, connection) {
+        async.series([
+            //Start transaction
+            function(callback) {
+                connection.beginTransaction(function(error) {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+            function(callback) {
+                connection.query('INSERT INTO roles (name) VALUES ?', [insert_roles], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query('INSERT INTO semesters (name,start_date,end_date,vacation_time) VALUES ?', [insert_semesters], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query('INSERT INTO programs (name,code) VALUES ?', [insert_programs], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query('INSERT INTO classes (name,email,program_id) VALUES ?', [insert_classes], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query('INSERT INTO courses (code,name,semester_id,program_id,office_hour,note) VALUES ?', [insert_courses], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query('INSERT INTO class_has_course (class_id,course_id,schedules) VALUES ?', [insert_class_has_course], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query('INSERT INTO users (first_name,last_name,email,phone,password,role_id) VALUES ?', [insert_users], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query('INSERT INTO teacher_teach_course (teacher_id,course_id,teacher_role) VALUES ?', [insert_teacher_teach_course], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query('INSERT INTO students (id,stud_id,class_id) VALUES ?', [insert_students], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query('INSERT INTO student_enroll_course (class_has_course_id,student_id) VALUES ?', [insert_student_enroll_course], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query('INSERT INTO absence_requests (student_id, reason, start_date, end_date) VALUES ?', [insert_absence_requests], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query('INSERT INTO attendance (course_id,class_id,closed) VALUES ?', [insert_attendance], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query('INSERT INTO attendance_detail (attendance_id, student_id, attendance_type) VALUES ?', [insert_attendance_detail], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query('INSERT INTO feedbacks (from_id, to_id, title, content, type, read, replied) VALUES ?', [insert_feeback], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query('INSERT INTO quiz (title, class_has_course_id, closed, created_by) VALUES ?', [insert_quiz], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query('INSERT INTO quiz_questions (quiz_id, text) VALUES ?', [insert_quiz_question], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            function(callback) {
+                connection.query('INSERT INTO quiz_answers (quiz_question_id, text,answered_by) VALUES ?', [insert_quiz_answer], function(error, results, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            //Commit transaction
+            function(callback) {
+                connection.commit(function(error) {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+        ], function(error) {
+            if (error) {
+                _global.sendError(res, error.message);
+                connection.rollback(function() {
+                    return console.log(error);
+                });
+                return console.log(error);
+            } else {
+                console.log('success seeding!---------------------------------------');
+                res.send({ result: 'success', message: 'success seeding' });
+            }
+            connection.release();
+        });
+    });
+}
+>>>>>>> fb61340dcae60f9a130027dcc5514eb4b0fe4365
 var seeding_postgres = function(res) {
     pool_postgres.connect(function(error, connection, done) {
         async.series([
@@ -1285,7 +1480,7 @@ var seeding_postgres = function(res) {
                 });
             },
             function(callback) {
-                connection.query(format('INSERT INTO feedbacks (from_id, to_id, title, content, type) VALUES %L', insert_feeback), function(error, results, fields) {
+                connection.query(format('INSERT INTO feedbacks (from_id, to_id, title, content, type, read, replied) VALUES %L', insert_feeback), function(error, results, fields) {
                     if (error) {
                         callback(error);
                     } else {

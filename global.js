@@ -15,7 +15,7 @@ module.exports = {
     db_postgres: {
         host: 'localhost',
         user: 'postgres',
-        password: '1234',
+        password: 'a',
         port:'5432',
         database: 'qldd'
     },
@@ -56,7 +56,7 @@ module.exports = {
         exemption: 1,
     },
     role: {
-        admin: 0,
+        admin: 4,
         student: 1,
         teacher: 2,
         staff: 3,

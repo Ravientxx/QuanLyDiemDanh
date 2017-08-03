@@ -100,6 +100,7 @@ CREATE TABLE feedbacks (
   content varchar(255) DEFAULT NULL,
   type smallint DEFAULT 0,
   read boolean DEFAULT FALSE,
+  replied boolean DEFAULT FALSE,
   created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id)
 );

@@ -6,6 +6,7 @@ var async = require("async");
 var pool = mysql.createPool(_global.db);
 var pg = require('pg');
 var format = require('pg-format');
+var nodemailer = require('nodemailer');
 const pool_postgres = new pg.Pool(_global.db_postgres);
 
 router.post('/list', function(req, res, next) {
@@ -14,7 +15,7 @@ router.post('/list', function(req, res, next) {
     var page = req.body.page != null ? req.body.page : _global.default_page;
     var limit = req.body.limit != null ? req.body.limit : _global.detail_limit;
     pool_postgres.connect(function(error, connection, done) {
-        var query = `SELECT id, title, content, feedbacks.read, created_at , 
+        var query = `SELECT id, title, content, replied, feedbacks.read, created_at , 
             (SELECT CONCAT(users.first_name,' ',users.last_name,E'\r\n',users.email) FROM users WHERE users.id = feedbacks.from_id) as _from, 
             (SELECT CONCAT(first_name,' ',last_name) FROM users WHERE users.id = feedbacks.to_id) as _to 
             FROM feedbacks`;
@@ -134,7 +135,7 @@ router.post('/history', function(req, res, next) {
                 return console.log(error);
         }
 
-        var query = `SELECT id, title, content, feedbacks.read, DATE_FORMAT(created_at, "%d-%m-%Y %H:%i") as time FROM feedbacks WHERE from_id = %L ORDER BY feedbacks.read, feedbacks.created_at DESC LIMIT 10`;
+        var query = `SELECT id, title, content, feedbacks.read, created_at as time, replied FROM feedbacks WHERE from_id = %L ORDER BY feedbacks.read, feedbacks.created_at DESC LIMIT 10`;
 
         connection.query(format(query, user_id), function(error, result, fields) {
             if (error) {
@@ -143,12 +144,80 @@ router.post('/history', function(req, res, next) {
                 return console.log(error);
             }
 
+            var feedbacks = result.rows;
+
             res.send({ 
                 result: 'success',
-                total_items: rows.length,
-                list: rows
+                total_items: feedbacks.length,
+                feedbacks: feedbacks
             });
             done();
+        });
+    });
+});
+
+router.post('/send-reply', function(req, res, next) {
+    if (req.body.content == undefined || req.body.content == '') {
+        _global.sendError(res, null, "reply_content is required");
+        return;
+    }
+    
+    if (req.body.id == undefined || req.body.id == '') {
+        _global.sendError(res, null, "feedback_id is required");
+        return;
+    }
+
+    var reply_content = req.body.content;
+    var feedback_id = req.body.id;    
+
+    pool_postgres.connect(function(error, connection, done) {
+        if (error) {
+            _global.sendError(res, error.message);
+            done();
+                return console.log(error);
+        }
+
+        var query = `SELECT id, title, content,  
+            (SELECT users.email FROM users WHERE users.id = feedbacks.from_id) as _from,  
+            (SELECT users.last_name FROM users WHERE users.id = feedbacks.from_id) as _last_name  
+            FROM feedbacks
+            WHERE id = %L`;
+        connection.query(format(query, [feedback_id]),function(error, result, fields) {
+            if (error) {
+                _global.sendError(res, error.message);
+                done();
+                return console.log(error);
+            }
+
+            var email = result.rows[0]._from;
+            var title = result.rows[0].title;
+            var last_name = result.rows[0]._last_name;
+            
+            connection.query(format('UPDATE feedbacks SET replied = TRUE WHERE id = %L LIMIT 1', [feedback_id]), function(error, result, fields) {
+                if (error) {
+                    res.send({ result: 'failure', message: 'Reply Failed' });
+                    done();
+                    return console.log(error);
+                }
+
+                let transporter = nodemailer.createTransport(_global.email_setting);
+                let mailOptions = {
+                    from: '"Giáo vụ", giaovu@fit.hcmus.edu.vn', // sender address
+                    to: email, // list of receivers
+                    subject: 'Reply your feedback ' + title, // Subject line
+                    text: `Hi ` + last_name +`,\r\n\r\nTo your feedback:\r\n` + reply_content + `\r\n Reply by ` + req.decoded.first_name + ` ` + req.decoded.last_name + `.\r\n\r\nIf you need help, please contact giaovu@fit.hcmus.edu.vn`,
+                };
+                transporter.sendMail(mailOptions, (error, info) => {
+                    if (error) {
+                        done();
+                        return console.log(error);
+                    }
+                    console.log('Message %s sent: %s', info.messageId, info.response);
+                });
+
+                res.send({ result: 'success', message: 'Replied Successfully' });
+                done();
+            });
         });
     });
 });

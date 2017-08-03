@@ -7,9 +7,11 @@ import { CollapseModule } from 'ngx-bootstrap';
 
 import { FeedbackComponent } from './feedback.component';
 import { FeedbackStaffComponent } from './feedback-staff/feedback-staff.component';
+import { FeedbackHistoryComponent } from './feedback-history/feedback-history.component';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
-import { SharedModule } from '../shared/shared.module';
+import { SharedModule} from '../shared/shared.module';
+import { AutosizeModule } from '../shared/module/autosize/autosize.module';
 
 const feedbackRoutes: Routes = [
   { path: '',  component: FeedbackComponent },
@@ -23,11 +25,13 @@ const feedbackRoutes: Routes = [
     CollapseModule.forRoot(),
     PaginationModule.forRoot(),
     TabsModule,
-    SharedModule
+    SharedModule,
+    AutosizeModule
   ],
   declarations: [
     FeedbackComponent,
     FeedbackStaffComponent,
+    FeedbackHistoryComponent
   ],
   providers: [
   ]
