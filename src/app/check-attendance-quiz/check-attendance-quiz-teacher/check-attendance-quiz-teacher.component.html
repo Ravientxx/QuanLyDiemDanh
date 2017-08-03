@@ -34,30 +34,42 @@
                     <div class="col-xs-12 col-sm-6">
                         <div class="form-horizontal">
                             <div class="form-group">
-                                <div class="col-xs-1 col-xs-offset-1">
-                                    <div class="checkbox">
-                                        <label>
-                                            <input type="checkbox" name="is_randomize_questions" [(ngModel)]="quiz.is_randomize_questions">
-                                            <input *ngIf="is_published" disabled type="checkbox" name="is_randomize_questions" [(ngModel)]="quiz.is_randomize_questions">
-                                        </label>
+                                <div class="row">
+                                    <div class="col-xs-1 col-xs-offset-1">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="is_randomize_questions" [(ngModel)]="quiz.is_randomize_questions">
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-9">
+                                        <h4>Randomimze order of questions</h4>
                                     </div>
                                 </div>
-                                <div class="col-xs-9">
-                                    <h4>Randomimze order of questions</h4>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="col-xs-1 col-xs-offset-1">
-                                    <div class="checkbox">
-                                        <label>
-                                            <input type="checkbox" name="is_randomize_answers" [(ngModel)]="quiz.is_randomize_answers">
-                                            <input *ngIf="is_published" disabled type="checkbox" name="is_randomize_answers" [(ngModel)]="quiz.is_randomize_answers">
-                                        </label>
+                                <div class="row">
+                                    <div class="col-xs-1 col-xs-offset-1">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="is_randomize_answers" [(ngModel)]="quiz.is_randomize_answers">
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-9">
+                                        <h4>Randomize order of answers</h4>
                                     </div>
                                 </div>
-                                <div class="col-xs-9">
-                                    <h4>Randomize order of answers</h4>
-                                </div>
+                                <!-- <div class="row">
+                                    <div class="col-xs-1 col-xs-offset-1">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="is_auto_move_through_questions" [(ngModel)]="quiz.is_auto_move_through_questions">
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-9">
+                                        <h4>Automatically move through questions</h4>
+                                    </div>
+                                </div> -->
                             </div>
                         </div>
                     </div>

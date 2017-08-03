@@ -8,7 +8,7 @@ import { AppComponent } from './app.component';
 import { LoginComponent } from './login.component';
 import { LogoutComponent } from './logout.component';
 import { ForgotPasswordComponent } from './forgot-password.component';
-import { SharedModule, PageNotFoundComponent, QRCodeComponent, AuthService, AuthGuardService } from './shared/shared.module';
+import { SharedModule, PageNotFoundComponent, QRCodeComponent, AuthService, AuthGuardService,QuizDisplayComponent } from './shared/shared.module';
 
 
 const ROUTES = [
@@ -17,6 +17,7 @@ const ROUTES = [
     { path: 'logout', component: LogoutComponent},
     { path: 'forgot-password', component: ForgotPasswordComponent},
     { path: 'qr-code', component: QRCodeComponent },
+    { path: 'quiz/display', component: QuizDisplayComponent },
     { path: '**', component: PageNotFoundComponent },
 
 ];
