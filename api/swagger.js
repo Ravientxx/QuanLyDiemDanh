@@ -285,6 +285,31 @@
 
 /**
 * @swagger
+* /api/attendance/list-by-student:
+*   post:
+*     summary: Get student
+*     description:
+*     tags: [Attendance]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: token
+*         in: formData
+*         required: true
+*         type: string
+*       - name: student_id
+*         description: student id
+*         in: formData
+*         required: true
+*         type: integer
+*     responses:
+*       200:
+*         description: json
+*/
+
+/**
+* @swagger
 * /api/attendance/opening-by-teacher:
 *   post:
 *     summary: Get opening attendance
