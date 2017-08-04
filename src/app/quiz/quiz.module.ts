@@ -3,14 +3,12 @@ import { CommonModule }   from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 import { QuizTeacherComponent }    from './quiz-teacher.component';
-import { QuizDisplayComponent }    from './quiz-display.component';
 import { TabsModule,AccordionModule ,PaginationModule } from 'ngx-bootstrap';
 import { AutosizeModule } from '../shared/module/autosize/autosize.module';
 import { SharedModule } from '../shared/shared.module';
 import { TooltipModule } from 'ngx-bootstrap';
 const Routes: Routes = [
   { path: '',  component: QuizTeacherComponent },
-  { path: '/display',  component: QuizDisplayComponent },
 ];
 
 @NgModule({
@@ -27,7 +25,6 @@ const Routes: Routes = [
   ],
   declarations: [
     QuizTeacherComponent,
-    QuizDisplayComponent
   ],
   providers: []
 })

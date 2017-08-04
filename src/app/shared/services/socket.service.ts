@@ -9,7 +9,13 @@ export class SocketService {
   public invokeCheckAttendanceCreated = new Subject();
   public invokeCheckAttendanceStopped = new Subject();
   public invokeQuizStopped = new Subject();
-  public invokeQuizAnswered = new Subject();
+  public invokeQuizQuestionReady = new Subject();
+  public invokeQuizQuestionLoaded = new Subject();
+  public invokeQuizQuestionEnded = new Subject();
+  public invokeJoinedQuiz = new Subject();
+  public invokeQuittedQuiz = new Subject();
+  public invokeAnsweredQuiz = new Subject();
+  public invokeQuizEnded = new Subject();
 
   public invokeNotificationPushed = new Subject();
   // Constructor with an injection of ToastService
@@ -62,46 +68,93 @@ export class SocketService {
     this.socket.off('checkAttendanceStopped');
   }
 
-  public emitEventOnQuizStopped(quizStopped){
-    this.socket.emit('quizStopped', quizStopped);
-  }
-  // Consume on Quiz stopped 
+  //Teacher stop quiz midway
+  public emitEventOnQuizStopped(quizStopped){this.socket.emit('quizStopped', quizStopped);}
   public consumeEventOnQuizStopped(){
     var self = this;
     this.socket.on('quizStopped', function(event:any){
       self.invokeQuizStopped.next(event);
     });
   }
-  public stopEventOnQuizStopped(){
-    this.socket.off('quizStopped');
-  }
+  public stopEventOnQuizStopped(){this.socket.off('quizStopped');}
 
-  public emitEventOnQuizAnswered(quizAnswered){
-    this.socket.emit('quizAnswered', quizAnswered);
-  }
-  // Consume on Quiz answered 
-  public consumeEventOnQuizAnswered(){
+  //Teacher end quiz normarlly
+  public emitEventOnQuizEnded(quizEnded){this.socket.emit('quizEnded', quizEnded);}
+  public consumeEventOnQuizEnded(){
     var self = this;
-    this.socket.on('quizAnswered', function(event:any){
-      self.invokeQuizAnswered.next(event);
+    this.socket.on('quizEnded', function(event:any){
+      self.invokeQuizEnded.next(event);
     });
   }
-  public stopEventOnQuizAnswered(){
-    this.socket.off('quizAnswered');
-  }
+  public stopEventOnQuizEnded(){this.socket.off('quizEnded');}
 
-
-  public emitEventOnNotificationPushed(notificationPushed){
-  this.socket.emit('notificationPushed', notificationPushed);
+  //Question ready
+  public emitEventOnQuizQuestionReady(quizQuestionReady){this.socket.emit('quizQuestionReady', quizQuestionReady);}
+  public consumeEventOnQuizQuestionReady(){
+    var self = this;
+    this.socket.on('quizQuestionReady', function(event:any){
+      self.invokeQuizQuestionReady.next(event);
+    });
   }
-  // Consume on Quiz answered 
+  public stopEventOnQuizQuestionReady(){this.socket.off('quizQuestionReady');}
+
+  //Question loaded
+  public emitEventOnQuizQuestionLoaded(quizQuestionLoaded){this.socket.emit('quizQuestionLoaded', quizQuestionLoaded);}
+  public consumeEventOnQuizQuestionLoaded(){
+    var self = this;
+    this.socket.on('quizQuestionLoaded', function(event:any){
+      self.invokeQuizQuestionLoaded.next(event);
+    });
+  }
+  public stopEventOnQuizQuestionLoaded(){this.socket.off('quizQuestionLoaded');}
+
+  //Question ended
+  public emitEventOnQuizQuestionEnded(quizQuestionEnded){this.socket.emit('quizQuestionEnded', quizQuestionEnded);}
+  public consumeEventOnQuizQuestionEnded(){
+    var self = this;
+    this.socket.on('quizQuestionEnded', function(event:any){
+      self.invokeQuizQuestionEnded.next(event);
+    });
+  }
+  public stopEventOnQuizQuestionEnded(){this.socket.off('quizQuestionEnded');}
+
+  //Joined Quiz
+  public emitEventOnJoinedQuiz(joinedQuiz){this.socket.emit('joinedQuiz', joinedQuiz);}
+  public consumeEventOnJoinedQuiz(){
+    var self = this;
+    this.socket.on('joinedQuiz', function(event:any){
+      self.invokeJoinedQuiz.next(event);
+    });
+  }
+  public stopEventOnJoinedQuiz(){this.socket.off('joinedQuiz');}
+
+  //Quitted Quiz
+  public emitEventOnQuittedQuiz(quittedQuiz){this.socket.emit('quittedQuiz', quittedQuiz);}
+  public consumeEventOnQuittedQuiz(){
+    var self = this;
+    this.socket.on('quittedQuiz', function(event:any){
+      self.invokeQuittedQuiz.next(event);
+    });
+  }
+  public stopEventOnQuittedQuiz(){this.socket.off('quittedQuiz');}
+
+  //Answered Quiz
+  public emitEventOnAnsweredQuiz(answeredQuiz){this.socket.emit('answeredQuiz', answeredQuiz);}
+  public consumeEventOnAnsweredQuiz(){
+    var self = this;
+    this.socket.on('answeredQuiz', function(event:any){
+      self.invokeAnsweredQuiz.next(event);
+    });
+  }
+  public stopEventOnAnsweredQuiz(){this.socket.off('answeredQuiz');}
+
+  //Push notification
+  public emitEventOnNotificationPushed(notificationPushed){this.socket.emit('notificationPushed', notificationPushed);}
   public consumeEventOnNotificationPushed(){
-  var self = this;
-  this.socket.on('notificationPushed', function(event:any){
-    self.invokeNotificationPushed.next(event);
-  });
+    var self = this;
+    this.socket.on('notificationPushed', function(event:any){
+      self.invokeNotificationPushed.next(event);
+    });
   }
-  public stopEventOnNotificationPushed(){
-  this.socket.off('notificationPushed');
-  }
+  public stopEventOnNotificationPushed(){this.socket.off('notificationPushed');}
 }

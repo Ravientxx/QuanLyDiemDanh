@@ -52,18 +52,60 @@ io.sockets.on('connection', function(socket){
     io.emit('checkAttendanceStopped', checkAttendanceStopped);
   });
 
-  // Socket event for quiz stopped
+  // Socket event for teacher stop quiz
   socket.on('quizStopped', function(quizStopped){
     console.log('quizStopped');
     console.log(quizStopped);
     io.emit('quizStopped', quizStopped);
   });
 
-  // Socket event for quiz answered
-  socket.on('quizAnswered', function(quizAnswered){
-    console.log('quizAnswered');
-    console.log(quizAnswered);
-    io.emit('quizAnswered', quizAnswered);
+  // Socket event for teacher stop quiz
+  socket.on('quizEnded', function(quizEnded){
+    console.log('quizEnded');
+    console.log(quizEnded);
+    io.emit('quizEnded', quizEnded);
+  });
+
+  // Socket event for teacher ready question
+  socket.on('quizQuestionReady', function(quizQuestionReady){
+    console.log('quizQuestionReady');
+    console.log(quizQuestionReady);
+    io.emit('quizQuestionReady', quizQuestionReady);
+  });
+
+  // Socket event for teacher load question
+  socket.on('quizQuestionLoaded', function(quizQuestionLoaded){
+    console.log('quizQuestionLoaded');
+    console.log(quizQuestionLoaded);
+    io.emit('quizQuestionLoaded', quizQuestionLoaded);
+  });
+
+  // Socket event for teacher end question
+  socket.on('quizQuestionEnded', function(quizQuestionEnded){
+    console.log('quizQuestionEnded');
+    console.log(quizQuestionEnded);
+    io.emit('quizQuestionEnded', quizQuestionEnded);
+  });
+
+  // Socket event for student join quiz
+  socket.on('joinedQuiz', function(joinedQuiz){
+    console.log('joinedQuiz');
+    console.log(joinedQuiz);
+    io.emit('joinedQuiz', joinedQuiz);
+  });
+
+  // Socket event for student quit quiz
+  socket.on('quittedQuiz', function(quittedQuiz){
+    console.log('quittedQuiz');
+    console.log(quittedQuiz);
+    io.emit('quittedQuiz', quittedQuiz);
+  });
+
+  // Socket event for student answer quiz
+  socket.on('answeredQuiz', function(answeredQuiz){
+    console.log('answeredQuiz');
+    console.log(answeredQuiz);
+    io.emit('answeredQuiz', answeredQuiz);
   });
 
   // Socket event for notification pushed

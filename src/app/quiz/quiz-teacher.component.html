@@ -67,7 +67,7 @@
 </div>
 <div class="modal fade" id="addQuizModal" role="dialog">
     <div class="vertical-alignment-helper">
-        <div class="modal-dialog vertical-align-center">
+        <div class="modal-dialog modal-lg vertical-align-center">
             <!-- Modal content-->
             <div class="modal-content">
                 <div class="modal-header">
@@ -81,9 +81,17 @@
                         </div>
                         <div *ngFor="let question of quiz.questions; let i = index;">
                             <form class="form-group well">
-                                <div>
-                                    <div class="col-sm-10 form-group">
+                                <div class="form-group">
+                                    <div class="col-sm-6 col-xs-12">
                                         <textarea autosize rows="2" class="form-control only_bottom_border" name="question_title_{{i}}" placeholder="Question" [(ngModel)]="question.text" style="resize: none;" (keydown)="onTabInTextarea($event)"></textarea>
+                                    </div>
+                                    <div class="col-sm-4 col-xs-6">
+                                        <label class="control-label col-sm-3">Timer: </label>
+                                        <div class="col-sm-9">
+                                            <select class="form-control" [(ngModel)]="question.timer" name="question_timer_{{i}}">
+                                                <option *ngFor="let timer of appService.timers" [value]="timer.value">{{timer.text}}</option>
+                                            </select>
+                                        </div>
                                     </div>
                                     <div class="col-sm-1" *ngIf="quiz.questions.length > 1">
                                         <button class="btn btn-danger" (click)="onRemoveQuestion(i)"><i class="fa fa-times"></i></button>
@@ -93,35 +101,43 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <div class="col-sm-9 col-sm-offset-1">
+                                    <div class="col-sm-4 col-sm-offset-1">
                                         <input class="form-control" name="question_{{i}}_option_a" placeholder="Option A" [(ngModel)]="question.option_a">
                                     </div>
                                     <div class="col-sm-1 radio">
-                                        <label><input type="radio" name="optradio_{{i}}" [value]="question.option_a" [(ngModel)]="question.correct_option"> <p class="green_text" *ngIf="question.option_a == question.correct_option">Correct</p></label>
+                                        <label>
+                                            <input type="radio" name="optradio" [value]="question.option_a" [(ngModel)]="question.correct_option">
+                                            <p class="green_text" *ngIf="question.option_a == question.correct_option">Correct</p>
+                                        </label>
                                     </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-9 col-sm-offset-1">
+                                    <div class="col-sm-4 col-sm-offset-1">
                                         <input class="form-control" name="question_{{i}}_option_b" placeholder="Option B" [(ngModel)]="question.option_b">
                                     </div>
                                     <div class="col-sm-1 radio">
-                                        <label><input type="radio" name="optradio_{{i}}" [value]="question.option_b" [(ngModel)]="question.correct_option"> <p class="green_text" *ngIf="question.option_b == question.correct_option">Correct</p></label>
+                                        <label>
+                                            <input type="radio" name="optradio" [value]="question.option_b" [(ngModel)]="question.correct_option">
+                                            <p class="green_text" *ngIf="question.option_b == question.correct_option">Correct</p>
+                                        </label>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <div class="col-sm-9 col-sm-offset-1">
+                                    <div class="col-sm-4 col-sm-offset-1">
                                         <input class="form-control" name="question_{{i}}_option_c" placeholder="Option C" [(ngModel)]="question.option_c">
                                     </div>
                                     <div class="col-sm-1 radio">
-                                        <label><input type="radio" name="optradio_{{i}}" [value]="question.option_c" [(ngModel)]="question.correct_option"> <p class="green_text" *ngIf="question.option_c == question.correct_option">Correct</p></label>
+                                        <label>
+                                            <input type="radio" name="optradio" [value]="question.option_c" [(ngModel)]="question.correct_option">
+                                            <p class="green_text" *ngIf="question.option_c == question.correct_option">Correct</p>
+                                        </label>
                                     </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="col-sm-9 col-sm-offset-1">
+                                    <div class="col-sm-4 col-sm-offset-1">
                                         <input class="form-control" name="question_{{i}}_option_d" placeholder="Option D" [(ngModel)]="question.option_d">
                                     </div>
                                     <div class="col-sm-1 radio">
-                                        <label><input type="radio" name="optradio_{{i}}" [value]="question.option_d" [(ngModel)]="question.correct_option"> <p class="green_text" *ngIf="question.option_d == question.correct_option">Correct</p></label>
+                                        <label>
+                                            <input type="radio" name="optradio" [value]="question.option_d" [(ngModel)]="question.correct_option">
+                                            <p class="green_text" *ngIf="question.option_d == question.correct_option">Correct</p>
+                                        </label>
                                     </div>
                                 </div>
                             </form>

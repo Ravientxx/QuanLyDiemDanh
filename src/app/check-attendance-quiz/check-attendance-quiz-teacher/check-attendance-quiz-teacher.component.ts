@@ -13,17 +13,6 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
     public constructor(public quizService: QuizService, public location: Location, public checkAttendanceService: CheckAttendanceService,
         public appConfig: AppConfig, public socketService: SocketService,
         public authService: AuthService, public attendanceService: AttendanceService, public localStorage: LocalStorageService, public appService: AppService, public router: Router) {
-        // socketService.consumeEventOnQuizAnswered();
-        // socketService.invokeQuizAnswered.subscribe(result => {
-        //     this.getOpeningQuiz();
-        // });
-        // socketService.consumeEventOnQuizStopped();
-        // socketService.invokeQuizStopped.subscribe(result => {
-        //     if (this.quiz.id == result['quiz_id']) {
-        //         this.stopped_modal_message = "Quiz is " + result['message'];
-        //         jQuery('#quizStoppedModal').modal({ backdrop: 'static', keyboard: false });
-        //     }
-        // });
     }
     public is_published = false;
     public apiResult;
@@ -38,6 +27,8 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
         code: '',
         is_randomize_questions: true,
         is_randomize_answers: true,
+        is_auto_move_through_questions: true,
+        type: 0,
         title: '',
         questions: [{
             text: '',
@@ -50,31 +41,18 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
             answers: []
         }]
     };
-    public mask = [/\d/, /\d/, ':', /\d/, /\d/];
     public ngOnDestroy() {
-        this.socketService.stopEventOnQuizAnswered();
-        this.socketService.stopEventOnQuizStopped();
-    }
-    public getOpeningQuiz() {
-        this.quizService.getOpeningQuizByCourseAndClass(this.selected_attendance['course_id'], this.selected_attendance['class_id']).subscribe(result => {
-            this.apiResult = result.result;
-            this.apiResultMessage = result.message;
-            if (this.apiResult == 'failure') {
-                this.appService.showPNotify('failure', this.apiResultMessage, 'error');
-            } else {
-                if (result.quiz != undefined) {
-                    this.quiz = result.quiz;
-                } else {
-                    this.getQuizList();
-                }
-            }
-        }, error => { this.appService.showPNotify('failure', "Server Error! Can't get opening quiz", 'error'); });
+        // this.socketService.stopEventOnQuizAnswered();
+        // this.socketService.stopEventOnQuizStopped();
     }
     public ngOnInit() {
-        this.selected_attendance = this.localStorage.get('selected_attendance');
-        this.getOpeningQuiz();
-        this.quiz_types.push(this.appService.quiz_type.miscellaneous);
-        this.quiz_types.push(this.appService.quiz_type.academic);
+        if(!this.localStorage.get('selected_attendance')){
+            this.router.navigate(['/dashboard']);
+        }else{
+            this.selected_attendance = this.localStorage.get('selected_attendance');
+            this.quiz_types.push(this.appService.quiz_type.miscellaneous);
+            this.quiz_types.push(this.appService.quiz_type.academic); 
+        }
     }
     public onAddQuestion() {
         this.quiz.questions.push({
@@ -101,31 +79,24 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
         this.quiz.questions.pop();
     }
     public onPublishQuiz() {
+        var w = window.open(this.appConfig.host + '/quiz/display', '_blank', 'height=720,width=1024,scrollbars=yes,status=0,toolbar=0,menubar=0,location=0');
+        this.localStorage.remove('quiz_code');
+        this.localStorage.remove('get_published_quiz_error');
         this.quizService.publishQuiz(this.selected_attendance['course_id'], this.selected_attendance['class_id'], this.quiz).subscribe(result => {
             this.apiResult = result.result;
             this.apiResultMessage = result.message;
             if (this.apiResult == 'failure') {
+                this.localStorage.set('get_published_quiz_error',this.apiResultMessage);
+                w.location.href = this.appConfig.host + '/quiz/display';
                 this.appService.showPNotify('failure', this.apiResultMessage, 'error');
-            } else {
-                this.quiz.id = result.quiz_id;
+            } 
+            if(result.result == 'success') {
+                this.localStorage.set('token',this.authService.token);
+                this.localStorage.set('quiz_code',result.quiz_code);
+                w.location.href = this.appConfig.host + '/quiz/display';
             }
         }, error => { this.appService.showPNotify('failure', "Server Error! Can't publish quiz", 'error'); });
     }
-    public onStopQuiz() {
-        jQuery('#confirmStopQuizModal').modal('show');
-    }
-    // public stopQuiz() {
-    //     this.quizService.stopQuiz(this.quiz.id).subscribe(result => {
-    //         this.apiResult = result.result;
-    //         this.apiResultMessage = result.message;
-    //         if (this.apiResult == 'failure') {
-    //             this.appService.showPNotify('failure', this.apiResultMessage, 'error');
-    //         } else {
-    //             this.socketService.emitEventOnQuizStopped({ quiz_id: this.quiz.id, message: ' stopped by ' + this.authService.current_user.first_name + ' ' + this.authService.current_user.last_name });
-    //             this.router.navigate(['/check-attendance']);
-    //         }
-    //     }, error => { this.appService.showPNotify('failure', "Server Error! Can't stop quiz", 'error'); });
-    // }
     public onBack() {
         this.location.back();
     }
@@ -153,7 +124,10 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
         }
     }
     public onChangeQuizType(){
-
+        if(this.selected_quiz_type == this.appService.quiz_type.academic.id){
+            this.getQuizList();
+        }
+        this.quiz.type = this.selected_quiz_type;
     }
     public getQuizList(){
         this.quizService.getQuizByCourseAndClass(this.selected_attendance['course_id'], this.selected_attendance['class_id']).subscribe(result=>{
@@ -166,8 +140,10 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
                 this.quizzes.unshift({
                     id: 0,
                     code: result.quiz_code,
-                    is_use_timer: true,
-                    timer: '15:00',
+                    is_randomize_questions: true,
+                    is_randomize_answers: true,
+                    is_auto_move_through_questions: false,
+                    type: 0,
                     title: 'New quiz',
                     questions: [{
                         text: '',

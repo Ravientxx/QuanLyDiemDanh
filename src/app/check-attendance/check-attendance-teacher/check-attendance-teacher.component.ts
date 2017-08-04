@@ -212,24 +212,36 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
     }
     public confirmCancelAttendanceSession(){
         this.attendanceService.cancelAttendance(this.selected_attendance['id']).subscribe(result=>{
-            this.socketService.emitEventOnCheckAttendanceStopped({
-                message: 'cancelled by ' + this.authService.current_user.first_name + ' ' + this.authService.current_user.last_name,
-                course_id : this.selected_course_id,
-                class_id : this.selected_class_id,
-            });
-            this.appService.showPNotify('success',"Canceled Attendance Session",'success');
-            this.router.navigate(['/dashboard']);
+            if(result.result == 'success'){
+                var temp_attendance = this.localStorage.get('selected_attendance');
+                if(temp_attendance && this.selected_attendance['id'] == temp_attendance['id']){
+                    this.localStorage.remove('selected_attendance');
+                }
+                this.socketService.emitEventOnCheckAttendanceStopped({
+                    message: 'cancelled by ' + this.authService.current_user.first_name + ' ' + this.authService.current_user.last_name,
+                    course_id : this.selected_course_id,
+                    class_id : this.selected_class_id,
+                });
+                this.appService.showPNotify('success',"Canceled Attendance Session",'success');
+                this.router.navigate(['/dashboard']);
+            }
         },error=>{this.appService.showPNotify('failure', "Server Error! Can't cancel attendance session", 'error');});
     }
     public confirmCloseAttendanceSession(){
         this.attendanceService.closeAttendance(this.selected_attendance['id']).subscribe(result=>{
-            this.socketService.emitEventOnCheckAttendanceStopped({
-                message: 'closed by ' + this.authService.current_user.first_name + ' ' + this.authService.current_user.last_name,
-                course_id : this.selected_course_id,
-                class_id : this.selected_class_id,
-            });
-            this.appService.showPNotify('success',"Closed Attendance Session",'success');
-            this.router.navigate(['/dashboard']);
+            if(result.result == 'success'){
+                var temp_attendance = this.localStorage.get('selected_attendance');
+                if(temp_attendance && this.selected_attendance['id'] == temp_attendance['id']){
+                    this.localStorage.remove('selected_attendance');
+                }
+                this.socketService.emitEventOnCheckAttendanceStopped({
+                    message: 'closed by ' + this.authService.current_user.first_name + ' ' + this.authService.current_user.last_name,
+                    course_id : this.selected_course_id,
+                    class_id : this.selected_class_id,
+                });
+                this.appService.showPNotify('success',"Closed Attendance Session",'success');
+                this.router.navigate(['/dashboard']);
+            }
         },error=>{this.appService.showPNotify('failure', "Server Error! Can't close attendance session", 'error');});
     }
     public generateQRCode(){

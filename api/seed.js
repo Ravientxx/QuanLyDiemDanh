@@ -1140,15 +1140,15 @@ var insert_feeback = [
     [1,    null, 'Ổ điện không mở được',     'Cô hãy fix giúp tụi em',                    1, true, true],//9
     [1,    null, 'Lớp 13CLC cúp học cả lớp', 'Lớp 13CLC nói chuyện quá ',                 1, true, true]//10
 ];
-//[title, class_has_course_id, closed, created_by]
+//[title, class_has_course_id, created_by,is_template]
 var insert_quiz = [
     ['KTLT tuần 1', 20, 1, 1], //1
 ];
-//[quiz_id, text, option_a, option_b, option_c, option_d, correct_option]
+//[quiz_id, text, option_a, option_b, option_c, option_d, correct_option, timer]
 var insert_quiz_question = [
-    [1, `Kiểu nào có kích thước lớn nhất`,'int','char','long','double','double'], //1
-    [1, `Dạng hậu tố của biểu thức 9 - (5 + 2) là ?`,'95-+2','95-2+','952+-','95+2-','952+-'], //2
-    [1, `Giả sử a và b là hai số thực. Biểu thức nào dưới đây là không được phép theo cú pháp của ngôn ngữ lập trình C?`,'ab','a-=b','a>>=b','a*=b','a>>=b'],//3
+    [1, `Kiểu nào có kích thước lớn nhất`,'int','char','long','double','double',10], //1
+    [1, `Dạng hậu tố của biểu thức 9 - (5 + 2) là ?`,'95-+2','95-2+','952+-','95+2-','952+-',10], //2
+    [1, `Giả sử a và b là hai số thực. Biểu thức nào dưới đây là không được phép theo cú pháp của ngôn ngữ lập trình C?`,'ab','a-=b','a>>=b','a*=b','a>>=b',10],//3
 ];
 //[quiz_question_id, selected_option, answered_by]
 var insert_quiz_answer = [
@@ -1164,191 +1164,6 @@ var insert_notifications = [
     [null,1, `Đinh Bá Tiến sent you a feedback`,5,_global.notification_type.sent_feedback], //1
 ];
 
-var seeding_mysql = function(res) {
-    pool.getConnection(function(error, connection) {
-        async.series([
-            //Start transaction
-            function(callback) {
-                connection.beginTransaction(function(error) {
-                    if (error) callback(error);
-                    else callback();
-                });
-            },
-            function(callback) {
-                connection.query('INSERT INTO roles (name) VALUES ?', [insert_roles], function(error, results, fields) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        callback();
-                    }
-                });
-            },
-            function(callback) {
-                connection.query('INSERT INTO semesters (name,start_date,end_date,vacation_time) VALUES ?', [insert_semesters], function(error, results, fields) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        callback();
-                    }
-                });
-            },
-            function(callback) {
-                connection.query('INSERT INTO programs (name,code) VALUES ?', [insert_programs], function(error, results, fields) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        callback();
-                    }
-                });
-            },
-            function(callback) {
-                connection.query('INSERT INTO classes (name,email,program_id) VALUES ?', [insert_classes], function(error, results, fields) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        callback();
-                    }
-                });
-            },
-            function(callback) {
-                connection.query('INSERT INTO courses (code,name,semester_id,program_id,office_hour,note) VALUES ?', [insert_courses], function(error, results, fields) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        callback();
-                    }
-                });
-            },
-            function(callback) {
-                connection.query('INSERT INTO class_has_course (class_id,course_id,schedules) VALUES ?', [insert_class_has_course], function(error, results, fields) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        callback();
-                    }
-                });
-            },
-            function(callback) {
-                connection.query('INSERT INTO users (first_name,last_name,email,phone,password,role_id) VALUES ?', [insert_users], function(error, results, fields) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        callback();
-                    }
-                });
-            },
-            function(callback) {
-                connection.query('INSERT INTO teacher_teach_course (teacher_id,course_id,teacher_role) VALUES ?', [insert_teacher_teach_course], function(error, results, fields) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        callback();
-                    }
-                });
-            },
-            function(callback) {
-                connection.query('INSERT INTO students (id,stud_id,class_id) VALUES ?', [insert_students], function(error, results, fields) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        callback();
-                    }
-                });
-            },
-            function(callback) {
-                connection.query('INSERT INTO student_enroll_course (class_has_course_id,student_id) VALUES ?', [insert_student_enroll_course], function(error, results, fields) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        callback();
-                    }
-                });
-            },
-            function(callback) {
-                connection.query('INSERT INTO absence_requests (student_id, reason, start_date, end_date) VALUES ?', [insert_absence_requests], function(error, results, fields) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        callback();
-                    }
-                });
-            },
-            function(callback) {
-                connection.query('INSERT INTO attendance (course_id,class_id,closed) VALUES ?', [insert_attendance], function(error, results, fields) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        callback();
-                    }
-                });
-            },
-            function(callback) {
-                connection.query('INSERT INTO attendance_detail (attendance_id, student_id, attendance_type) VALUES ?', [insert_attendance_detail], function(error, results, fields) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        callback();
-                    }
-                });
-            },
-            function(callback) {
-                connection.query('INSERT INTO feedbacks (from_id, to_id, title, content, type, read, replied) VALUES ?', [insert_feeback], function(error, results, fields) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        callback();
-                    }
-                });
-            },
-            function(callback) {
-                connection.query('INSERT INTO quiz (title, class_has_course_id, closed, created_by) VALUES ?', [insert_quiz], function(error, results, fields) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        callback();
-                    }
-                });
-            },
-            function(callback) {
-                connection.query('INSERT INTO quiz_questions (quiz_id, text) VALUES ?', [insert_quiz_question], function(error, results, fields) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        callback();
-                    }
-                });
-            },
-            function(callback) {
-                connection.query('INSERT INTO quiz_answers (quiz_question_id, text,answered_by) VALUES ?', [insert_quiz_answer], function(error, results, fields) {
-                    if (error) {
-                        callback(error);
-                    } else {
-                        callback();
-                    }
-                });
-            },
-            //Commit transaction
-            function(callback) {
-                connection.commit(function(error) {
-                    if (error) callback(error);
-                    else callback();
-                });
-            },
-        ], function(error) {
-            if (error) {
-                _global.sendError(res, error.message);
-                connection.rollback(function() {
-                    return console.log(error);
-                });
-                return console.log(error);
-            } else {
-                console.log('success seeding!---------------------------------------');
-                res.send({ result: 'success', message: 'success seeding' });
-            }
-            connection.release();
-        });
-    });
-}
 var seeding_postgres = function(res) {
     pool_postgres.connect(function(error, connection, done) {
         async.series([
@@ -1486,7 +1301,7 @@ var seeding_postgres = function(res) {
                 });
             },
             function(callback) {
-                connection.query(format('INSERT INTO quiz (title, class_has_course_id, closed, created_by) VALUES %L', insert_quiz), function(error, results, fields) {
+                connection.query(format('INSERT INTO quiz (title, class_has_course_id, created_by, is_template) VALUES %L', insert_quiz), function(error, results, fields) {
                     if (error) {
                         callback(error);
                     } else {
@@ -1495,7 +1310,7 @@ var seeding_postgres = function(res) {
                 });
             },
             function(callback) {
-                connection.query(format('INSERT INTO quiz_questions (quiz_id, text, option_a, option_b, option_c, option_d, correct_option) VALUES %L', insert_quiz_question), function(error, results, fields) {
+                connection.query(format('INSERT INTO quiz_questions (quiz_id, text, option_a, option_b, option_c, option_d, correct_option, timer) VALUES %L', insert_quiz_question), function(error, results, fields) {
                     if (error) {
                         callback(error);
                     } else {

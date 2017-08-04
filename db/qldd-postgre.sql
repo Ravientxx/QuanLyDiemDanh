@@ -261,13 +261,13 @@ CREATE TABLE quiz (
   id serial NOT NULL,
   title varchar(255) DEFAULT NULL,
   class_has_course_id int NOT NULL,
-  closed boolean DEFAULT FALSE,
+  -- closed boolean DEFAULT FALSE,
   created_by int DEFAULT NULL,
   created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
   started_at timestamp with time zone DEFAULT NULL,
-  ended_at timestamp with time zone DEFAULT NULL,
   is_randomize_answers boolean DEFAULT TRUE,
   is_randomize_questions boolean DEFAULT TRUE,
+  is_auto_move_through_questions boolean DEFAULT TRUE,
   is_template boolean DEFAULT FALSE,
   code varchar(7) DEFAULT NULL,
   type smallint DEFAULT NULL,
@@ -319,8 +319,6 @@ CREATE TABLE notifications (
   created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id)
 );
-
-
 
 CREATE OR REPLACE FUNCTION update_updated_at()
  	RETURNS trigger AS

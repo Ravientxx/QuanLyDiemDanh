@@ -29,6 +29,8 @@ import { SendFeedbackModalComponent } from './components/send-feedback-modal/sen
 export { SendFeedbackModalComponent };
 import { QRCodeComponent } from './components/qr-code.component';
 export { QRCodeComponent };
+import { QuizDisplayComponent } from './components/quiz-display/quiz-display.component';
+export { QuizDisplayComponent };
 import {AppService} from './services/app.service';
 export {AppService};
 import {CourseService} from './services/courses.service';
@@ -94,7 +96,8 @@ export {NotificationService};
     CreateAbsenceRequestModalComponent,
     SendFeedbackModalComponent,
     ExportModalComponent,
-    QRCodeComponent
+    QRCodeComponent,
+    QuizDisplayComponent
   ],
   exports: [
     FooterComponent,
@@ -107,7 +110,8 @@ export {NotificationService};
     CreateAbsenceRequestModalComponent,
     SendFeedbackModalComponent,
     ExportModalComponent,
-    QRCodeComponent
+    QRCodeComponent,
+    QuizDisplayComponent
   ],  
   providers: [
     AppService,

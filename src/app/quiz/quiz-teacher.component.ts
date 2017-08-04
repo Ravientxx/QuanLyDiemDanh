@@ -17,6 +17,7 @@ export class QuizTeacherComponent implements OnInit {
     public quiz = {
         id: 0,
         title: '',
+        is_template: true,
         questions: [{
             text: '',
             option_a: '',
@@ -24,6 +25,7 @@ export class QuizTeacherComponent implements OnInit {
             option_c: '',
             option_d: '',
             correct_option: null,
+            timer:10,
             answers: []
         }]
     };
@@ -67,6 +69,7 @@ export class QuizTeacherComponent implements OnInit {
         this.quiz = {
             id: 0,
             title: '',
+            is_template:true,
             questions: [{
                 text: '',
                 option_a: '',
@@ -74,6 +77,7 @@ export class QuizTeacherComponent implements OnInit {
                 option_c: '',
                 option_d: '',
                 correct_option: null,
+                timer:10,
                 answers: []
             }]
         };
@@ -100,6 +104,7 @@ export class QuizTeacherComponent implements OnInit {
             option_c: '',
             option_d: '',
             correct_option: null,
+            timer:10,
             answers: []
         });
     }
@@ -111,6 +116,7 @@ export class QuizTeacherComponent implements OnInit {
             this.quiz.questions[i].option_c = this.quiz.questions[i + 1].option_c;
             this.quiz.questions[i].option_d = this.quiz.questions[i + 1].option_d;
             this.quiz.questions[i].correct_option = this.quiz.questions[i + 1].correct_option;
+            this.quiz.questions[i].timer = this.quiz.questions[i + 1].timer;
         }
         this.quiz.questions.pop();
     }
