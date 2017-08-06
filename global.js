@@ -15,7 +15,7 @@ module.exports = {
     db_postgres: {
         host: 'localhost',
         user: 'postgres',
-        password: '1234',
+        password: 'a',
         port:'5432',
         database: 'qldd'
     },

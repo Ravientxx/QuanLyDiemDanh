@@ -594,7 +594,7 @@
 
 /**
 * @swagger
-* /api/quiz/detail:
+* /api/quiz/published:
 *   post:
 *     summary: Quiz detail
 *     description:
@@ -607,11 +607,11 @@
 *         in: formData
 *         required: true
 *         type: string
-*       - name: quiz_id
-*         description: quiz id
+*       - name: quiz_code
+*         description: quiz code
 *         in: formData
 *         required: true
-*         type: integer
+*         type: string
 *     responses:
 *       200:
 *         description: json
@@ -620,7 +620,7 @@
 
 /**
 * @swagger
-* /api/quiz/check-code:
+* /api/quiz/join:
 *   post:
 *     summary: check quiz code
 *     description:
