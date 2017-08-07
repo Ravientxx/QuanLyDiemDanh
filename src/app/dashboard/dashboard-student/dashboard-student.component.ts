@@ -32,6 +32,28 @@ export class DashboardStudentComponent implements OnInit {
 					if(this.attendance_list_by_student[i].attendance_details[j].attendance_type == this.appService.attendance_type.absent){
 						absences++;
 					}
+					switch (this.attendance_list_by_student[i].attendance_details[j].attendance_type) {
+						case this.appService.attendance_type.checklist:
+							this.attendance_list_by_student[i].attendance_details[j]['icon'] = 'fa-check';
+							this.attendance_list_by_student[i].attendance_details[j]['method'] = 'Checklist';
+							break;
+						case this.appService.attendance_type.qr:
+							this.attendance_list_by_student[i].attendance_details[j]['icon'] = 'fa-qrcode';
+							this.attendance_list_by_student[i].attendance_details[j]['method'] = 'QR Code';
+							break;
+						case this.appService.attendance_type.quiz:
+							this.attendance_list_by_student[i].attendance_details[j]['icon'] = 'fa-question-circle';
+							this.attendance_list_by_student[i].attendance_details[j]['method'] = 'Quiz';
+							break;
+						case this.appService.attendance_type.permited_absent:
+							this.attendance_list_by_student[i].attendance_details[j]['icon'] = 'fa-envelope-square';
+							this.attendance_list_by_student[i].attendance_details[j]['method'] = 'Permited Absent';
+							break;		
+						default:
+							this.attendance_list_by_student[i].attendance_details[j]['icon'] = '';
+							this.attendance_list_by_student[i].attendance_details[j]['method'] = 'Absent';
+							break;
+					}
 				}
 				this.attendance_list_by_student[i]['absences'] = absences;
 			}

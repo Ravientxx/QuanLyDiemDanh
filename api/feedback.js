@@ -113,14 +113,26 @@ router.post('/send', function(req, res, next) {
             done();
                 return console.log(error);
         }
-        connection.query(format(`INSERT INTO feedbacks (title,content,from_id,type) VALUES %L`,feedback),function(error, result, fields) {
+        connection.query(format(`INSERT INTO feedbacks (title,content,from_id,type) VALUES %L RETURNING id`,feedback),function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 done();
                 return console.log(error);
             }
-            res.send({ result: 'success', message: 'Feedback sent successfully'});
-            done();
+            connection.query(format(`INSERT INTO notifications (from_id,message,object_id,type) VALUES %L RETURNING id`, [[
+                    req.decoded.id,
+                    'sent a feedback',
+                    result.rows[0].id,
+                    _global.notification_type.send_feedback
+                ]]), function(error, result, fields) {
+                if (error) {
+                    _global.sendError(res, error.message);
+                    done();
+                    return console.log(error);
+                }
+                res.send({ result: 'success', message: 'Feedback sent successfully'});
+                done();
+            });
         });
     });
 });
@@ -177,12 +189,12 @@ router.post('/send-reply', function(req, res, next) {
                 return console.log(error);
         }
 
-        var query = `SELECT id, title, content,  
+        var query = `SELECT id, title, content, from_id, 
             (SELECT users.email FROM users WHERE users.id = feedbacks.from_id) as _from,  
             (SELECT users.last_name FROM users WHERE users.id = feedbacks.from_id) as _last_name  
             FROM feedbacks
             WHERE id = %L`;
-        connection.query(format(query, [feedback_id]),function(error, result, fields) {
+        connection.query(format(query, feedback_id),function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 done();
@@ -192,8 +204,8 @@ router.post('/send-reply', function(req, res, next) {
             var email = result.rows[0]._from;
             var title = result.rows[0].title;
             var last_name = result.rows[0]._last_name;
-            
-            connection.query(format('UPDATE feedbacks SET replied = TRUE WHERE id = %L LIMIT 1', [feedback_id]), function(error, result, fields) {
+            var reply_to = result.rows[0].from_id;
+            connection.query(format('UPDATE feedbacks SET replied = TRUE WHERE id = %L', feedback_id), function(error, result, fields) {
                 if (error) {
                     res.send({ result: 'failure', message: 'Reply Failed' });
                     done();
@@ -215,8 +227,22 @@ router.post('/send-reply', function(req, res, next) {
                     console.log('Message %s sent: %s', info.messageId, info.response);
                 });
 
-                res.send({ result: 'success', message: 'Replied Successfully' });
-                done();
+                connection.query(format(`INSERT INTO notifications (to_id,from_id,message,object_id,type) VALUES %L RETURNING id`, [[
+                        reply_to,
+                        req.decoded.id,
+                        'replied your feedback',
+                        feedback_id,
+                        _global.notification_type.reply_feedback
+                    ]]), function(error, result, fields) {
+                        if (error) {
+                            res.send({ result: 'failure', message: 'Reply Failed' });
+                            done();
+                        } else {
+                            res.send({ result: 'success', message: 'Replied Successfully' });
+                            done();
+                        }
+                    });
+                
             });
         });
     });

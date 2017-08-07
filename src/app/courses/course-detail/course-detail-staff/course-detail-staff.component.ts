@@ -41,7 +41,7 @@ export class CourseDetailStaffComponent implements OnInit {
         this.attendanceSerivce.getAttendanceListByCourse(this.course_id,classes_id).subscribe(result => {
             this.apiResult = result.result;
             this.attendance_lists = result.attendance_lists;
-            this.attendance_list = this.attendance_lists[0];
+            this.onChangeClass(0);
             this.cloneAttendanceList(true);
         }, error => { this.appService.showPNotify('failure',"Server Error! Can't get attendance_list",'error'); });
     }
@@ -93,9 +93,35 @@ export class CourseDetailStaffComponent implements OnInit {
     public isEdittingAttendance = false;
     public temp_attendance_lists: Array < any > = [];
     public selected_class_index = 0;
-    public onChangeClass(i){
-        this.selected_class_index = i;
-        this.attendance_list = this.attendance_lists[i];
+    public onChangeClass(index){
+        this.selected_class_index = index;
+        this.attendance_list = this.attendance_lists[index];
+        for(var i = 0; i < this.attendance_list.length;i++){
+            for(var j = 0 ; j < this.attendance_list[i].attendance_details.length; j++){
+                switch (this.attendance_list[i].attendance_details[j].attendance_type) {
+                    case this.appService.attendance_type.checklist:
+                        this.attendance_list[i].attendance_details[j]['icon'] = 'fa-check';
+                        this.attendance_list[i].attendance_details[j]['method'] = 'Checklist';
+                        break;
+                    case this.appService.attendance_type.qr:
+                        this.attendance_list[i].attendance_details[j]['icon'] = 'fa-qrcode';
+                        this.attendance_list[i].attendance_details[j]['method'] = 'QR Code';
+                        break;
+                    case this.appService.attendance_type.quiz:
+                        this.attendance_list[i].attendance_details[j]['icon'] = 'fa-question-circle';
+                        this.attendance_list[i].attendance_details[j]['method'] = 'Quiz';
+                        break;
+                    case this.appService.attendance_type.permited_absent:
+                        this.attendance_list[i].attendance_details[j]['icon'] = 'fa-envelope-square';
+                        this.attendance_list[i].attendance_details[j]['method'] = 'Permited Absent';
+                        break;        
+                    default:
+                        this.attendance_list[i].attendance_details[j]['icon'] = '';
+                        this.attendance_list[i].attendance_details[j]['method'] = 'Absent';
+                        break;
+                }
+            }
+        }
     }
     public cloneAttendanceList(isTempDes: boolean) {
         if (isTempDes) {
@@ -118,6 +144,8 @@ export class CourseDetailStaffComponent implements OnInit {
                             edited_reason: this.attendance_lists[k][i].attendance_details[j].edited_reason,
                             edited_by: this.attendance_lists[k][i].attendance_details[j].edited_by,
                             editor: this.attendance_lists[k][i].attendance_details[j].editor,
+                            icon: this.attendance_lists[k][i].attendance_details[j].icon,
+                            method: this.attendance_lists[k][i].attendance_details[j].method,
                         };
                         attendance.attendance_details.push(attendance_detail);
                     }
@@ -145,6 +173,8 @@ export class CourseDetailStaffComponent implements OnInit {
                             edited_reason: this.temp_attendance_lists[k][i].attendance_details[j].edited_reason,
                             edited_by: this.temp_attendance_lists[k][i].attendance_details[j].edited_by,
                             editor: this.temp_attendance_lists[k][i].attendance_details[j].editor,
+                            icon: this.temp_attendance_lists[k][i].attendance_details[j].icon,
+                            method: this.temp_attendance_lists[k][i].attendance_details[j].method,
                         };
                         attendance.attendance_details.push(attendance_detail);
                     }
@@ -195,9 +225,13 @@ export class CourseDetailStaffComponent implements OnInit {
             this.appService.showPNotify('failure',"Error! Reason is required to change attendance detail",'error'); 
         }else{
             if (this.temp_attendance_lists[this.selected_class_index][this.current_attendance_index].attendance_details[this.current_attendance_detail_index].attendance_type) {
-                this.temp_attendance_lists[this.selected_class_index][this.current_attendance_index].attendance_details[this.current_attendance_detail_index].attendance_type = 0;
+                this.temp_attendance_lists[this.selected_class_index][this.current_attendance_index].attendance_details[this.current_attendance_detail_index].attendance_type = this.appService.attendance_type.absent;
+                this.temp_attendance_lists[this.selected_class_index][this.current_attendance_index].attendance_details[this.current_attendance_detail_index].icon = '';
+                this.temp_attendance_lists[this.selected_class_index][this.current_attendance_index].attendance_details[this.current_attendance_detail_index].method = 'Absent';
             } else {
-                this.temp_attendance_lists[this.selected_class_index][this.current_attendance_index].attendance_details[this.current_attendance_detail_index].attendance_type = 1;
+                this.temp_attendance_lists[this.selected_class_index][this.current_attendance_index].attendance_details[this.current_attendance_detail_index].attendance_type = this.appService.attendance_type.checklist;
+                this.temp_attendance_lists[this.selected_class_index][this.current_attendance_index].attendance_details[this.current_attendance_detail_index].icon = 'fa-check';
+                this.temp_attendance_lists[this.selected_class_index][this.current_attendance_index].attendance_details[this.current_attendance_detail_index].method = 'Checklist';
             }
             this.temp_attendance_lists[this.selected_class_index][this.current_attendance_index].attendance_details[this.current_attendance_detail_index].attendance_time = new Date();
             this.temp_attendance_lists[this.selected_class_index][this.current_attendance_index].attendance_details[this.current_attendance_detail_index].edited_by = this.authService.current_user.id;
@@ -242,7 +276,9 @@ export class CourseDetailStaffComponent implements OnInit {
                         attendance_time: new Date(),
                         created_at: this.attendance_lists[this.selected_class_index][0].attendance_details[j].created_at,
                         edited_by: null,
-                        edited_reason: null
+                        edited_reason: null,
+                        icon : '',
+                        method : 'Absent'
                     };
                     attendance.attendance_details.push(attendance_detail);
                 }
@@ -275,6 +311,8 @@ export class CourseDetailStaffComponent implements OnInit {
                 this.temp_attendance_lists[this.selected_class_index][i].attendance_details[j].edited_by =  this.temp_attendance_lists[this.selected_class_index][i+1].attendance_details[j].edited_by;
                 this.temp_attendance_lists[this.selected_class_index][i].attendance_details[j].edited_reason =  this.temp_attendance_lists[this.selected_class_index][i+1].attendance_details[j].edited_reason;
                 this.temp_attendance_lists[this.selected_class_index][i].attendance_details[j].editor =  this.temp_attendance_lists[this.selected_class_index][i+1].attendance_details[j].editor;
+                this.temp_attendance_lists[this.selected_class_index][i].attendance_details[j]['icon'] =  this.temp_attendance_lists[this.selected_class_index][i+1].attendance_details[j]['icon'];
+                this.temp_attendance_lists[this.selected_class_index][i].attendance_details[j]['method'] =  this.temp_attendance_lists[this.selected_class_index][i+1].attendance_details[j]['method'];
             }
         }
         this.temp_attendance_lists[this.selected_class_index].pop();

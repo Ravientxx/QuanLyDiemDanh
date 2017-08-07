@@ -39,7 +39,27 @@ export class TopNavigationComponent implements OnInit {
 		this.router.navigate(['/change-password']);
 	}
 	public onNotificationClick(index){
-
+		this.notificationService.readNotification(this.notifications[index].id).subscribe(result=>{
+			if(result.result == 'success'){
+				switch (this.notifications[index].type) {
+					case this.appService.notification_type.send_feedback:
+					case this.appService.notification_type.reply_feedback:
+						this.router.navigate(['/feedbacks']);
+						break;
+					case this.appService.notification_type.send_absence_request:
+					case this.appService.notification_type.accept_absence_request:
+					case this.appService.notification_type.reject_absence_request:
+						this.router.navigate(['/absence-requests']);
+						break;
+					default:
+						// code...
+						break;
+				}
+				this.notifications.splice(index,1);
+			}else{
+				this.appService.showPNotify('failure', result.message, 'error');
+			}
+		},error=>{this.appService.showPNotify('failure', "Server Error! Can't read notifications", 'error');});
 	}
 }
 	

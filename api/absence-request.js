@@ -60,43 +60,139 @@ router.put('/change-status', function(req, res, next) {
     }
     var id = req.body.id;
     var status = req.body.status;
+    var absence_request_info ;
     pool_postgres.connect(function(error, connection, done) {
-        connection.query(format(`UPDATE absence_requests SET status = %L WHERE id = %L`, status, id), function(error, result, fields) {
-            if (error) {
-                _global.sendError(res, error.message);
-                done();
-                return console.log(error);
-            }
-            if(status != _global.absence_request_status.new){
+        async.series([
+            //Start transaction
+            function(callback) {
+                connection.query('BEGIN', (error) => {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+            //update absence requests
+            function(callback) {
+                connection.query(format(`UPDATE absence_requests SET status = %L WHERE id = %L`, status, id), function(error, result, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            //get absence requests info
+            function(callback) {
                 connection.query(format(`SELECT * FROM absence_requests, users 
                     WHERE absence_requests.student_id = users.id AND absence_requests.id = %L LIMIT 1`, id), function(error, result, fields) {
                     if (error) {
-                        _global.sendError(res, error.message);
-                        done();
-                        return console.log(error);
-                    }
-                    else{
-                        var email = result.rows[0].email;
-                        var status_text =  status == _global.absence_request_status.accepted ? 'accepted' : 'rejected';
-                        let transporter = nodemailer.createTransport(_global.email_setting);
-                        let mailOptions = {
-                            from: '"Giáo vụ"', // sender address
-                            to: email, // list of receivers
-                            subject: 'Your absence request has been ' + status_text, // Subject line
-                            text: `Hi ` + result.rows[0].last_name +`,\r\n\r\nYour absence request:\r\n_Reason: ` + result.rows[0].reason + `\r\n_From : `+ result.rows[0].start_date + ` to `+ result.rows[0].end_date +`\r\n\r\nHas been ` + status_text + ` by ` + req.decoded.first_name + ` ` + req.decoded.last_name + `.\r\n\r\nIf you need help, please contact giaovu.clc@fit.hcmus.edu.vn`,
-                        };
-                        transporter.sendMail(mailOptions, (error, info) => {
-                            if (error) {
-                                done();
-                                return console.log(error);
-                            }
-                            console.log('Message %s sent: %s', info.messageId, info.response);
-                        });
+                        callback(error);
+                    } else {
+                        absence_request_info = result.rows[0];
+                        callback();
                     }
                 });
+            },
+            //create notification
+            function(callback) {
+                if(status != _global.absence_request_status.new){
+                    var notification_type;
+                    var notification_message;
+                    if(status == _global.absence_request_status.accepted){
+                        notification_type = _global.notification_type.accept_absence_request;
+                        notification_message = 'accepted your absence request';
+                    }else{
+                        notification_type = _global.notification_type.reject_absence_request;
+                        notification_message = 'rejected your absence request';
+                    }
+                    connection.query(format(`INSERT INTO notifications (to_id,from_id,message,object_id,type) VALUES %L RETURNING id`, [[
+                        absence_request_info.student_id,
+                        req.decoded.id,
+                        notification_message,
+                        id,
+                        notification_type
+                    ]]), function(error, result, fields) {
+                        if (error) {
+                            callback(error);
+                        } else {
+                            callback();
+                        }
+                    });
+                }
+                else{
+                    callback();
+                }
+            },
+            //update attendance details if needed
+            function(callback) {
+                var start_date = absence_request_info.start_date;
+                var end_date = absence_request_info.end_date;
+                connection.query(format(`SELECT attendance_id FROM attendance, attendance_detail 
+                    WHERE attendance.id = attendance_detail.attendance_id AND
+                    attendance_detail.student_id = %L AND
+                    attendance.closed = TRUE AND
+                    attendance.created_at >= %L AND
+                    attendance.created_at < %L`, absence_request_info.student_id,start_date,end_date), function(error, result, fields) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        if(result.rowCount != 0){
+                            var query_where = ' student_id = ' + absence_request_info.student_id;
+                            query_where += ' AND (attendance_id = ' + result.rows[0].attendance_id;
+                            for(var i = 1 ; i < result.rowCount; i++){
+                                query_where += ' OR attendance_id = ' + result.rows[i].attendance_id;
+                            }
+                            query_where += ")";
+                            connection.query(format(`UPDATE attendance_detail SET attendance_type = %L WHERE` + query_where, _global.attendance_type.permited_absent), function(error, result, fields) {
+                                if (error) {
+                                    callback(error);
+                                } else {
+                                    callback();
+                                }
+                            });
+                        }else{
+                            callback();
+                        }
+                    }
+                });
+            },
+            //Commit transaction
+            function(callback) {
+                connection.query('COMMIT', (error) => {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+        ], function(error) {
+            if (error) {
+                _global.sendError(res, error.message);
+                connection.query('ROLLBACK', (error) => {
+                    if (error) return console.log(error);
+                });
+                done();
+                return console.log(error);
+            } else {
+                if(status != _global.absence_request_status.new){
+                    var email = absence_request_info.email;
+                    var status_text =  status == _global.absence_request_status.accepted ? 'accepted' : 'rejected';
+                    let transporter = nodemailer.createTransport(_global.email_setting);
+                    let mailOptions = {
+                        from: '"Giáo vụ"', // sender address
+                        to: email, // list of receivers
+                        subject: 'Your absence request has been ' + status_text, // Subject line
+                        text: `Hi ` + absence_request_info.last_name +`,\r\n\r\nYour absence request:\r\n_Reason: ` + absence_request_info.reason + `\r\n_From : `+ absence_request_info.start_date + ` to `+ absence_request_info.end_date +`\r\n\r\nHas been ` + status_text + ` by ` + req.decoded.first_name + ` ` + req.decoded.last_name + `.\r\n\r\nIf you need help, please contact giaovu.clc@fit.hcmus.edu.vn`,
+                    };
+                    transporter.sendMail(mailOptions, (error, info) => {
+                        if (error) {
+                            done();
+                            return console.log(error);
+                        }
+                        console.log('Message %s sent: %s', info.messageId, info.response);
+                    });
+                }
+                console.log('successfully changed request status---------------------------------------');
+                res.send({ result: 'success', message: 'successfully changed request status' });
+                done();
             }
-            res.send({ result: 'success', message: 'successfully changed request status' });
-            done();
         });
     });
 });
@@ -171,17 +267,30 @@ router.post('/create', function(req, res, next) {
             start_date,
             end_date,
         ]];
-        connection.query(format(`INSERT INTO absence_requests (student_id,reason,start_date,end_date) VALUES %L`, absence_request), function(error, result, fields) {
+        connection.query(format(`INSERT INTO absence_requests (student_id,reason,start_date,end_date) VALUES %L RETURNING id`, absence_request), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 done();
                 return console.log(error);
             }
-            res.send({
-                result: 'success',
-                message: 'Request sent successfully'
+            var request_id = result.rows[0].id;
+            connection.query(format(`INSERT INTO notifications (from_id,message,object_id,type) VALUES %L RETURNING id`, [[
+                    current_user.id,
+                    'sent an absence request',
+                    request_id,
+                    _global.notification_type.send_absence_request
+                ]]), function(error, result, fields) {
+                if (error) {
+                    _global.sendError(res, error.message);
+                    done();
+                    return console.log(error);
+                }
+                res.send({
+                    result: 'success',
+                    message: 'Request sent successfully'
+                });
+                done();
             });
-            done();
         });
     });
 });
@@ -212,11 +321,18 @@ router.post('/cancel', function(req, res, next) {
                         done();
                         return console.log(error);
                     }
-                    res.send({
-                        result: 'success',
-                        message: 'Request canceled successfully'
+                    connection.query(format(`DELETE FROM notifications WHERE from_id = %L AND object_id = %L`, current_user.id, id), function(error, result, fields) {
+                        if (error) {
+                            _global.sendError(res, error.message);
+                            done();
+                            return console.log(error);
+                        }
+                        res.send({
+                            result: 'success',
+                            message: 'Request canceled successfully'
+                        });
+                        done();
                     });
-                    done();
                 });
             }
         });

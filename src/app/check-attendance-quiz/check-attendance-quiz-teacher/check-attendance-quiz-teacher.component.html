@@ -7,8 +7,8 @@
         <div class="x_content">
             <div class="col-xs-12 form-horizontal">
                 <div class="form-group">
-                    <label class="control-label col-sm-1 col-xs-3">Quiz type: </label>
-                    <div class="col-sm-3 col-xs-6">
+                    <label class="control-label col-sm-1 col-xs-6">Quiz type: </label>
+                    <div class="col-sm-3 col-xs-5">
                         <select class="form-control" name="selected_quiz_type" [(ngModel)]="selected_quiz_type" (ngModelChange)="onChangeQuizType()">
                             <option *ngFor="let quiz_type of quiz_types" [value]="quiz_type.id">{{quiz_type.title}}</option>
                         </select>
@@ -22,8 +22,18 @@
                         </div>
                     </ng-container>
                     <ng-container *ngIf="selected_quiz_type == appService.quiz_type.miscellaneous.id">
-                        <div class="col-md-3 col-sm-3 col-xs-6">
-                            <button class="btn btn-primary btn-round">Generate questions</button>
+                        <div class="col-sm-1 col-xs-6">
+                            <ng-template #tolTemplate>
+                                <div>Miscellaneous Quiz requires students to have 100% correct answers for their attendance to be checked</div>
+                            </ng-template>
+                            <i class="fa fa-question-circle fa-2x" [tooltip]="tolTemplate" container="body"></i>
+                        </div>
+                        <label class="control-label col-sm-2 col-xs-4">No. questions: </label>
+                        <div class="col-sm-2 col-xs-4">
+                            <input class="form-control" name="number_questions" [(ngModel)]="number_misc_question">
+                        </div>
+                        <div class="col-sm-3 col-xs-4">
+                            <button class="btn btn-primary btn-round" (click)="generateMiscQuestion()">Generate questions</button>
                         </div>
                     </ng-container>
                 </div>
@@ -74,7 +84,7 @@
                         </div>
                     </div>
                 </div>
-                <div *ngIf="selected_quiz_type == appService.quiz_type.academic.id">
+                <div>
                     <div *ngFor="let question of quiz.questions; let i = index;">
                         <form class="form-group well">
                             <div class="form-group">
@@ -139,8 +149,8 @@
                         </form>
                     </div>
                 </div>
-                <div *ngIf="selected_quiz_type == appService.quiz_type.miscellaneous.id">
-                </div>
+<!--                 <div *ngIf="selected_quiz_type == appService.quiz_type.miscellaneous.id">
+                </div> -->
                 <div class="form-group">
                     <div class="text-center">
                         <button class="btn btn-default" (click)="onBack()">Back</button>
@@ -151,24 +161,3 @@
         </div>
     </div>
 </div>
-<!-- <div class="modal fade" id="confirmStopQuizModal" role="dialog">
-    <div class="vertical-alignment-helper">
-        <div class="modal-dialog modal-sm vertical-align-center">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Confirm Stop Quiz</h4>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        If you stop the quiz,students won't be able to submit their answers anymore.
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-default btn-success" (click)="stopQuiz()" data-dismiss="modal">Confirm</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div> -->

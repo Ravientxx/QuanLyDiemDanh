@@ -74,7 +74,7 @@ module.exports = {
     jwt_secret_key: '13530191353049',
     jwt_expire_time: '1d',
     jwt_reset_password_expire_time: 30 * 60,
-
+    jwt_register_expire_time: '7d',
     default_page: 1,
     default_limit: 10,
 

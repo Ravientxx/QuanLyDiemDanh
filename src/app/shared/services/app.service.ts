@@ -60,7 +60,7 @@ export class AppService {
             text: '90s'
         },
         {
-            id:120,
+            value:120,
             text: '120s'
         }
     ];
@@ -85,12 +85,13 @@ export class AppService {
         accept_absence_request:3,
         reject_absence_request:4,
     };
+    public default_avatar = 'http://i.imgur.com/FTa2JWD.png';
     public student_interaction_type = {answer_question: 0,discuss: 1, present: 2};
     public import_export_type = { student: 0, teacher: 1, course: 2, schedule: 3, examinees: 4, attendance_summary: 5, class:6};
     public enrollment_status = { compulsory: 0, elective: 1 };
     public attendance_status = { normal: 0, exemption: 1 };
     public userType = { admin: 4, student: 1, teacher: 2, staff: 3 };
-    public attendance_type = { absent: 0, checklist: 1, qr: 2, quiz: 3, face: 4 };
+    public attendance_type = { permited_absent:-1, absent: 0, checklist: 1, qr: 2, quiz: 3, face: 4 };
     
     public getSemesterProgramClassUrl = this.appConfig.apiHost + '/semesters-programs-classes';
     public getSemesterProgramClass(): Observable < { result: string, semesters: Array < any > , programs: Array < any > , classes: Array < any > , message: string } > {

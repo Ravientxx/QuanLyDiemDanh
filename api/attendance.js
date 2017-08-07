@@ -168,7 +168,7 @@ router.post('/update-list-by-course', function(req, res, next) {
             }
         }
     }
-
+    new_student_list = [];
     pool_postgres.connect(function(error, connection, done) {
         connection.query(format(`SELECT name FROM courses WHERE id = %L LIMIT 1`, course_id), function(error, result, fields) {
             if (error) {
@@ -179,6 +179,7 @@ router.post('/update-list-by-course', function(req, res, next) {
             }
             if (result.rowCount == 0) {
                 _global.sendError(res, null, 'Course not found!');
+                done();
             } else {
                 async.series([
                     //Start transaction
@@ -192,63 +193,87 @@ router.post('/update-list-by-course', function(req, res, next) {
                     function(callback) {
                         async.eachOf(attendance_lists, function(attendance_list, index, callback) {
                             async.each(attendance_list, function(student, callback) {
+                                var check_new_student = false;
                                 async.series([
                                     //Check student info to update or create
                                     function(callback) {
                                         if (student.id == 0) {
                                             //new student to list
-                                            connection.query(format(`SELECT id FROM students WHERE stud_id = %L LIMIT 1`, student.code), function(error, result, fields) {
+                                            async.series([
+                                                function(callback){
+                                                    connection.query(format(`SELECT id FROM students WHERE stud_id = %L LIMIT 1`, student.code), function(error, result, fields) {
+                                                        if (error) {
+                                                            callback(error);
+                                                        } else {
+                                                            if (result.rowCount == 0) {
+                                                                //Not exist in system
+                                                                var new_user = [
+                                                                    [
+                                                                        _global.getFirstName(student.name),
+                                                                        _global.getLastName(student.name),
+                                                                        student.code + '@student.hcmus.edu.vn',
+                                                                        _global.role.student,
+                                                                    ]
+                                                                ];
+                                                                new_student_list.push({
+                                                                    name: _global.getLastName(student.name),
+                                                                    email : student.code + '@student.hcmus.edu.vn'
+                                                                });
+                                                                connection.query(format(`INSERT INTO users (first_name,last_name,email,role_id) VALUES %L RETURNING id`, new_user), function(error, result, fields) {
+                                                                    if (error) {
+                                                                        callback(error);
+                                                                    } else {
+                                                                        student.id = result.rows[0].id;
+                                                                        var new_student = [
+                                                                            [
+                                                                                result.rows[0].id,
+                                                                                student.code,
+                                                                                classes_id[index],
+                                                                            ]
+                                                                        ];
+                                                                        connection.query(format(`INSERT INTO students (id,stud_id,class_id) VALUES %L`, new_student), function(error, result, fields) {
+                                                                            if (error) {
+                                                                                callback(error);
+                                                                            } else {
+                                                                                callback();
+                                                                            }
+                                                                        });
+                                                                    }
+                                                                });
+                                                            } else {
+                                                                //Exist in system
+                                                                student.id = result.rows[0].id;
+                                                                callback();
+                                                            }
+                                                        }
+                                                    });
+                                                },
+                                                function(callback){
+                                                    connection.query(format(`SELECT id FROM class_has_course WHERE class_id = %L AND course_id = %L LIMIT 1`, classes_id[index], course_id), function(error, result, fields) {
+                                                        if (error) {
+                                                            callback(error);
+                                                        } else {
+                                                            var insert_student_enroll_course = [
+                                                                [
+                                                                    result.rows[0].id,
+                                                                    student.id
+                                                                ]
+                                                            ];
+                                                            connection.query(format(`INSERT INTO student_enroll_course (class_has_course_id,student_id) VALUES %L`, insert_student_enroll_course), function(error, result, fields) {
+                                                                if (error) {
+                                                                    callback(error);
+                                                                } else {
+                                                                    callback();
+                                                                }
+                                                            });
+                                                        }
+                                                    });
+                                                },
+                                            ], function(error) {
                                                 if (error) {
                                                     callback(error);
                                                 } else {
-                                                    if (result.rowCount == 0) {
-                                                        //Not exist in system
-                                                        var new_user = [[
-                                                            student.code + '@student.hcmus.edu.vn',
-                                                            _global.role.student,
-                                                            bcrypt.hashSync(student.code, 10),
-                                                        ]];
-                                                        connection.query(format(`INSERT INTO users (email,role_id,password) VALUES %L RETURNING id`, new_user), function(error, result, fields) {
-                                                            if (error) {
-                                                                callback(error);
-                                                            } else {
-                                                                student.id = result.rows[0].id;
-                                                                var new_student = [[
-                                                                    result.rows[0].id,
-                                                                    student.code,
-                                                                    classes_id[index],
-                                                                ]];
-                                                                connection.query(format(`INSERT INTO students (id,stud_id,class_id) VALUES %L`, new_student), function(error, result, fields) {
-                                                                    if (error) {
-                                                                        callback(error);
-                                                                    } else {
-                                                                        callback();
-                                                                    }
-                                                                });
-                                                            }
-                                                        });
-                                                    } else {
-                                                        //Exist in system
-                                                        //Get class_has_course_id
-                                                        student.id = result.rows[0].id;
-                                                        connection.query(format(`SELECT id FROM class_has_course WHERE class_id = %L AND course_id = %L LIMIT 1`, classes_id[index], course_id), function(error, result, fields) {
-                                                            if (error) {
-                                                                callback(error);
-                                                            } else {
-                                                                var insert_student_enroll_course = [[
-                                                                    result.rows[0].id,
-                                                                    student.id
-                                                                ]];
-                                                                connection.query(format(`INSERT INTO student_enroll_course (class_has_course,student_id) VALUES %L`, insert_student_enroll_course), function(error, result, fields) {
-                                                                    if (error) {
-                                                                        callback(error);
-                                                                    } else {
-                                                                        callback();
-                                                                    }
-                                                                });
-                                                            }
-                                                        });
-                                                    }
+                                                    callback();
                                                 }
                                             });
                                         } else {
@@ -278,18 +303,6 @@ router.post('/update-list-by-course', function(req, res, next) {
                                     },
                                     //update attendance details by class + course
                                     function(callback) {
-                                        var insert_attendance_detail = [];
-                                        for (var i = 0; i < student.attendance_details.length; i++) {
-                                            var temp = [
-                                                student.attendance_details[i].attendance_id,
-                                                student.id,
-                                                student.attendance_details[i].attendance_type,
-                                                student.attendance_details[i].attendance_time,
-                                                student.attendance_details[i].edited_by,
-                                                student.attendance_details[i].edited_reason,
-                                            ];
-                                            insert_attendance_detail.push(temp);
-                                        }
                                         async.each(student.attendance_details, function(attendance_detail, callback) {
                                             connection.query(format(`SELECT * FROM attendance_detail WHERE attendance_id = %L AND student_id = %L`, attendance_detail.attendance_id, student.id), function(error, result, fields) {
                                                 if (error) {
@@ -297,15 +310,18 @@ router.post('/update-list-by-course', function(req, res, next) {
                                                 } else {
                                                     //for new student
                                                     if (result.rowCount == 0) {
-                                                        var temp = [[
-                                                            attendance_detail.attendance_id,
-                                                            student.id,
-                                                            attendance_detail.attendance_type,
-                                                            attendance_detail.attendance_time,
-                                                            attendance_detail.edited_by,
-                                                            attendance_detail.edited_reason
-                                                        ]];
-                                                        connection.query(format(`INSERT INTO attendance_detail (attendance_id,student_id,attendance_type,attendance_time) VALUES %L`, temp), function(error, result, fields) {
+                                                        check_new_student = true;
+                                                        var temp = [
+                                                            [
+                                                                attendance_detail.attendance_id,
+                                                                student.id,
+                                                                attendance_detail.attendance_type,
+                                                                attendance_detail.attendance_time,
+                                                                attendance_detail.edited_by,
+                                                                attendance_detail.edited_reason
+                                                            ]
+                                                        ];
+                                                        connection.query(format(`INSERT INTO attendance_detail (attendance_id,student_id,attendance_type,attendance_time,edited_by,edited_reason) VALUES %L`, temp), function(error, result, fields) {
                                                             if (error) {
                                                                 callback(error);
                                                             } else {
@@ -331,6 +347,42 @@ router.post('/update-list-by-course', function(req, res, next) {
                                                 callback();
                                             }
                                         });
+                                    },
+                                    //Add opening attendance if needed
+                                    function(callback) {
+                                        if(check_new_student){
+                                            connection.query(format(`SELECT * FROM attendance WHERE class_id = %L AND course_id = %L AND closed = FALSE`, classes_id[index], course_id), function(error, result, fields) {
+                                                if (error) {
+                                                    callback(error);
+                                                } else {
+                                                    //No opening attendance
+                                                    if (result.rowCount == 0) {
+                                                        callback();
+                                                    } else {
+                                                        var temp = [
+                                                            [
+                                                                result.rows[0].id,
+                                                                student.id,
+                                                                _global.attendance_type.absent,
+                                                                null,
+                                                                null,
+                                                                null
+                                                            ]
+                                                        ];
+                                                        connection.query(format(`INSERT INTO attendance_detail (attendance_id,student_id,attendance_type,attendance_time,edited_by,edited_reason) VALUES %L`, temp), function(error, result, fields) {
+                                                            if (error) {
+                                                                callback(error + 'at add opening attendance');
+                                                            } else {
+                                                                callback();
+                                                            }
+                                                        });
+                                                    }
+                                                }
+                                            });
+                                        }else{
+                                            callback();
+                                        }
+                                        
                                     },
                                 ], function(error) {
                                     if (error) {
@@ -373,12 +425,43 @@ router.post('/update-list-by-course', function(req, res, next) {
                         done();
                         return console.log(error);
                     } else {
-                        console.log('success updating attendance list by course!---------------------------------------');
-                        res.send({ result: 'success', message: 'Attendance list updated successfully' });
+                        let transporter = nodemailer.createTransport(_global.email_setting);
+                        async.each(new_student_list, function(student, callback) {
+                            var token = jwt.sign({ email: student.email }, _global.jwt_secret_key, { expiresIn: _global.jwt_register_expire_time });
+                            var link = _global.host + '/register;token=' + token;
+                            let mailOptions = {
+                                from: '"Giáo vụ"',
+                                to: student.email,
+                                subject: 'Register your account',
+                                text: 'Hi,'+ student.name + '\r\n' + 
+                                    'Your account has been created.To setup your account for the first time, please go to the following web address: \r\n\r\n' +
+                                    link + 
+                                    '\r\n(This link is valid for 7 days from the time you received this email)\r\n\r\n' +
+                                    'If you need help, please contact the site administrator,\r\n' +
+                                    'Admin User \r\n\r\n' +
+                                    'admin@fit.hcmus.edu.vn'
+                            };
+                            transporter.sendMail(mailOptions, (error, info) => {
+                                if (error) {
+                                    console.log(error);
+                                }
+                                console.log('Message %s sent: %s', info.messageId, info.response);
+                            });
+                            callback();
+                        }, function(error) {
+                            if (error) {
+                                _global.sendError(res, error.message);
+                                done();
+                                return console.log(error);
+                            } else {
+                                console.log('success updating attendance list by course!---------------------------------------');
+                                res.send({ result: 'success', message: 'Attendance list updated successfully' });
+                                done();
+                            }
+                        });
                     }
                 });
             }
-            done();
         });
     });
 });
@@ -476,10 +559,12 @@ router.post('/create', function(req, res, next) {
                         callback(error.message + ' at get student in attendances');
                     } else {
                         async.each(result.rows, function(student, callback) {
-                            var attendance_detail = [[
-                                new_attendance_id,
-                                student.student_id
-                            ]];
+                            var attendance_detail = [
+                                [
+                                    new_attendance_id,
+                                    student.student_id
+                                ]
+                            ];
                             connection.query(format(`INSERT INTO attendance_detail (attendance_id,student_id) VALUES %L`, attendance_detail), function(error, result, fields) {
                                 if (error) {
                                     console.log(error);
@@ -489,7 +574,7 @@ router.post('/create', function(req, res, next) {
                                 }
                             });
                         }, function(error) {
-                            if(error) callback(error);
+                            if (error) callback(error);
                             else callback();
                         });
                     }
@@ -533,7 +618,7 @@ router.post('/delete', function(req, res, next) {
                 return console.log(error.message + ' at get attendances info');
             } else {
                 for (var i = 0; i < delegate_list.length; i++) {
-                    if (delegate_list[i]['course_id'] == results[0].course_id && delegate_list[i]['class_id'] == results[0].class_id) {
+                    if (delegate_list[i]['course_id'] == result.rows[0].course_id && delegate_list[i]['class_id'] == result.rows[0].class_id) {
                         delegate_list.splice(i, 1);
                         break;
                     }
@@ -559,81 +644,187 @@ router.post('/close', function(req, res, next) {
         return console.log("attendance_id is required");
     }
     var attendance_id = req.body.attendance_id;
+    var course_id = 0;
+    var class_id = 0;
+    var absence_requests = [];
     pool_postgres.connect(function(error, connection, done) {
-        connection.query(format(`SELECT course_id , class_id FROM attendance WHERE id = %L`, attendance_id), function(error, result, fields) {
-            if (error) {
-                _global.sendError(res, null, 'error at get attendances info');
-                done();
-                return console.log(error.message + ' at get attendances info');
-            } else {
-                for (var i = 0; i < delegate_list.length; i++) {
-                    if (delegate_list[i]['course_id'] == results[0].course_id && delegate_list[i]['class_id'] == results[0].class_id) {
-                        delegate_list.splice(i, 1);
-                        break;
+        async.series([
+            //Start transaction
+            function(callback) {
+                connection.query('BEGIN', (error) => {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+            //get Info and delete delegate code
+            function(callback) {
+                connection.query(format(`SELECT course_id , class_id FROM attendance WHERE id = %L`, attendance_id), function(error, result, fields) {
+                    if (error) {
+                        callback(error + ' at get attendances info');
+                    } else {
+                        course_id = result.rows[0].course_id;
+                        class_id = result.rows[0].class_id;
+                        for (var i = 0; i < delegate_list.length; i++) {
+                            if (delegate_list[i]['course_id'] == course_id && delegate_list[i]['class_id'] == class_id) {
+                                delegate_list.splice(i, 1);
+                                break;
+                            }
+                        }
+                        callback();
+
                     }
-                }
+                });
+            },
+            //close attendance
+            function(callback) {
                 connection.query(format(`UPDATE attendance SET closed = TRUE WHERE id = %L`, attendance_id), function(error, result, fields) {
                     if (error) {
-                        _global.sendError(res, null, 'error at close attendances');
-                        done();
-                        return console.log(error.message + ' at close attendances');
+                        callback(error + ' at close attendances');
                     } else {
-                        //send email for the absent
-                        connection.query(format(`SELECT users.*, courses.code as course_code, courses.name as course_name, attendance.course_id, attendance.class_id 
-                            FROM courses,attendance,attendance_detail, users 
-                            WHERE attendance_id = %L AND attendance_type = %L AND users.id = student_id AND attendance.id = attendance_id AND
-                            courses.id = attendance.course_id`, attendance_id, _global.attendance_type.absent), function(error, result, fields) {
-                            if (error) {
-                                _global.sendError(res, null, 'error at get absent students to send mail');
-                                done();
-                                return console.log(error.message + ' at get absent students to send mail');
-                            } else {
-                                let transporter = nodemailer.createTransport(_global.email_setting);
-                                async.each(result.rows, function(student, callback) {
-                                    //count absences and total attendance
-                                    connection.query(format(`SELECT COUNT(*) as count, attendance_type FROM attendance,attendance_detail 
-                                                WHERE id = attendance_id AND student_id = %L AND course_id = %L AND class_id = %L 
-                                                GROUP BY attendance_type`, student.id, student.course_id, student.class_id), function(error, result, fields) {
-                                        if (error) {
-                                            console.log(error.message + ' at insert attendance_details');
-                                            callback(error);
-                                        } else {
-                                            var total = 0;
-                                            var absence = 0;
-                                            for (var i = 0; i < result.rowCount; i++) {
-                                                if (result.rows[i].attendance_type == _global.attendance_type.absent) absence = result.rows[i].count;
-                                                total += result.rows[i].count;
-                                            }
-                                            let mailOptions = {
-                                                from: '"Giáo vụ" <giaovu.clc@fit.hcmus.edu.vn>', // sender address
-                                                to: student.email, // list of receivers
-                                                subject: 'Update on your absence from ' + student.course_code + '-' + student.course_name, // Subject line
-                                                text: `Hi ` + student.last_name + `,\r\n\r\n Today, you were absent from the class ` + student.course_code + '-' + student.course_name + `.Currently, your absence/total is ` + absence + `/` + total + ` (` + Math.floor(100 * absence / total) + `%).` + `Please be aware that if you exceed 30% of the total attendance, you won't be able to attend the final exam.\r\n\r\n If you need help, please contact giaovu.clc@fit.hcmus.edu.vn`,
-                                            };
-                                            transporter.sendMail(mailOptions, (error, info) => {
-                                                if (error) {
-                                                    callback(error);
-                                                } else {
-                                                    console.log(mailOptions);
-
-                                                }
-                                            });
-                                            callback();
-                                        }
-                                    });
-                                }, function(error) {
+                        callback();
+                    }
+                });
+            },
+            //get student who is absent
+            function(callback) {
+                connection.query(format(`SELECT users.*, courses.code as course_code, courses.name as course_name, attendance.course_id, attendance.class_id 
+                    FROM courses,attendance,attendance_detail, users 
+                    WHERE attendance_id = %L AND attendance_type = %L AND users.id = student_id AND attendance.id = attendance_id AND
+                    courses.id = attendance.course_id`, attendance_id, _global.attendance_type.absent), function(error, result, fields) {
+                    if (error) {
+                        callback(error + ' at get absent students');
+                    } else {
+                        absent_students = result.rows.slice();
+                        callback();
+                    }
+                });
+            },
+            //check accepted absence request for student
+            function(callback) {
+                async.each(absent_students, function(student, callback) {
+                    var accepted_requests = [];
+                    var check_permited = false;
+                    async.series([
+                        //Find accepted absent request
+                        function(callback) {
+                             connection.query(format(`SELECT * FROM absence_requests
+                                WHERE student_id = %L AND status = %L`, student.id, _global.absence_request_status.accepted), function(error, result, fields) {
+                                if (error) {
+                                    callback(error + ' at get accepted absent request');
+                                } else {
+                                    accepted_requests = result.rows;
+                                    callback();
+                                }
+                            });
+                        },
+                        //Check if this attendance session is absent permited
+                        function(callback) {
+                            var where = format('(( attendance.created_at >= %L AND attendance.created_at < %L )',accepted_requests[0].start_date,accepted_requests[0].end_date);
+                            for(var i = 1 ; i < accepted_requests.length; i++){
+                                where += format(' OR ( attendance.created_at >= %L AND attendance.created_at < %L )',accepted_requests[i].start_date,accepted_requests[i].end_date);
+                            }
+                            where += ')';
+                            console.log(where);
+                            connection.query(format(`SELECT * FROM attendance,attendance_detail
+                                WHERE attendance.id = attendance_detail.attendance_id AND
+                                    attendance_detail.student_id = %L AND
+                                    attendance.closed = TRUE AND
+                                    attendance.id = %L AND ` + where, student.id, attendance_id), function(error, result, fields) {
+                                if (error) {
+                                    callback(error + ' at check permited_student');
+                                } else {
+                                    check_permited = true;
+                                    student['skip_send_email'] = true;
+                                    callback();
+                                }
+                            });
+                        },
+                        //Update attendance detail
+                        function(callback) {
+                            if(check_permited){
+                                connection.query(format(`UPDATE attendance_detail SET attendance_type =  %L
+                                    WHERE attendance_id = %L AND student_id = %L`, _global.attendance_type.permited_absent, attendance_id, student.id), function(error, result, fields) {
                                     if (error) {
-                                        _global.sendError(res, error.message);
-                                        done();
-                                        return console.log(error);
+                                        callback(error + ' at update attendance for permited student');
                                     } else {
-                                        console.log('sent all mails');
-                                        res.send({ result: 'success' });
-                                        done();
+                                        callback();
                                     }
                                 });
+                            }else{
+                                callback();
+                            }
+                        }
+                    ], function(error) {
+                        if (error) callback(error);
+                        else callback();
+                    });
+                }, function(error) {
+                    if (error) callback(error + ' at check accepted absence request');
+                    else callback();
+                });
+            },
+            //Commit transaction
+            function(callback) {
+                connection.query('COMMIT', (error) => {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+        ], function(error) {
+            if (error) {
+                _global.sendError(res,null, error);
+                connection.query('ROLLBACK', (error) => {
+                    if (error) return console.log(error);
+                });
+                done();
+                return console.log(error);
+            } else {
+                let transporter = nodemailer.createTransport(_global.email_setting);
+                async.each(absent_students, function(student, callback) {
+                    //count absences and total attendance
+                    if(!student['skip_send_email']){
+                        connection.query(format(`SELECT COUNT(*) as count, attendance_type FROM attendance,attendance_detail 
+                                    WHERE id = attendance_id AND student_id = %L AND course_id = %L AND class_id = %L 
+                                    GROUP BY attendance_type`, student.id, student.course_id, student.class_id), function(error, result, fields) {
+                            if (error) {
+                                console.log(error.message + ' at insert attendance_details');
+                                callback(error);
+                            } else {
+                                var total = 0;
+                                var absence = 0;
+                                for (var i = 0; i < result.rowCount; i++) {
+                                    if (result.rows[i].attendance_type == _global.attendance_type.absent) absence = result.rows[i].count;
+                                    total += result.rows[i].count;
+                                }
+                                let mailOptions = {
+                                    from: '"Giáo vụ" <giaovu.clc@fit.hcmus.edu.vn>', // sender address
+                                    to: student.email, // list of receivers
+                                    subject: 'Update on your absence from ' + student.course_code + '-' + student.course_name, // Subject line
+                                    text: `Hi ` + student.last_name + `,\r\n\r\n Today, you were absent from the class ` + student.course_code + '-' + student.course_name + `.Currently, your absence/total is ` + absence + `/` + total + ` (` + Math.floor(100 * absence / total) + `%).` + `Please be aware that if you exceed 30% of the total attendance, you won't be able to attend the final exam.\r\n\r\n If you need help, please contact giaovu.clc@fit.hcmus.edu.vn`,
+                                };
+                                transporter.sendMail(mailOptions, (error, info) => {
+                                    if (error) {
+                                        callback(error);
+                                    } else {
+                                        console.log(mailOptions);
+
+                                    }
+                                });
+                                callback();
                             }
                         });
+                    }else{
+                        callback();
+                    }
+                }, function(error) {
+                    if (error) {
+                        _global.sendError(res, error.message);
+                        done();
+                        return console.log(error);
+                    } else {
+                        console.log('successfully changed request status---------------------------------------');
+                        res.send({ result: 'success', message: 'successfully changed request status' });
+                        done();
                     }
                 });
             }
@@ -655,7 +846,7 @@ router.post('/check-attendance-list', function(req, res, next) {
     var course_id = req.body.course_id;
     var class_id = req.body.class_id;
     pool_postgres.connect(function(error, connection, done) {
-        connection.query(format(`SELECT students.id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name ,avatar, answered_questions, discussions, presentations
+        connection.query(format(`SELECT students.id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name ,avatar
             FROM users,student_enroll_course,students,class_has_course 
             WHERE users.id = students.id AND users.id = student_enroll_course.student_id AND student_enroll_course.class_has_course_id = class_has_course.id AND class_has_course.course_id = %L AND class_has_course.class_id = %L`, course_id, class_id), function(error, result, fields) {
             if (error) {
@@ -671,18 +862,14 @@ router.post('/check-attendance-list', function(req, res, next) {
                     id: student.id,
                     code: student.code,
                     name: student.name,
-                    avatar : student.avatar,
-                    discussions : student.discussions,
-                    answered_questions : student.answered_questions,
-                    presentations : student.presentations,
+                    avatar: student.avatar,
                     attendance_details: []
                 };
                 if (listOnlyFlag) {
                     check_attendance_list.push(attendance);
                     callback();
                 } else {
-                    connection.query(format(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type,created_at, edited_by, edited_reason , 
-                        (SELECT CONCAT(users.first_name,' ',users.last_name) FROM users WHERE users.id = edited_by) as editor
+                    connection.query(format(`SELECT *, (SELECT CONCAT(users.first_name,' ',users.last_name) FROM users WHERE users.id = edited_by) as editor
                         FROM attendance, attendance_detail 
                         WHERE attendance.id = attendance_detail.attendance_id AND  course_id = %L AND student_id = %L
                         ORDER BY attendance_id`, course_id, student.id), function(error, result, fields) {
@@ -699,6 +886,9 @@ router.post('/check-attendance-list', function(req, res, next) {
                                     edited_by: result.rows[i].edited_by,
                                     edited_reason: result.rows[i].edited_reason,
                                     editor: result.rows[i].editor,
+                                    discussions: result.rows[i].discussions,
+                                    answered_questions: result.rows[i].answered_questions,
+                                    presentations: result.rows[i].presentations,
                                 });
                             }
                             check_attendance_list.push(attendance);
@@ -758,7 +948,7 @@ router.post('/check-attendance', function(req, res, next) {
 
             class_has_course_id = result.rows[0].id;
 
-            connection.query(format(`SELECT presentations, discussions, answered_questions, students.id as id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name, attendance_detail.attendance_type as status, users.avatar as avatar 
+            connection.query(format(`SELECT students.id as id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name, attendance_detail.attendance_type as status, users.avatar as avatar 
             FROM users, attendance_detail, students, student_enroll_course 
             WHERE users.id = students.id
             AND attendance_detail.student_id = students.id
@@ -766,20 +956,20 @@ router.post('/check-attendance', function(req, res, next) {
             AND students.id = student_enroll_course.student_id
             AND attendance_detail.attendance_id = %L`, class_has_course_id, attendance_id), function(error, result, fields) {
 
-            if (error) {
-                var message = error.message + ' at get student_list by course';
-                _global.sendError(res, message);
-                done();
-                return console.log(message);
-            }
+                if (error) {
+                    var message = error.message + ' at get student_list by course';
+                    _global.sendError(res, message);
+                    done();
+                    return console.log(message);
+                }
 
-            console.log('loaded check_attendance_list');
+                console.log('loaded check_attendance_list');
 
-            res.send({
-                result: 'success',
-                length: result.rowCount,
-                check_attendance_list: result.rows
-            });
+                res.send({
+                    result: 'success',
+                    length: result.rowCount,
+                    check_attendance_list: result.rows
+                });
 
                 done();
             });
@@ -830,7 +1020,7 @@ router.post('/update-attendance', function(req, res, next) {
     });
 });
 
-//Mobile
+//Mobile - FAILLLLLLLLLLLLLLLLLLL
 router.post('/update-attendance-offline', function(req, res, next) {
     if (req.body.data == null || req.body.data.length == 0) {
         _global.sendError(res, null, "attendance detail is required");
@@ -848,11 +1038,13 @@ router.post('/update-attendance-offline', function(req, res, next) {
     var attendance_id = 0;
     var attendance_detail = req.body.data;
     pool_postgres.connect(function(error, connection, done) {
-        var new_attendance = [[
-            course_id,
-            class_id,
-            req.decoded.id,
-        ]];
+        var new_attendance = [
+            [
+                course_id,
+                class_id,
+                req.decoded.id,
+            ]
+        ];
         connection.query(format(`INSERT INTO attendance (course_id,class_id,created_by) VALUES %L RETURNING id`, new_attendance), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, null, "error at insert new attendance");
@@ -1073,7 +1265,7 @@ router.post('/opening-for-student', function(req, res, next) {
                 res.send({
                     result: 'success',
                     length: result.rowCount,
-                    opening_attendances: results
+                    opening_attendances: result.rows
                 });
                 done();
             }
@@ -1081,4 +1273,82 @@ router.post('/opening-for-student', function(req, res, next) {
     });
 });
 
+//Teacher update student's interaction
+router.post('/update-interaction', function(req, res, next) {
+    if (req.body.id == undefined || req.body.id == 0) {
+        _global.sendError(res, null, "Student id is required");
+        return;
+    }
+    if (req.body.attendance_id == undefined || req.body.attendance_id == 0) {
+        _global.sendError(res, null, "attendance_id is required");
+        return;
+    }
+    if (req.body.interaction_type == undefined) {
+        _global.sendError(res, null, "Interaction type is required");
+        return;
+    }
+    var student_id = req.body.id;
+    var attendance_id = req.body.attendance_id;
+    var interaction_type = req.body.interaction_type;
+    pool_postgres.connect(function(error, connection, done) {
+        if (error) {
+            _global.sendError(res, error.message);
+            done();
+            return console.log(error);
+        }
+        async.series([
+            //Start transaction
+            function(callback) {
+                connection.query('BEGIN', (error) => {
+                    if(error) callback(error);
+                    else callback();
+                });
+            },
+            //update user interaction
+            function(callback) {
+                var query = 'UPDATE attendance_detail ';
+                switch(interaction_type){
+                    case _global.student_interaction_type.answer_question:
+                        query += 'SET answered_questions = answered_questions + 1 ';
+                    break;
+                    case _global.student_interaction_type.discuss:
+                        query += 'SET discussions = discussions + 1 ';
+                    break;
+                    case _global.student_interaction_type.present:
+                        query += 'SET presentations = presentations + 1 ';
+                    break;
+                }
+                query += 'WHERE attendance_id = %L AND student_id = %L ';
+                connection.query(format(query, attendance_id, student_id), function(error, result, fields) {
+                    if (error) {
+                        console.log(error.message + ' at Update Student interaction');
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            //Commit transaction
+            function(callback) {
+                connection.query('COMMIT', (error) => {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+        ], function(error) {
+            if (error) {
+                _global.sendError(res, error.message);
+                connection.query('ROLLBACK', (error) => {
+                    if (error) return console.log(error);
+                });
+                done(error);
+                return console.log(error);
+            } else {
+                console.log('success updating student interaction!---------------------------------------');
+                res.send({ result: 'success', message: 'Student Interaction Updated Successfully' });
+                done();
+            }
+        });
+    });
+});
 module.exports = router;

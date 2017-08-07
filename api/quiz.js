@@ -8,7 +8,7 @@ var pool = mysql.createPool(_global.db);
 var pg = require('pg');
 var format = require('pg-format');
 const pool_postgres = new pg.Pool(_global.db_postgres);
-
+var fs = require('fs');
 var published_quizzes = [];
 
 //teacher : get to show template quiz
@@ -27,7 +27,7 @@ router.post('/list', function(req, res, next) {
     pool_postgres.connect(function(error, connection, done) {
         connection.query(format(`SELECT quiz.* FROM quiz,class_has_course 
             WHERE quiz.class_has_course_id = class_has_course.id AND class_has_course.class_id = %L AND
-             class_has_course.course_id = %L AND is_template = TRUE`, class_id, course_id), function(error, quizzes, fields) {
+             class_has_course.course_id = %L`, class_id, course_id), function(error, quizzes, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 done();
@@ -39,27 +39,33 @@ router.post('/list', function(req, res, next) {
                     if (error) {
                         callback(error.message);
                     } else {
-                        _quiz['questions'] = [];
-                        async.each(questions.rows, function(question, callback) {
-                            connection.query(format(`SELECT quiz_answers.* ,CONCAT(users.first_name,' ',users.last_name) as student_name, students.stud_id as student_code 
-                                FROM quiz_answers,students,users 
-                                WHERE users.id = students.id AND users.id = quiz_answers.answered_by AND quiz_question_id = %L`, question.id), function(error, answers, fields) {
+                        if(_quiz.is_template){
+                            _quiz['questions'] = questions.rows;
+                            quiz_list.push(_quiz);
+                            callback();
+                        }else{
+                            _quiz['questions'] = [];
+                            async.each(questions.rows, function(question, callback) {
+                                connection.query(format(`SELECT quiz_answers.* ,CONCAT(users.first_name,' ',users.last_name) as student_name, students.stud_id as student_code 
+                                    FROM quiz_answers,students,users 
+                                    WHERE users.id = students.id AND users.id = quiz_answers.answered_by AND quiz_question_id = %L`, question.id), function(error, answers, fields) {
+                                    if (error) {
+                                        callback(error.message);
+                                    } else {
+                                        question['answers'] = answers.rows.slice();
+                                        _quiz['questions'].push(question);
+                                        callback();
+                                    }
+                                });
+                            }, function(error) {
                                 if (error) {
-                                    callback(error.message);
+                                    callback(error);
                                 } else {
-                                    question['answers'] = answers.rows.slice();
-                                    _quiz['questions'].push(question);
+                                    quiz_list.push(_quiz);
                                     callback();
                                 }
                             });
-                        }, function(error) {
-                            if (error) {
-                                callback(error);
-                            } else {
-                                quiz_list.push(_quiz);
-                                callback();
-                            }
-                        });
+                        }
                     }
                 });
             }, function(error) {
@@ -285,7 +291,6 @@ router.post('/stop', function(req, res, next) {
     res.send({ result: 'success', message: 'Stop quiz successfully' });
 });
 
-
 router.post('/join', function(req, res, next) {
     if (req.body.code == null || req.body.code == '') {
         _global.sendError(res, null, "Quiz code is required");
@@ -361,7 +366,7 @@ router.post('/quit', function(req, res, next) {
                 result: 'success'
             });
             var socket = req.app.get('socket');
-            socket.emit('quittedQuiz', { 'quiz_code': code });
+            socket.emit('quittedQuiz', { 'quiz_code': code, 'student_id':student_id });
             return console.log('Quitted quiz successfully------------------------');
         }
     }
@@ -440,12 +445,11 @@ router.post('/delete', function(req, res, next) {
         ], function(error) {
             if (error) {
                 _global.sendError(res, error.message);
-                connection.rollback(function() {
-                    done();
-                    return console.log(error);
+                connection.query('ROLLBACK', (error) => {
+                    if (error) return console.log(error);
                 });
-                return console.log(error);
                 done();
+                return console.log(error);
             } else {
                 console.log('success delete quiz---------------------------------------');
                 res.send({ result: 'success', message: 'Delete quiz successfully' });
@@ -535,11 +539,10 @@ router.post('/add', function(req, res, next) {
                         quiz.title,
                         class_has_course_id,
                         1,
-                        1,
                         _global.quiz_type.academic
                     ]
                 ];
-                connection.query(format(`INSERT INTO quiz (title,class_has_course_id,closed,is_template,type) VALUES %L RETURNING id`, new_quiz), function(error, result, fields) {
+                connection.query(format(`INSERT INTO quiz (title,class_has_course_id,is_template,type) VALUES %L RETURNING id`, new_quiz), function(error, result, fields) {
                     if (error) {
                         callback(error);
                     } else {
@@ -595,6 +598,7 @@ router.post('/add', function(req, res, next) {
     });
 });
 
+//Teacher save quiz to database and check attendance
 router.post('/save', function(req, res, next) {
     if (req.body.quiz == null) {
         _global.sendError(res, null, "Quiz is required");
@@ -608,6 +612,8 @@ router.post('/save', function(req, res, next) {
     var checked_student_list = req.body.checked_student_list;
     var quiz_id = 0;
     var opening_attendance_id = 0;
+    var class_id =0;
+    var course_id = 0;
     pool_postgres.connect(function(error, connection, done) {
         async.series([
             //Start transaction
@@ -703,7 +709,7 @@ router.post('/save', function(req, res, next) {
             },
             //get opening attendance id
             function(callback) {
-                connection.query(format(`SELECT attendance.id FROM attendance,class_has_course 
+                connection.query(format(`SELECT attendance.id,attendance.class_id,attendance.course_id FROM attendance,class_has_course 
                     WHERE attendance.class_id = class_has_course.class_id AND
                     class_has_course.course_id = attendance.course_id AND 
                     class_has_course.id = %L AND attendance.closed = FALSE`, quiz.class_has_course_id), function(error, result, fields) {
@@ -711,6 +717,8 @@ router.post('/save', function(req, res, next) {
                         callback(error);
                     } else {
                         opening_attendance_id = result.rows[0].id;
+                        class_id = result.rows[0].class_id;
+                        course_id = result.rows[0].course_id;
                         callback();
                     }
                 });
@@ -764,9 +772,130 @@ router.post('/save', function(req, res, next) {
                 console.log('success save quiz---------------------------------------');
                 res.send({ result: 'success', message: 'Save quiz successfully' });
                 done();
+                var socket = req.app.get('socket');
+                socket.emit('checkAttendanceUpdated', { 'course_id': course_id, 'class_id': class_id });            
             }
         });
     });
 });
 
+//Teacher generate misc question
+router.post('/misc-question', function(req, res, next) {
+    var number_of_question = req.body.number_of_question ? req.body.number_of_question : 3;
+    var questions = [];
+
+    fs.readFile('./api/data/misc_quiz.json', 'utf8', function (error, data) {
+        if (error){
+            _global.sendError(res, error.message);
+            return console.log(error);
+        }
+        var all_questions = JSON.parse(data);
+
+        for(var i = 0; i < number_of_question; i++){
+            if(all_questions.length == 0){
+                break;
+            }
+            var random_index = Math.floor(Math.random() * all_questions.length);
+            questions.push(all_questions[random_index]);
+            all_questions.splice(random_index, 1);
+        }
+        console.log('Get misc questions successfully-----------------');
+        res.send({
+            result: 'success',
+            questions: questions,
+        });
+    });
+});
+
+router.post('/update', function(req, res, next) {
+    if (req.body.quiz == null || req.body.quiz.length == 0) {
+        _global.sendError(res, null, "Quiz is required");
+        return console.log("Quiz is required");
+    }
+    if (req.body.quiz.id == null || req.body.quiz.id == 0) {
+        _global.sendError(res, null, "Quiz_id is required");
+        return console.log("Quiz_id is required");
+    }
+    if (req.body.quiz.questions == null || req.body.quiz.questions.length == 0) {
+        _global.sendError(res, null, "Quiz questions are required");
+        return console.log("Quiz questions are required");
+    }
+    var quiz = req.body.quiz;
+    for (var i = 0; i < quiz.questions.length; i++) {
+        if (req.body.quiz.questions[i].text == null || req.body.quiz.questions[i].text == '') {
+            _global.sendError(res, null, "Title of question " + (i + 1) + " are required");
+            return console.log("Title of question " + (i + 1) + " are required");
+        }
+        if (req.body.quiz.questions[i].option_a == null || req.body.quiz.questions[i].option_a == '') {
+            _global.sendError(res, null, "Option A of question " + (i + 1) + " are required");
+            return console.log("Option A of question " + (i + 1) + " are required");
+        }
+        if (req.body.quiz.questions[i].option_b == null || req.body.quiz.questions[i].option_b == '') {
+            _global.sendError(res, null, "Option B of question " + (i + 1) + " are required");
+            return console.log("Option B of question " + (i + 1) + " are required");
+        }
+        if (req.body.quiz.questions[i].option_c == null || req.body.quiz.questions[i].option_c == '') {
+            _global.sendError(res, null, "Option C of question " + (i + 1) + " are required");
+            return console.log("Option C of question " + (i + 1) + " are required");
+        }
+        if (req.body.quiz.questions[i].option_d == null || req.body.quiz.questions[i].option_d == '') {
+            _global.sendError(res, null, "Option D of question " + (i + 1) + " are required");
+            return console.log("Option D of question " + (i + 1) + " are required");
+        }
+        if (req.body.quiz.questions[i].correct_option == null || req.body.quiz.questions[i].correct_option == '') {
+            _global.sendError(res, null, "Correct option of question " + (i + 1) + " are required");
+            return console.log("Correct option of question " + (i + 1) + " are required");
+        }
+    }
+    pool_postgres.connect(function(error, connection, done) {
+        async.series([
+            //Start transaction
+            function(callback) {
+                connection.query('BEGIN', (error) => {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+            //update questions
+            function(callback) {
+                async.each(quiz.questions, function(question, callback) {
+                    connection.query(format(`UPDATE quiz_questions SET text = %L,option_a = %L,option_b = %L,option_c = %L,option_d = %L,correct_option = %L,timer = %L
+                        WHERE id = %L AND quiz_id = %L`,question.text, question.option_a, question.option_b, question.option_c, question.option_d, question.correct_option, question.timer, question.id, question.quiz_id), function(error, result, fields) {
+                        if (error) {
+                            callback(error);
+                        } else {
+                            callback();
+                        }
+                    });
+                }, function(error) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            //Commit transaction
+            function(callback) {
+                connection.query('COMMIT', (error) => {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+        ], function(error) {
+            if (error) {
+                _global.sendError(res, error.message);
+                connection.query('ROLLBACK', (error) => {
+                    if (error) return console.log(error);
+                });
+                done();
+                return console.log(error);
+            } else {
+                console.log('success update quiz---------------------------------------');
+                res.send({ result: 'success', message: 'Update quiz successfully' });
+                done();
+            }
+        });
+    });
+});
 module.exports = router;

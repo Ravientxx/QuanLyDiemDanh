@@ -57,4 +57,28 @@ router.post('/list', function(req, res, next) {
     });
 });
 
+router.post('/read', function(req, res, next) {
+    var id = req.body.id != null ? req.body.id : 0;
+    pool_postgres.connect(function(error, connection, done) {
+        if (error) {
+            _global.sendError(res, error.message);
+            done();
+            return console.log(error);
+        }
+        var return_function = function(error, result, fields) {
+            if (error) {
+                _global.sendError(res, error.message);
+                done();
+                return console.log(error);
+            }
+            res.send({
+                result: 'success',
+                notifications: notifications
+            });
+            done();
+        };
+        connection.query(format(`DELETE FROM notifications WHERE id = %L`,id), return_function);
+    });
+});
+
 module.exports = router;

@@ -38,7 +38,7 @@ export class CourseDetailTeacherComponent implements OnInit {
         this.attendanceSerivce.getAttendanceListByCourse(this.course_id,classes_id).subscribe(result => {
             this.apiResult = result.result;
             this.attendance_lists = result.attendance_lists;
-            this.attendance_list = this.attendance_lists[0];
+            this.onChangeClass(0);
         }, error => { this.appService.showPNotify('failure', "Server Error! Can't get attendance_lists by course", 'error');  });
     }
     public ngOnInit(): void {
@@ -92,9 +92,35 @@ export class CourseDetailTeacherComponent implements OnInit {
         this.editScheduleModal.onOpenModal();
     }
     public selected_class_index = 0;
-    public onChangeClass(i){
-        this.selected_class_index = i;
-        this.attendance_list = this.attendance_lists[i];
-
+    public onChangeClass(index){
+        this.selected_class_index = index;
+        this.attendance_list = this.attendance_lists[index];
+        for(var i = 0; i < this.attendance_list.length;i++){
+            var absences = 0;
+            for(var j = 0 ; j < this.attendance_list[i].attendance_details.length; j++){
+                switch (this.attendance_list[i].attendance_details[j].attendance_type) {
+                    case this.appService.attendance_type.checklist:
+                        this.attendance_list[i].attendance_details[j]['icon'] = 'fa-check';
+                        this.attendance_list[i].attendance_details[j]['method'] = 'Checklist';
+                        break;
+                    case this.appService.attendance_type.qr:
+                        this.attendance_list[i].attendance_details[j]['icon'] = 'fa-qrcode';
+                        this.attendance_list[i].attendance_details[j]['method'] = 'QR Code';
+                        break;
+                    case this.appService.attendance_type.quiz:
+                        this.attendance_list[i].attendance_details[j]['icon'] = 'fa-question-circle';
+                        this.attendance_list[i].attendance_details[j]['method'] = 'Quiz';
+                        break;
+                    case this.appService.attendance_type.permited_absent:
+                        this.attendance_list[i].attendance_details[j]['icon'] = 'fa-envelope-square';
+                        this.attendance_list[i].attendance_details[j]['method'] = 'Permited Absent';
+                        break;        
+                    default:
+                        this.attendance_list[i].attendance_details[j]['icon'] = '';
+                        this.attendance_list[i].attendance_details[j]['method'] = 'Absent';
+                        break;
+                }
+            }
+        }
     }
 }

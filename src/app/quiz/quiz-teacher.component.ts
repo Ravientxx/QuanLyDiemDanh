@@ -120,6 +120,17 @@ export class QuizTeacherComponent implements OnInit {
         }
         this.quiz.questions.pop();
     }
+
+    public onSaveQuiz(index){
+        this.quizService.updateQuiz(this.quiz_list[index]).subscribe(result=>{
+            if(result.result == 'success'){
+                this.appService.showPNotify('success',result.message,'success');
+            }else{
+                this.appService.showPNotify('failure',result.message,'error');
+            }
+        },error=>{this.appService.showPNotify('failure',"Server Error! Can't delete quiz",'error');});
+    }
+
     public onDeleteQuiz(quiz_id){
         this.deleting_quiz_id = quiz_id;
         jQuery('#deleteQuizModal').modal('show');

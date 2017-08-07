@@ -225,7 +225,7 @@ export class QuizService {
             });
     }
 
-    //Student submit quiz
+    //Teacher save quiz and attendance
     public saveQuizUrl = this.appConfig.apiHost + '/quiz/save';
     public saveQuiz(quiz: any,checked_student_list: any): Observable < { result: string, message:string} > {
         var params = {
@@ -249,4 +249,49 @@ export class QuizService {
             });
     }
 
+    //Teacher get misc question
+    public getMiscQuestionUrl = this.appConfig.apiHost + '/quiz/misc-question';
+    public getMiscQuestion(number_of_question: number): Observable < { result: string, questions:Array<any>, message:string} > {
+        var params = {
+            'number_of_question' : number_of_question
+        };
+        let authToken = this.authService.token ? this.authService.token : this.localStorage.get('token');
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.getMiscQuestionUrl,params,options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => {
+                if (error.status == 401) {
+                    this.authService.tokenExpired(this.router.url);
+                }
+                //this.authService.tokenExpired(this.router.url);
+                return Observable.throw(error || 'Server error');
+            });
+    }
+
+    //Teacher update template quiz
+    public updateQuizUrl = this.appConfig.apiHost + '/quiz/update';
+    public updateQuiz(quiz: any): Observable < { result: string, message:string} > {
+        var params = {
+            'quiz': quiz
+        };
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.updateQuizUrl,params,options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => {
+                if (error.status == 401) {
+                    this.authService.tokenExpired(this.router.url);
+                }
+                //this.authService.tokenExpired(this.router.url);
+                return Observable.throw(error || 'Server error');
+            });
+    }
 }

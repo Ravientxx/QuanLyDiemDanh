@@ -13,6 +13,14 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
     public constructor(public quizService: QuizService, public location: Location, public checkAttendanceService: CheckAttendanceService,
         public appConfig: AppConfig, public socketService: SocketService,
         public authService: AuthService, public attendanceService: AttendanceService, public localStorage: LocalStorageService, public appService: AppService, public router: Router) {
+        socketService.consumeEventOnCheckAttendanceStopped();
+        socketService.invokeCheckAttendanceStopped.subscribe(result=>{
+            if(this.selected_attendance['course_id'] == result['course_id'] && this.selected_attendance['class_id'] == result['class_id']){
+                
+                this.appService.showPNotify('Info',"Attendance session is " + result['message'],'info');
+                this.router.navigate(['/dashboard']);
+            }
+        });
     }
     public is_published = false;
     public apiResult;
@@ -29,7 +37,7 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
         is_randomize_answers: true,
         is_auto_move_through_questions: true,
         type: 0,
-        title: '',
+        title: 'Attendance Quiz',
         questions: [{
             text: '',
             option_a: '',
@@ -41,9 +49,11 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
             answers: []
         }]
     };
+    public number_misc_question = 3;
     public ngOnDestroy() {
         // this.socketService.stopEventOnQuizAnswered();
         // this.socketService.stopEventOnQuizStopped();
+        this.socketService.stopEventOnCheckAttendanceStopped();
     }
     public ngOnInit() {
         if(!this.localStorage.get('selected_attendance')){
@@ -51,7 +61,8 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
         }else{
             this.selected_attendance = this.localStorage.get('selected_attendance');
             this.quiz_types.push(this.appService.quiz_type.miscellaneous);
-            this.quiz_types.push(this.appService.quiz_type.academic); 
+            this.quiz_types.push(this.appService.quiz_type.academic);
+            this.generateMiscQuestion();
         }
     }
     public onAddQuestion() {
@@ -126,6 +137,8 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
     public onChangeQuizType(){
         if(this.selected_quiz_type == this.appService.quiz_type.academic.id){
             this.getQuizList();
+        }else{
+            this.generateMiscQuestion();
         }
         this.quiz.type = this.selected_quiz_type;
     }
@@ -160,5 +173,18 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
                 this.onChangeQuiz();
             }
         },error=>{this.appService.showPNotify('failure',"Server Error! Can't get quiz list",'error');});
+    }
+    public generateMiscQuestion(){
+        if(this.number_misc_question <= 0){
+            this.appService.showPNotify('failure','Number of questions must be greater than 0','error');
+        }else{
+            this.quizService.getMiscQuestion(this.number_misc_question).subscribe(result=>{
+                if(result.result == 'success'){
+                    this.quiz.questions = result.questions;
+                }else{
+                    this.appService.showPNotify('failure',result.message,'error');
+                }
+            },error=>{this.appService.showPNotify('failure',"Server Error! Can't get miscellaneous questions",'error');});
+        }        
     }
 }

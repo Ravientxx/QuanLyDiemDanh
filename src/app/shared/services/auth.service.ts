@@ -91,4 +91,31 @@ export class AuthService {
     public saveCurrentUserToLocal(){
         this.localStorage.set('current_user',this.current_user);
     }
+
+    public registerCheckUrl = this.appConfig.host + '/authenticate/register-check';
+    public registerCheck(token : string): Observable < { result: string,user: any, message: string} > {
+        var params = {
+            'token': token,
+        };
+        return this.http.post(this.registerCheckUrl, params)
+            .map((res: Response) => res.json())
+            .catch((error: any) => Observable.throw(error || 'Server error'));
+    }
+    public registerUrl = this.appConfig.host + '/authenticate/register';
+    public register(first_name:string, last_name:string, phone: string, avatar:string, password : string,confirm_password: string,token:string): Observable < { result: string, message: string} > {
+        var params = {
+            'first_name': first_name,
+            'last_name': last_name,
+            'phone': phone,
+            'avatar': avatar,
+            'password': password,
+            'confirm_password': confirm_password,
+            'token': token
+        };
+        return this.http.post(this.registerUrl, params)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => Observable.throw(error || 'Server error'));
+    }
 }

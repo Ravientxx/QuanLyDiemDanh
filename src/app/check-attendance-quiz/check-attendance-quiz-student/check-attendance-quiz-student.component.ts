@@ -33,10 +33,12 @@ export class CheckAttendanceQuizStudentComponent implements OnInit, OnDestroy {
     public constructor(public quizService: QuizService, public checkAttendanceService: CheckAttendanceService,
         public appConfig: AppConfig, public socketService: SocketService, public authService: AuthService,
         public attendanceService: AttendanceService, public localStorage: LocalStorageService, public appService: AppService,
-        public router: Router) {}
+        public router: Router) {
+    }
     @HostListener('window:unload', ['$event'])
     public onWindowUnload(event: Event) {
-        //emit Student quitted
+       if(!this.is_ended) 
+           this.socketService.emitEventOnQuittedQuiz({'quiz_code':this.quiz_code,'student_id': this.authService.current_user.id}); 
     }
     @HostListener('window:beforeunload', ['$event'])
     public onWindowBeforeUnload(event: Event) {
@@ -46,12 +48,18 @@ export class CheckAttendanceQuizStudentComponent implements OnInit, OnDestroy {
         jQuery('#enterQuizCodeModal').modal({ backdrop: 'static', keyboard: false });
     }
     public ngOnDestroy() {
-        if(!this.is_ended) this.socketService.emitEventOnQuittedQuiz({'quiz_code':this.quiz_code,'student_id': this.authService.current_user.id});
+        if(!this.is_ended) 
+            this.socketService.emitEventOnQuittedQuiz({'quiz_code':this.quiz_code,'student_id': this.authService.current_user.id});
         this.closeSocket();
     }
     public cancelCheckQuizCode() {
         jQuery("#enterQuizCodeModal").modal("hide");
         this.router.navigate(['/dashboard']);
+    }
+    public keyDownFunction(event) {
+      if(event.keyCode == 13) {
+        this.checkQuizCode();
+      }
     }
     public checkQuizCode() {
         this.quizService.joinQuiz(this.quiz_code).subscribe(result => {

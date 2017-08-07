@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AppService, AuthService } from './shared/shared.module';
+import { AppService, AuthService } from '../shared/shared.module';
 import { Router } from '@angular/router';
 import { LocalStorageService } from 'angular-2-local-storage';
 @Component({
@@ -37,8 +37,8 @@ export class LoginComponent implements OnInit {
                 this.localStorage.set('token',results.token);
                 this.localStorage.set('current_user',results.user);
 
-                let redirect = this.authService.redirectUrl ? this.authService.redirectUrl : '/dashboard';
-                this.router.navigate([redirect]);
+                //let redirect = this.authService.redirectUrl ? this.authService.redirectUrl : '/dashboard';
+                this.router.navigate(['/dashboard']);
             }else{
                 this.error_message = results.message;
             }

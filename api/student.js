@@ -5,7 +5,9 @@ var mysql = require('mysql');
 var async = require("async");
 var connection = mysql.createConnection(_global.db);
 var pool = mysql.createPool(_global.db);
+var jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
 var bcrypt = require('bcrypt');
+var nodemailer = require('nodemailer');
 var pg = require('pg');
 var format = require('pg-format');
 const pool_postgres = new pg.Pool(_global.db_postgres);
@@ -154,7 +156,6 @@ router.post('/add', function(req, res, next) {
                     new_last_name,
                     new_email,
                     new_phone,
-                    bcrypt.hashSync(new_password, 10),
                     _global.role.student
                 ]];
                 var new_student = [];
@@ -168,7 +169,7 @@ router.post('/add', function(req, res, next) {
                     },
                     //add data to user table
                     function(callback) {
-                        connection.query(format('INSERT INTO users (first_name,last_name,email,phone,password,role_id) VALUES %L RETURNING id', new_user), function(error, result, fields) {
+                        connection.query(format('INSERT INTO users (first_name,last_name,email,phone,role_id) VALUES %L RETURNING id', new_user), function(error, result, fields) {
                             if (error) {
                                 callback(error);
                             }else{
@@ -184,7 +185,7 @@ router.post('/add', function(req, res, next) {
                     },
                     //insert student
                     function(callback) {
-                        connection.query(format('INSERT INTO students VALUES %L', new_student), function(error, result, fields) {
+                        connection.query(format('INSERT INTO students (id,stud_id,class_id,note) VALUES %L', new_student), function(error, result, fields) {
                             if (error) {
                                 callback(error);
                             }else{
@@ -208,6 +209,28 @@ router.post('/add', function(req, res, next) {
                         done();
                         return console.log(error);
                     } else {
+                        let transporter = nodemailer.createTransport(_global.email_setting);
+                        var token = jwt.sign({ email: new_email }, _global.jwt_secret_key, { expiresIn: _global.jwt_register_expire_time });
+                        console.log(token);
+                        var link = _global.host + '/register;token=' + token;
+                        let mailOptions = {
+                            from: '"Giáo vụ"',
+                            to: new_email,
+                            subject: 'Register your account',
+                            text: 'Hi,'+ new_first_name + '\r\n' + 
+                                'Your account has been created.To setup your account for the first time, please go to the following web address: \r\n\r\n' +
+                                link + 
+                                '\r\n(This link is valid for 7 days from the time you received this email)\r\n\r\n' +
+                                'If you need help, please contact the site administrator,\r\n' +
+                                'Admin User \r\n\r\n' +
+                                'admin@fit.hcmus.edu.vn'
+                        };
+                        transporter.sendMail(mailOptions, (error, info) => {
+                            if (error) {
+                                return console.log(error);
+                            }
+                            console.log('Message %s sent: %s', info.messageId, info.response);
+                        });
                         console.log('success adding student!');
                         res.send({ result: 'success', message: 'Student Added Successfully' });
                         done();
@@ -364,6 +387,7 @@ router.post('/import', function(req, res, next) {
     }
     var class_name = req.body.class_name;
     var student_list = req.body.student_list;
+    var new_student_list = [];
     pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
@@ -452,6 +476,10 @@ router.post('/import', function(req, res, next) {
                                             if (error) {
                                                 callback(error);
                                             } else {
+                                                new_student_list.push({
+                                                    name : _global.getLastName(student.name),
+                                                    email : student.stud_id + '@student.hcmus.edu.vn'
+                                                });
                                                 callback();
                                             }
                                         });
@@ -487,9 +515,40 @@ router.post('/import', function(req, res, next) {
                 done(error);
                 return console.log(error);
             } else {
-                console.log('success import students!---------------------------------------');
-                res.send({ result: 'success', message: 'Students imported successfully' });
-                done();
+                let transporter = nodemailer.createTransport(_global.email_setting);
+                async.each(new_student_list, function(student, callback) {
+                    var token = jwt.sign({ email: student.email }, _global.jwt_secret_key, { expiresIn: _global.jwt_register_expire_time });
+                    var link = _global.host + '/register;token=' + token;
+                    let mailOptions = {
+                        from: '"Giáo vụ"',
+                        to: student.email,
+                        subject: 'Register your account',
+                        text: 'Hi,'+ student.name + '\r\n' + 
+                            'Your account has been created.To setup your account for the first time, please go to the following web address: \r\n\r\n' +
+                            link + 
+                            '\r\n(This link is valid for 7 days from the time you received this email)\r\n\r\n' +
+                            'If you need help, please contact the site administrator,\r\n' +
+                            'Admin User \r\n\r\n' +
+                            'admin@fit.hcmus.edu.vn'
+                    };
+                    transporter.sendMail(mailOptions, (error, info) => {
+                        if (error) {
+                            console.log(error);
+                        }
+                        console.log('Message %s sent: %s', info.messageId, info.response);
+                    });
+                    callback();
+                }, function(error) {
+                    if (error) {
+                        _global.sendError(res, error.message);
+                        done();
+                        return console.log(error);
+                    } else {
+                        console.log('success import students!---------------------------------------');
+                        res.send({ result: 'success', message: 'Students imported successfully' });
+                        done();
+                    }
+                });
             }
         });
     });
@@ -864,102 +923,6 @@ router.post('/change-attendance-status', function(req, res, next) {
                     res.send({ result: 'success', message: 'Change attendance status successfully' });
                     done();
                 });
-            }
-        });
-    });
-});
-
-router.post('/update-interaction', function(req, res, next) {
-    if (req.body.id == undefined || req.body.id == 0) {
-        _global.sendError(res, null, "Student id is required");
-        return;
-    }
-    if (req.body.class_id == undefined || req.body.class_id == 0) {
-        _global.sendError(res, null, "Class id is required");
-        return;
-    }
-    if (req.body.course_id == undefined || req.body.course_id == 0) {
-        _global.sendError(res, null, "Email is required");
-        return;
-    }
-    if (req.body.interaction_type == undefined) {
-        _global.sendError(res, null, "Interaction type is required");
-        return;
-    }
-    var student_id = req.body.id;
-    var class_id = req.body.class_id;
-    var course_id = req.body.course_id;
-    var interaction_type = req.body.interaction_type;
-    var class_has_course_id = 0;
-    pool_postgres.connect(function(error, connection, done) {
-        if (error) {
-            _global.sendError(res, error.message);
-            done();
-            return console.log(error);
-        }
-        async.series([
-            //Start transaction
-            function(callback) {
-                connection.query('BEGIN', (error) => {
-                    if(error) callback(error);
-                    else callback();
-                });
-            },
-            //get class_has_course_id
-            function(callback) {
-                connection.query(format(`SELECT id FROM class_has_course WHERE class_id = %L AND course_id = %L`, class_id, course_id), function(error, result, fields) {
-                    if (error) {
-                        console.log(error.message + "at get class_has_course_id");
-                        callback(error);
-                    } else {
-                        class_has_course_id = result.rows[0].id;
-                        callback();
-                    }
-                });
-            },
-            //update user interaction
-            function(callback) {
-                var query = 'UPDATE student_enroll_course ';
-                switch(interaction_type){
-                    case _global.student_interaction_type.answer_question:
-                        query += 'SET answered_questions = answered_questions + 1 ';
-                    break;
-                    case _global.student_interaction_type.discuss:
-                        query += 'SET discussions = discussions + 1 ';
-                    break;
-                    case _global.student_interaction_type.present:
-                        query += 'SET presentations = presentations + 1 ';
-                    break;
-                }
-                query += 'WHERE class_has_course_id = %L AND student_id = %L ';
-                connection.query(format(query, class_has_course_id, student_id), function(error, result, fields) {
-                    if (error) {
-                        console.log(error.message + ' at Update Student interaction');
-                        callback(error);
-                    } else {
-                        callback();
-                    }
-                });
-            },
-            //Commit transaction
-            function(callback) {
-                connection.query('COMMIT', (error) => {
-                    if (error) callback(error);
-                    else callback();
-                });
-            },
-        ], function(error) {
-            if (error) {
-                _global.sendError(res, error.message);
-                connection.query('ROLLBACK', (error) => {
-                    if (error) return console.log(error);
-                });
-                done(error);
-                return console.log(error);
-            } else {
-                console.log('success updating student interaction!---------------------------------------');
-                res.send({ result: 'success', message: 'Student Interaction Updated Successfully' });
-                done();
             }
         });
     });

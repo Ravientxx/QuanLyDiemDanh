@@ -249,12 +249,11 @@ export class StudentService {
             });
     }
 
-    public  updateStudentInteractionUrl = this.appConfig.apiHost + '/student/update-interaction';
-    public updateStudentInteraction(id:number, class_id:number, course_id:number, interaction_type: number): Observable < { result: string, message: string } > {
+    public  updateStudentInteractionUrl = this.appConfig.apiHost + '/attendance/update-interaction';
+    public updateStudentInteraction(id:number, attendance_id:number, interaction_type: number): Observable < { result: string, message: string } > {
         var params = {
             'id': id,
-            'class_id': class_id,
-            'course_id': course_id,
+            'attendance_id': attendance_id,
             'interaction_type': interaction_type,
         };
         let authToken = this.authService.token;

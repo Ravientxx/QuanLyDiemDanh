@@ -177,6 +177,8 @@ router.post('/add', function(req, res, next) {
 
     var new_classes = req.body.classes;
     var new_schedules = req.body.schedule;
+
+    var new_student_list = [];
     pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
@@ -263,16 +265,6 @@ router.post('/add', function(req, res, next) {
                     },
                     //Insert class_has_course
                     function(callback) {
-                        // var new_class_has_course_list = [];
-                        // for (var i = 0; i < new_classes.length; i++) {
-                        //     var class_has_course = {
-                        //         class_id: new_classes[i].classId,
-                        //         course_id: new_course_id,
-                        //         schedules: new_classes[i].schedule
-                        //     };
-                        //     new_class_has_course_list.push(class_has_course);
-                        // }
-
                         async.each(new_classes, function(_class, callback) {
                             var class_has_course = [[
                                 _class.classId,
@@ -325,6 +317,10 @@ router.post('/add', function(req, res, next) {
                                                                     _global.role.student,
                                                                     bcrypt.hashSync(student.code, 10),
                                                                 ]];
+                                                                new_student_list.push({
+                                                                    name: _global.getLastName(student.name),
+                                                                    email : student.stud_id + '@student.hcmus.edu.vn'
+                                                                });
                                                                 connection.query(format(`INSERT INTO users (first_name,last_name,email,phone,role_id,password) VALUES %L RETURNING id`, new_user), function(error, result, fields) {
                                                                     if (error) {
                                                                         callback(error);
@@ -409,8 +405,39 @@ router.post('/add', function(req, res, next) {
                         done();
                         return console.log(error);
                     } else {
-                        console.log('success adding course!---------------------------------------');
-                        res.send({ result: 'success', message: 'Course Added Successfully' });
+                        let transporter = nodemailer.createTransport(_global.email_setting);
+                        async.each(new_student_list, function(student, callback) {
+                            var token = jwt.sign({ email: student.email }, _global.jwt_secret_key, { expiresIn: _global.jwt_register_expire_time });
+                            var link = _global.host + '/register;token=' + token;
+                            let mailOptions = {
+                                from: '"Giáo vụ"',
+                                to: student.email,
+                                subject: 'Register your account',
+                                text: 'Hi,'+ student.name + '\r\n' + 
+                                    'Your account has been created.To setup your account for the first time, please go to the following web address: \r\n\r\n' +
+                                    link + 
+                                    '\r\n(This link is valid for 7 days from the time you received this email)\r\n\r\n' +
+                                    'If you need help, please contact the site administrator,\r\n' +
+                                    'Admin User \r\n\r\n' +
+                                    'admin@fit.hcmus.edu.vn'
+                            };
+                            transporter.sendMail(mailOptions, (error, info) => {
+                                if (error) {
+                                    console.log(error);
+                                }
+                                console.log('Message %s sent: %s', info.messageId, info.response);
+                            });
+                            callback();
+                        }, function(error) {
+                            if (error) {
+                                _global.sendError(res, error.message);
+                                done();
+                                return console.log(error);
+                            } else {
+                                console.log('success adding course!---------------------------------------');
+                                res.send({ result: 'success', message: 'Course Added Successfully' });
+                            }
+                        });
                     }
                     done();
                 });

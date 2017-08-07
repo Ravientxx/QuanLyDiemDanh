@@ -84,6 +84,7 @@ router.post('/create', function(req, res, next) {
         req.body.program_id
     ]];
     var student_list = req.body.student_list;
+    var new_student_list = [];
     pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
@@ -129,6 +130,10 @@ router.post('/create', function(req, res, next) {
                                             _global.role.student,
                                             bcrypt.hashSync(student.stud_id.toString(), 10),
                                         ]];
+                                        new_student_list.push({
+                                            name: _global.getLastName(student.name),
+                                            email : student.stud_id + '@student.hcmus.edu.vn'
+                                        });
                                         connection.query(format(`INSERT INTO users (first_name,last_name,email,phone,role_id,password) VALUES %L`, new_user), function(error, results, fields) {
                                             if (error) {
                                                 callback(error);
@@ -161,8 +166,40 @@ router.post('/create', function(req, res, next) {
                                 return console.log(error);
                             }
                             else {
-                                res.send({ result: 'success', message: 'Class added successfully'});
-                                done();
+                                let transporter = nodemailer.createTransport(_global.email_setting);
+                                async.each(new_student_list, function(student, callback) {
+                                    var token = jwt.sign({ email: student.email }, _global.jwt_secret_key, { expiresIn: _global.jwt_register_expire_time });
+                                    var link = _global.host + '/register;token=' + token;
+                                    let mailOptions = {
+                                        from: '"Giáo vụ"',
+                                        to: student.email,
+                                        subject: 'Register your account',
+                                        text: 'Hi,'+ student.name + '\r\n' + 
+                                            'Your account has been created.To setup your account for the first time, please go to the following web address: \r\n\r\n' +
+                                            link + 
+                                            '\r\n(This link is valid for 7 days from the time you received this email)\r\n\r\n' +
+                                            'If you need help, please contact the site administrator,\r\n' +
+                                            'Admin User \r\n\r\n' +
+                                            'admin@fit.hcmus.edu.vn'
+                                    };
+                                    transporter.sendMail(mailOptions, (error, info) => {
+                                        if (error) {
+                                            console.log(error);
+                                        }
+                                        console.log('Message %s sent: %s', info.messageId, info.response);
+                                    });
+                                    callback();
+                                }, function(error) {
+                                    if (error) {
+                                        _global.sendError(res, error.message);
+                                        done();
+                                        return console.log(error);
+                                    } else {
+                                        console.log('Class added successfully!---------------------------------------');
+                                        res.send({ result: 'success', message: 'Class added successfully'});
+                                        done();
+                                    }
+                                });
                             }
                         });
                     }

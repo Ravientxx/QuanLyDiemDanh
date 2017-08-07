@@ -44,6 +44,11 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
     public delegate_code = '';
     public check_attendance_list: Array < any > = [];
 
+    public is_show_attendance_history = true;
+    public selected_interaction;
+    public changeHistory(){
+        this.is_show_attendance_history = !this.is_show_attendance_history;
+    }
     public sortAttendanceList(){
         var temp_check_attendance_list = [];
         for(var i = 0 ; i < this.check_attendance_list.length; i++){
@@ -59,6 +64,9 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
                         edited_reason: attendance_details[j].edited_reason,
                         edited_by: attendance_details[j].edited_by,
                         editor: attendance_details[j].editor,
+                        answered_questions: attendance_details[j].answered_questions,
+                        discussions: attendance_details[j].discussions,
+                        presentations: attendance_details[j].presentations,
                     });
                 }
                 temp_check_attendance_list.push({
@@ -83,6 +91,9 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
                         edited_reason: attendance_details[j].edited_reason,
                         edited_by: attendance_details[j].edited_by,
                         editor: attendance_details[j].editor,
+                        answered_questions: attendance_details[j].answered_questions,
+                        discussions: attendance_details[j].discussions,
+                        presentations: attendance_details[j].presentations,
                     });
                 }
                 temp_check_attendance_list.push({
@@ -107,6 +118,31 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
                 this.check_attendance_list[i].attendance_details[j].edited_reason = temp_check_attendance_list[i].attendance_details[j].edited_reason;
                 this.check_attendance_list[i].attendance_details[j].edited_by = temp_check_attendance_list[i].attendance_details[j].edited_by;
                 this.check_attendance_list[i].attendance_details[j].editor = temp_check_attendance_list[i].attendance_details[j].editor;
+                this.check_attendance_list[i].attendance_details[j].answered_questions = temp_check_attendance_list[i].attendance_details[j].answered_questions;
+                this.check_attendance_list[i].attendance_details[j].discussions = temp_check_attendance_list[i].attendance_details[j].discussions;
+                this.check_attendance_list[i].attendance_details[j].presentations = temp_check_attendance_list[i].attendance_details[j].presentations;
+                switch (this.check_attendance_list[i].attendance_details[j].attendance_type) {
+                    case this.appService.attendance_type.checklist:
+                        this.check_attendance_list[i].attendance_details[j]['icon'] = 'fa-check';
+                        this.check_attendance_list[i].attendance_details[j]['method'] = 'Checklist';
+                        break;
+                    case this.appService.attendance_type.qr:
+                        this.check_attendance_list[i].attendance_details[j]['icon'] = 'fa-qrcode';
+                        this.check_attendance_list[i].attendance_details[j]['method'] = 'QR Code';
+                        break;
+                    case this.appService.attendance_type.quiz:
+                        this.check_attendance_list[i].attendance_details[j]['icon'] = 'fa-question-circle';
+                        this.check_attendance_list[i].attendance_details[j]['method'] = 'Quiz';
+                        break;
+                    case this.appService.attendance_type.permited_absent:
+                        this.check_attendance_list[i].attendance_details[j]['icon'] = 'fa-envelope-square';
+                        this.check_attendance_list[i].attendance_details[j]['method'] = 'Permited Absent';
+                        break;        
+                    default:
+                        this.check_attendance_list[i].attendance_details[j]['icon'] = '';
+                        this.check_attendance_list[i].attendance_details[j]['method'] = 'Absent';
+                        break;
+                }
             }
         }
     }
@@ -120,6 +156,7 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
         }, error => { this.appService.showPNotify('failure',"Server Error! Can't get check_attendance_list",'error'); });
     }
     public ngOnInit() {
+        this.selected_interaction = this.appService.student_interaction_type.answer_question;
         this.attendanceService.getOpeningAttendanceCourse(this.authService.current_user.id)
             .subscribe(result => {
                 this.opening_attendances = result.opening_attendances;
@@ -241,6 +278,8 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
                 });
                 this.appService.showPNotify('success',"Closed Attendance Session",'success');
                 this.router.navigate(['/dashboard']);
+            }else{
+                this.appService.showPNotify('failure',result.message,'error');
             }
         },error=>{this.appService.showPNotify('failure', "Server Error! Can't close attendance session", 'error');});
     }
@@ -262,33 +301,42 @@ export class CheckAttendanceTeacherComponent implements OnInit, OnDestroy {
     public onAttendanceCheckClick(student_index: number, attendance_detail_index: number) {
         var type;
         if (this.check_attendance_list[student_index].attendance_details[attendance_detail_index].attendance_type) {
-            type = 0;
+            type = this.appService.attendance_type.absent;
         } else {
-            type = 1;
+            type = this.appService.attendance_type.checklist;
         }
         this.checkAttendanceService.checkList(this.check_attendance_list[student_index].attendance_details[attendance_detail_index].attendance_id,this.check_attendance_list[student_index].id,type).subscribe(result=>{
-            this.check_attendance_list[student_index].attendance_details[attendance_detail_index].attendance_type = type;
-            this.sortAttendanceList();
-            this.socketService.emitEventOnCheckAttendanceUpdated({
-                course_id : this.selected_course_id,
-                class_id : this.selected_class_id,
-            });
+            if(result.result == 'success'){
+                this.check_attendance_list[student_index].attendance_details[attendance_detail_index].attendance_type = type;
+                if(type){
+                    this.check_attendance_list[student_index].attendance_details[attendance_detail_index]['icon'] = 'fa-check';
+                    this.check_attendance_list[student_index].attendance_details[attendance_detail_index]['method'] = 'Checklist';
+                }else{
+                    this.check_attendance_list[student_index].attendance_details[attendance_detail_index]['icon'] = '';
+                    this.check_attendance_list[student_index].attendance_details[attendance_detail_index]['method'] = 'Absent';
+                }
+                this.sortAttendanceList();
+                this.socketService.emitEventOnCheckAttendanceUpdated({
+                    course_id : this.selected_course_id,
+                    class_id : this.selected_class_id,
+                });
+            }
         },error=>{this.appService.showPNotify('failure',"Server Error! Can't check_list",'error');});
     }
 
     public confirmInteraction(student, interaction_type){
-        this.studentService.updateStudentInteraction(student.id,this.selected_class_id,this.selected_course_id,interaction_type)
+        this.studentService.updateStudentInteraction(student.id,this.selected_attendance_id,interaction_type)
         .subscribe(result=>{
             if(result.result == 'success'){
                 switch (interaction_type) {
                     case this.appService.student_interaction_type.answer_question:
-                        student.answered_questions++;
+                        student.attendance_details[student.attendance_details.length-1].answered_questions++;
                         break;
                     case this.appService.student_interaction_type.discuss:
-                        student.discussions++;
+                        student.attendance_details[student.attendance_details.length-1].discussions++;
                         break;
                     case this.appService.student_interaction_type.present:
-                        student.presentations++;
+                        student.attendance_details[student.attendance_details.length-1].presentations++;
                         break;
                 }
                 this.appService.showPNotify('success',"Successfully update student interaction!",'success');

@@ -72,12 +72,31 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
                 this.getQuiz();
             }
         });
+        socketService.consumeEventOnQuittedQuiz();
+        socketService.invokeQuittedQuiz.subscribe(result => {
+            if (this.quiz_code == result['quiz_code']) {
+                for(var i = 0 ;i < this.quiz['participants'].length; i++){
+                	if(this.quiz['participants'][i].id == result['student_id']){
+                		this.quiz['participants'].splice(i,1);
+                		break;
+                	}
+                }
+            }
+        });
+        socketService.consumeEventOnCheckAttendanceStopped();
+        socketService.invokeCheckAttendanceStopped.subscribe(result=>{
+            if(this.selected_attendance['course_id'] == result['course_id'] && this.selected_attendance['class_id'] == result['class_id']){
+                this.onStopQuiz();
+                this.appService.showPNotify('Info',"Attendance session is " + result['message'],'info');
+            }
+        });
 	}
 	public ngOnInit() {
 		if(this.localStorage.get('get_published_quiz_error')){
 			this.get_published_quiz_error = this.localStorage.get('get_published_quiz_error');
 		}
 		else{
+			this.selected_attendance = this.localStorage.get('selected_attendance');
 			if(!this.localStorage.get('quiz_code')){
 				this.get_published_quiz_error = 'Quiz is stopped';
 			}else{
@@ -89,6 +108,7 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
 	}
 	public closeSocket(){
 		this.socketService.stopEventOnJoinedQuiz();
+		this.socketService.stopEventOnCheckAttendanceStopped();
 		this.socketService.stopEventOnAnsweredQuiz();
 	}
 	public ngOnDestroy(){
@@ -191,7 +211,6 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
 		});
 	}
 	public onEndQuiz(){
-		this.selected_attendance = this.localStorage.get('selected_attendance');
 		this.studentService.getStudentByCourse(this.selected_attendance['course_id'],this.selected_attendance['class_id']).subscribe(result=>{
 			if(result.result == 'success'){
 				this.student_list = result.student_list;

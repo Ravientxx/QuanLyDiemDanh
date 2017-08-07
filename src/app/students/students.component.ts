@@ -99,6 +99,7 @@ export class StudentsComponent implements OnInit {
                 this.apiResult = list.result;
                 this.apiResultMessage = list.message;
                 if (this.apiResult == 'success') {
+                    jQuery("#addStudentModal").modal("hide");
                     this.newFirstName = this.newLastName = this.newPhone = this.newEmail = this.newCode = this.newNote = '';
                     this.newClass = this.newProgram = 0;
                     this.getCurrentList();

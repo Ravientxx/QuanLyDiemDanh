@@ -79,10 +79,15 @@ export class FeedbackStaffComponent implements OnInit {
     
     public sendReply(){
         this.appService.sendReply(this.reply_content, this.feedback_id).subscribe(result=>{
-            jQuery('#feedbackDetailModal').modal('hide');
-            this.reply_content = '';
-            this.feedback_id = null;
-            this.getFeedbacks();
+            if(result.result == 'success'){
+                jQuery('#feedbackDetailModal').modal('hide');
+                this.reply_content = '';
+                this.feedback_id = null;
+                this.getFeedbacks();
+            }else{
+                this.appService.showPNotify('failure', result.message, 'error');
+            }
+            
         },error=>{this.appService.showPNotify('failure', "Server Error! Can't read feedbacks", 'error');});
     }
 }

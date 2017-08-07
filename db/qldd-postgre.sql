@@ -51,7 +51,10 @@ CREATE TABLE attendance (
 DROP TABLE IF EXISTS attendance_detail;
 CREATE TABLE attendance_detail (
   attendance_id int NOT NULL,
-  student_id int NOT NULL,
+  student_id int NOT NULL,  
+  answered_questions smallint DEFAULT '0',
+  discussions smallint DEFAULT '0',
+  presentations smallint DEFAULT '0',
   attendance_time timestamp with time zone DEFAULT NULL,
   attendance_type smallint NOT NULL DEFAULT '0',
   edited_by int DEFAULT NULL,
@@ -179,9 +182,6 @@ CREATE TABLE student_enroll_course (
   student_id int NOT NULL,
   attendance_status smallint DEFAULT '0',
   enrollment_status smallint DEFAULT '0',
-  answered_questions smallint DEFAULT '0',
-  discussions smallint DEFAULT '0',
-  presentations smallint DEFAULT '0',
   PRIMARY KEY (class_has_course_id,student_id)
 );
 
@@ -310,12 +310,11 @@ CREATE TABLE quiz_answers (
 DROP TABLE IF EXISTS notifications;
 CREATE TABLE notifications (
   id serial NOT NULL,
-  to_id int NULL,
+  to_id int DEFAULT NULL,
   from_id int NOT NULL,
   message text DEFAULT NULL,
   object_id int NOT NULL,
   type smallint DEFAULT NULL,
-  read boolean DEFAULT FALSE,
   created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id)
 );

@@ -31,4 +31,26 @@ export class NotificationService {
                 return Observable.throw(error || 'Server error');
             });
     }
+
+    public readNotificationUrl = this.appConfig.apiHost + '/notification/read';
+    public readNotification(id: number): Observable < { result: string, message:string } > {
+        var params = {
+            'id': id,
+        };
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.readNotificationUrl, params, options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => {
+                if (error.status == 401) {
+                    this.authService.tokenExpired(this.router.url);
+                }
+                //this.authService.tokenExpired(this.router.url);
+                return Observable.throw(error || 'Server error');
+            });
+    }
 }
