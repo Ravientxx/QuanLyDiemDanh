@@ -1,10 +1,11 @@
 var express = require('express');
 var router = express.Router();
-var bcrypt = require('bcrypt');
 var _global = require('../global.js');
 var mysql = require('mysql');
 var pool = mysql.createPool(_global.db);
-var jwt = require('jsonwebtoken');
+var jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
+var bcrypt = require('bcrypt');
+var nodemailer = require('nodemailer');
 var async = require("async");
 var pg = require('pg');
 var format = require('pg-format');
@@ -166,6 +167,28 @@ router.post('/add-staff', function(req, res, next) {
                         done();
                         return console.log("Email already existed");
                     }else{
+                        let transporter = nodemailer.createTransport(_global.email_setting);
+                        var token = jwt.sign({ email: new_email }, _global.jwt_secret_key, { expiresIn: _global.jwt_register_expire_time });
+                        console.log(token);
+                        var link = _global.host + '/register;token=' + token;
+                        let mailOptions = {
+                            from: '"Giáo vụ"',
+                            to: new_email,
+                            subject: 'Register your account',
+                            text: 'Hi,'+ new_first_name + '\r\n' + 
+                                'Your account has been created.To setup your account for the first time, please go to the following web address: \r\n\r\n' +
+                                link + 
+                                '\r\n(This link is valid for 7 days from the time you received this email)\r\n\r\n' +
+                                'If you need help, please contact the site administrator,\r\n' +
+                                'Admin User \r\n\r\n' +
+                                'admin@fit.hcmus.edu.vn'
+                        };
+                        transporter.sendMail(mailOptions, (error, info) => {
+                            if (error) {
+                                return console.log(error);
+                            }
+                            console.log('Message %s sent: %s', info.messageId, info.response);
+                        });
                         res.send({ result: 'success',  message : "ok" });
                         done();
                     }
