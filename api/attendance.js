@@ -1138,6 +1138,7 @@ router.post('/list-by-student/', function(req, res, next) {
                     console.log('loaded attendance_list_by_student');
                     res.send({
                         result: 'success',
+                        total_items: attendance_list_by_student.length,
                         attendance_list_by_student: attendance_list_by_student
                     });
                     done();

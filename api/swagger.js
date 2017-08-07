@@ -285,6 +285,31 @@
 
 /**
 * @swagger
+* /api/attendance/list-by-student:
+*   post:
+*     summary: Get student
+*     description:
+*     tags: [Attendance]
+*     produces:
+*       - application/json
+*     parameters:
+*       - name: token
+*         description: token
+*         in: formData
+*         required: true
+*         type: string
+*       - name: student_id
+*         description: student id
+*         in: formData
+*         required: true
+*         type: integer
+*     responses:
+*       200:
+*         description: json
+*/
+
+/**
+* @swagger
 * /api/attendance/opening-by-teacher:
 *   post:
 *     summary: Get opening attendance
@@ -569,7 +594,7 @@
 
 /**
 * @swagger
-* /api/quiz/detail:
+* /api/quiz/published:
 *   post:
 *     summary: Quiz detail
 *     description:
@@ -582,11 +607,11 @@
 *         in: formData
 *         required: true
 *         type: string
-*       - name: quiz_id
-*         description: quiz id
+*       - name: quiz_code
+*         description: quiz code
 *         in: formData
 *         required: true
-*         type: integer
+*         type: string
 *     responses:
 *       200:
 *         description: json
@@ -595,7 +620,7 @@
 
 /**
 * @swagger
-* /api/quiz/check-code:
+* /api/quiz/join:
 *   post:
 *     summary: check quiz code
 *     description:
