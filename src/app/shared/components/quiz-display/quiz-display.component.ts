@@ -139,6 +139,28 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
 		}, 1000);
 	}
 	public onReadyForNextQuestion(next_question_index){
+		if(next_question_index > 0){
+			var last_question_index = next_question_index - 1;
+			for(var i = 0 ; i < this.quiz['participants']['length'];i++){
+				var check_no_answer = 0;
+	    		for(var j = 0 ; j < this.quiz['questions'][last_question_index]['answers'].length;j++){
+	    			if(this.quiz['questions'][last_question_index]['answers'][j]['answered_by'] == this.quiz['participants'][i]['id']){
+	    				break;
+	    			}else{
+	    				check_no_answer++;
+	    			}
+	    		}
+	    		if(check_no_answer == this.quiz['questions'][last_question_index]['answers'].length){
+	    			this.quiz['questions'][last_question_index]['answers'].push({
+		        		answered_by : this.quiz['participants'][i]['id'],
+		        		answered_at : null,
+		        		selected_option : '',
+		        		name : this.quiz['participants'][i]['name'],
+		        		code : this.quiz['participants'][i]['code']
+		        	});
+	    		}
+	    	}
+		}
 		if(next_question_index == this.quiz['questions'].length){
 			this.is_ended = true;
 			this.is_ready = this.is_started = false;
@@ -211,59 +233,31 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
 		});
 	}
 	public onEndQuiz(){
+
 		this.studentService.getStudentByCourse(this.selected_attendance['course_id'],this.selected_attendance['class_id']).subscribe(result=>{
 			if(result.result == 'success'){
 				this.student_list = result.student_list;
 				for(var i = 0 ; i < this.student_list.length; i++){
 					var check_no_participated = 0;
+					var check_no_answer = 0;
+					var check_right_answer = 0;
 					for(var j = 0 ; j < this.quiz['participants']['length']; j++){
 						if(this.student_list[i]['id'] == this.quiz['participants'][j]['id']){
 							//Có tham gia quiz
 							for(var k = 0; k < this.quiz['questions'].length; k++){
-								var check_no_answer = 0;
-								var check_right_answer = 0;
 								for(var l = 0; l < this.quiz['questions'][k]['answers'].length; l++){
 									if(this.quiz['questions'][k]['answers'][l]['answered_by'] == this.student_list[i]['id']){
+										if(this.quiz['questions'][k]['answers'][l]['selected_option'] == ''){
+											check_no_answer++;
+											continue;
+										}
 										if(this.quiz['questions'][k]['correct_option'] == this.quiz['questions']['option_' + this.quiz['questions'][k]['answers'][l]['selected_option'].toLowerCase()]){
 											check_right_answer++;
 										}
-									}else{
-										check_no_answer++;
 									}
 								}
 							}
-							if(this.quiz['questions']['length'] == check_no_answer){
-									//Ko trả lời câu nào
-									this.attendance_not_checked_list.push({
-										id : this.student_list[i]['id'],
-										code : this.student_list[i]['code'],
-										name : this.student_list[i]['name'],
-										reason : "Didn't answer any question"
-									});
-							}else{
-								if(this.quiz['type'] == this.appService.quiz_type.academic.id){
-									this.attendance_checked_list.push({
-										id : this.student_list[i]['id'],
-										code : this.student_list[i]['code'],
-										name : this.student_list[i]['name']
-									});
-								}else{
-									if(check_right_answer < this.miscellaneous_threshold){
-										this.attendance_not_checked_list.push({
-											id : this.student_list[i]['id'],
-											code : this.student_list[i]['code'],
-											name : this.student_list[i]['name'],
-											reason : "Not enough correct answers"
-										});
-									}else{
-										this.attendance_checked_list.push({
-											id : this.student_list[i]['id'],
-											code : this.student_list[i]['code'],
-											name : this.student_list[i]['name']
-										});
-									}
-								}
-							}
+							break;
 						}else{
 							//Ko tham gia quiz
 							check_no_participated++;
@@ -276,6 +270,39 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
 							name : this.student_list[i]['name'],
 							reason : 'Not participated'
 						});
+					}else{
+						if(this.quiz['questions']['length'] == check_no_answer){
+								//Ko trả lời câu nào
+								this.attendance_not_checked_list.push({
+									id : this.student_list[i]['id'],
+									code : this.student_list[i]['code'],
+									name : this.student_list[i]['name'],
+									reason : "Didn't answer any question"
+								});
+						}else{
+							if(this.quiz['type'] == this.appService.quiz_type.academic.id){
+								this.attendance_checked_list.push({
+									id : this.student_list[i]['id'],
+									code : this.student_list[i]['code'],
+									name : this.student_list[i]['name']
+								});
+							}else{
+								if(check_right_answer < this.miscellaneous_threshold){
+									this.attendance_not_checked_list.push({
+										id : this.student_list[i]['id'],
+										code : this.student_list[i]['code'],
+										name : this.student_list[i]['name'],
+										reason : "Not enough correct answers"
+									});
+								}else{
+									this.attendance_checked_list.push({
+										id : this.student_list[i]['id'],
+										code : this.student_list[i]['code'],
+										name : this.student_list[i]['name']
+									});
+								}
+							}
+						}
 					}
 				}
 				this.onSaveQuiz();
@@ -287,6 +314,7 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
 	}
 	public onNextQuestion(){
 		clearInterval(this.interval);
+		this.socketService.emitEventOnQuizQuestionEnded({'quiz_code': this.quiz_code});
 		this.onReadyForNextQuestion(this.current_question_index++);
 	}
 	public onStopQuiz(){

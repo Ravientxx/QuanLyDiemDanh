@@ -57,7 +57,8 @@
             <div>
                 <div class="pull-right">
                     <button *ngIf="!course['not_in_current_course']" type="button" class="btn btn-primary btn-round" (click)="onEditAttendance()"> <i class="fa fa-pencil"></i> Edit Attendance</button>
-                    <button type="button" class="btn btn-primary btn-round"> <i class="fa fa-download"></i> Export</button>
+                    <button type="button" class="btn btn-primary btn-round" (click)="onImportAttendanceList()"> <i class="fa fa-upload"></i> Import</button>
+                    <button type="button" class="btn btn-primary btn-round" (click)="onExportAttendanceList()"> <i class="fa fa-download"></i> Export</button>
                 </div>
                 <ul class="nav nav-tabs" *ngIf="class_has_course.length > 1">
                       <li *ngFor="let class of class_has_course; let i = index" [ngClass]="{'active': i == selected_class_index}" (click)="onChangeClass(i)"><a>{{class.class_name}}</a></li>
@@ -166,6 +167,7 @@
         </div>
     </div>
 </div>
+<import-modal [import_type]="appService.import_export_type.attendance_list" [title]="import_title" (onClose)="onCloseImport($event)"></import-modal>
 <edit-schedule-modal [modal_id]="scheduleModal.id" [modal_title]="scheduleModal.title" [classes]="class_has_course" (onSave)="onSaveSchedule($event)" [view_only]="course['not_in_current_course']"></edit-schedule-modal>
 <div class="modal fade" id="confirmRemoveModal" role="dialog">
     <div class="vertical-alignment-helper">

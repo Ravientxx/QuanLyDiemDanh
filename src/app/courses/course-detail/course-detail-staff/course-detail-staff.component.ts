@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 import { CourseService,StudentService, AttendanceService, AppService, EditScheduleModalComponent,
- ScheduleService, ResultMessageModalComponent, AuthService } from '../../../shared/shared.module';
+ ScheduleService, ResultMessageModalComponent, AuthService, ExcelService, ImportModalComponent } from '../../../shared/shared.module';
 declare let jQuery: any;
 @Component({
     selector: 'course-detail-staff',
@@ -31,7 +31,7 @@ export class CourseDetailStaffComponent implements OnInit {
 
     public constructor(public route: ActivatedRoute, public studentService: StudentService, public  router: Router,
         public  appService: AppService, public  courseService: CourseService, public  attendanceSerivce: AttendanceService,
-         public  scheduleService: ScheduleService, public authService: AuthService) {}
+         public  scheduleService: ScheduleService, public authService: AuthService,public excelService: ExcelService) {}
 
     public getAttendanceList() {
         var classes_id : Array<number> = [];
@@ -318,6 +318,18 @@ export class CourseDetailStaffComponent implements OnInit {
         this.temp_attendance_lists[this.selected_class_index].pop();
     }
 
+    public import_title;
+    @ViewChild(ImportModalComponent)
+    public  importModal: ImportModalComponent;
+    public onCloseImport(event : any){
+        this.getAttendanceList();
+    }
+    public onImportAttendanceList(){
+        this.import_title = 'Import Attendance List ' + this.class_has_course[this.selected_class_index].class_name;
+        this.importModal.onOpenModal();
+    }
 
-
+    public onExportAttendanceList(){
+        this.excelService.writeAttendanceList(this.attendance_list,this.course['code'] + ' - ' + this.course['name'] + ' (' + this.course['semester_name'] + ')');
+    }
 }

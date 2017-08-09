@@ -40,10 +40,10 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-sm-1" *ngIf="quiz.questions.length > 1">
-                                                    <button class="btn btn-danger" (click)="onRemoveQuestion(i)"><i class="fa fa-times"></i></button>
+                                                    <button class="btn btn-danger" (click)="onRemoveTemplateQuestion(i,j)"><i class="fa fa-times"></i></button>
                                                 </div>
                                                 <div class="col-sm-1" *ngIf="j == quiz.questions.length-1">
-                                                    <button class="btn btn-primary" (click)="onAddQuestion()"><i class="fa fa-plus"></i></button>
+                                                    <button class="btn btn-primary" (click)="onAddTemplateQuestion(i)"><i class="fa fa-plus"></i></button>
                                                 </div>
                                             </div>
                                             <div class="form-group row">
@@ -182,7 +182,7 @@
                                         <button class="btn btn-danger" (click)="onRemoveQuestion(i)"><i class="fa fa-times"></i></button>
                                     </div>
                                     <div class="col-sm-1" *ngIf="i == quiz.questions.length-1">
-                                        <button class="btn btn-primary" (click)="onAddQuestion()"><i class="fa fa-plus"></i></button>
+                                    <button class="btn btn-primary" (click)="onAddQuestion(i)"><i class="fa fa-plus"></i></button>
                                     </div>
                                 </div>
                                 <div class="form-group">

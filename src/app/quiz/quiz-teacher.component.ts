@@ -166,4 +166,29 @@ export class QuizTeacherComponent implements OnInit {
             event.preventDefault();
         }
     }
+
+    public onAddTemplateQuestion(quiz_index) {
+        this.quiz_list[quiz_index].questions.push({
+            text: '',
+            option_a: '',
+            option_b: '',
+            option_c: '',
+            option_d: '',
+            correct_option: null,
+            timer:10,
+            answers: []
+        });
+    }
+    public onRemoveTemplateQuestion(quiz_index, question_index) {
+        for (var i = question_index; i < this.quiz_list[quiz_index].questions.length - 1; i++) {
+            this.quiz_list[quiz_index].questions[i].text = this.quiz_list[quiz_index].questions[i + 1].text;
+            this.quiz_list[quiz_index].questions[i].option_a = this.quiz_list[quiz_index].questions[i + 1].option_a;
+            this.quiz_list[quiz_index].questions[i].option_b = this.quiz_list[quiz_index].questions[i + 1].option_b;
+            this.quiz_list[quiz_index].questions[i].option_c = this.quiz_list[quiz_index].questions[i + 1].option_c;
+            this.quiz_list[quiz_index].questions[i].option_d = this.quiz_list[quiz_index].questions[i + 1].option_d;
+            this.quiz_list[quiz_index].questions[i].correct_option = this.quiz_list[quiz_index].questions[i + 1].correct_option;
+            this.quiz_list[quiz_index].questions[i].timer = this.quiz_list[quiz_index].questions[i + 1].timer;
+        }
+        this.quiz_list[quiz_index].questions.pop();
+    }
 }

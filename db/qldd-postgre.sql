@@ -510,12 +510,12 @@ CREATE OR REPLACE FUNCTION when_update_attendance_detail()
  	RETURNS trigger AS
 	$$
 	BEGIN
-		IF NEW.attendance_type = 1 AND OLD.attendance_type = 0 THEN
+		IF NEW.attendance_type != 0 AND OLD.attendance_type = 0 THEN
 		UPDATE attendance
 		SET student_count = student_count + 1
 		WHERE id = NEW.attendance_id;
 		END IF;
-		IF NEW.attendance_type = 0 AND OLD.attendance_type = 1 THEN
+		IF NEW.attendance_type = 0 AND OLD.attendance_type != 0 THEN
 		UPDATE attendance
 		SET student_count = student_count - 1
 		WHERE id = NEW.attendance_id;
@@ -536,7 +536,7 @@ CREATE OR REPLACE FUNCTION when_insert_attendance_detail()
  	RETURNS trigger AS
 	$$
 	BEGIN
-		IF NEW.attendance_type = 1 THEN
+		IF NEW.attendance_type != 0 THEN
 		UPDATE attendance
 		SET student_count = student_count + 1
 		WHERE id = NEW.attendance_id;

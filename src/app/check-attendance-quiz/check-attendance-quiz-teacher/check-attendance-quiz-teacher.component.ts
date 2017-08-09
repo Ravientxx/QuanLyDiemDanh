@@ -36,7 +36,7 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
         is_randomize_questions: true,
         is_randomize_answers: true,
         is_auto_move_through_questions: true,
-        type: 0,
+        type: this.appService.quiz_type.miscellaneous.id,
         title: 'Attendance Quiz',
         questions: [{
             text: '',

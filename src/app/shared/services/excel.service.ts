@@ -3,14 +3,16 @@ import { Http, Response, Headers, RequestOptions } from '@angular/http';
 import { Observable } from 'rxjs';
 import { FileUploader } from "ng2-file-upload/ng2-file-upload";
 import * as XLSX from 'xlsx';
+declare var XlsxPopulate : any; 
 import * as FileSaver from 'file-saver';
 import * as JSZip from 'jszip';
 
 import { AppConfig } from '../config';
+import { AppService } from './app.service';
 @Injectable()
 export class ExcelService {
 
-    public constructor(public http: Http) {}
+    public constructor(public http: Http,public appService: AppService) {}
     public s2ab(s): any {
         var buf = new ArrayBuffer(s.length);
         var view = new Uint8Array(buf);
@@ -288,27 +290,27 @@ export class ExcelService {
             .catch((error: any) => Observable.of({ result: 'failure', message: error }));
     }
     public writeTeacherSearchList(teacher_list: any, file_name: string) {
-        var ws_name = "Sheet1";
-        var wb = { SheetNames: [], Sheets: {} };
-        wb.SheetNames.push(ws_name);
-        var ws = {};
-        ws[XLSX.utils.encode_cell({ c: 0, r: 0 })] = { v: 'STT' };
-        ws[XLSX.utils.encode_cell({ c: 1, r: 0 })] = { v: 'Họ' };
-        ws[XLSX.utils.encode_cell({ c: 2, r: 0 })] = { v: 'Tên' };
-        ws[XLSX.utils.encode_cell({ c: 3, r: 0 })] = { v: 'SĐT' };
-        ws[XLSX.utils.encode_cell({ c: 4, r: 0 })] = { v: 'Email' };
-        for (var i = 1; i <= teacher_list.length; i++) {
-            ws[XLSX.utils.encode_cell({ c: 0, r: i })] = { v: i };
-            ws[XLSX.utils.encode_cell({ c: 1, r: i })] = { v: teacher_list[i - 1].first_name };
-            ws[XLSX.utils.encode_cell({ c: 2, r: i })] = { v: teacher_list[i - 1].last_name };
-            ws[XLSX.utils.encode_cell({ c: 3, r: i })] = { v: teacher_list[i - 1].phone };
-            ws[XLSX.utils.encode_cell({ c: 4, r: i })] = { v: teacher_list[i - 1].email };
-        }
-        ws['!ref'] = XLSX.utils.encode_range({ s: { c: 0, r: 0 }, e: { c: 4, r: teacher_list.length } });
-        wb.Sheets[ws_name] = ws;
-        var wbout = XLSX.write(wb, { bookType: 'xlsx', bookSST: false, type: 'binary' });
-        if (file_name == '') file_name = 'teachers';
-        FileSaver.saveAs(new Blob([this.s2ab(wbout)], { type: "application/octet-stream" }), file_name + ".xlsx");
+        XlsxPopulate.fromBlankAsync()
+            .then(workbook => {
+                workbook.sheet("Sheet1").cell("A1").value("STT").style("border", true);
+                workbook.sheet("Sheet1").cell("B1").value("Họ").style("border", true);
+                workbook.sheet("Sheet1").cell("C1").value("Tên").style("border", true);
+                workbook.sheet("Sheet1").cell("D1").value("SĐT").style("border", true);
+                workbook.sheet("Sheet1").cell("E1").value("Email").style("border", true);
+                for (var i = 0; i < teacher_list.length; i++) {
+                    workbook.sheet("Sheet1").cell("A" + Math.floor(i + 2)).value(i + 2).style("border", true);
+                    workbook.sheet("Sheet1").cell("B" + Math.floor(i + 2)).value(teacher_list[i].first_name).style("border", true);
+                    workbook.sheet("Sheet1").cell("C" + Math.floor(i + 2)).value(teacher_list[i].last_name).style("border", true);
+                    workbook.sheet("Sheet1").cell("D" + Math.floor(i + 2)).value(teacher_list[i].phone).style("border", true);
+                    workbook.sheet("Sheet1").cell("E" + Math.floor(i + 2)).value(teacher_list[i].email).style("border", true);
+                }
+                const range = workbook.sheet(0).range("A1:E"+Math.floor(teacher_list.length+1));
+                return workbook.outputAsync()
+                    .then(function (blob) {
+                        if (file_name == '') file_name = 'teachers';
+                        FileSaver.saveAs(blob, file_name + ".xlsx");
+                    });
+            });
     }
 
 
@@ -517,5 +519,95 @@ export class ExcelService {
         var wbout = XLSX.write(wb, { bookType: 'xlsx', bookSST: false, type: 'binary' });
         if (file_name == '') file_name = 'schedule';
         FileSaver.saveAs(new Blob([this.s2ab(wbout)], { type: "application/octet-stream" }), file_name + ".xlsx");
+    }
+
+
+    public readAttendanceListFile(file: any) : Observable < { result: string, attendance_list: Array < any > , message: string } >{
+        return new Observable < any > ((observer) => {
+                XlsxPopulate.fromFileAsync(file)
+                .then(workbook => {
+                    const value = workbook.sheet("Sheet1").usedRange();
+                    console.log(value);
+                    return { result: 'failure', message: value };
+                });
+            }).catch((error: any) => Observable.of({ result: 'failure', message: error }));
+    }
+    public writeAttendanceList(attendance_list : any,file_name: string) {
+        XlsxPopulate.fromBlankAsync()
+            .then(workbook => {
+                workbook.sheet("Sheet1").cell("A1").value("Danh sách điểm danh " + file_name).style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("A2").value("CL: Checklist").style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("G2").value("QZ: Quiz").style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("M2").value("QR: QR code").style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("S2").value("PA: Permited Absent").style("horizontalAlignment", "center");
+
+                workbook.sheet("Sheet1").cell("A4").value("STT").style("border", true).style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("B4").value("MSSV").style("border", true).style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("C4").value("Họ Tên").style("border", true).style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("D4").value("Tuần 1").style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("F4").value("Tuần 2").style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("H4").value("Tuần 3").style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("J4").value("Tuần 4").style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("L4").value("Tuần 5").style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("N4").value("Tuần 6").style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("P4").value("Tuần 7").style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("R4").value("Tuần 8").style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("T4").value("Tuần 9").style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("V4").value("Tuần 10").style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("X4").value("Tuần 11").style("horizontalAlignment", "center");
+                var cell = ['D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y'];
+                for (var i = 0; i < attendance_list.length; i++) {
+                    workbook.sheet("Sheet1").cell("A" + Math.floor(i + 5)).value(i + 1).style("border", true);
+                    workbook.sheet("Sheet1").cell("B" + Math.floor(i + 5)).value(attendance_list[i].code).style("border", true);
+                    workbook.sheet("Sheet1").cell("C" + Math.floor(i + 5)).value(attendance_list[i].name).style("border", true);
+                    var j = 0;
+                    for(j = 0 ; j < attendance_list[i].attendance_details.length; j++){
+                        var value;
+                        switch (attendance_list[i].attendance_details[j].attendance_type) {
+                            case this.appService.attendance_type.checklist:
+                                value = 'CL';
+                                break;
+                            case this.appService.attendance_type.quiz:
+                                value = 'QZ';
+                                break;
+                            case this.appService.attendance_type.qr:
+                                value = 'QR';
+                                break;
+                            case this.appService.attendance_type.permited_absent:
+                                value = 'PA';
+                                break;
+                            default:
+                                value = '';
+                                break;
+                        }
+                        workbook.sheet("Sheet1").cell(cell[j] + Math.floor(i + 5)).value(value).style("border", true);
+                    }
+                    for(;j < 22; j++){
+                        workbook.sheet("Sheet1").cell(cell[j] + Math.floor(i + 5)).value('').style("border", true);
+                    }
+                }
+                workbook.sheet(0).range("A1:Y1").merged(true);
+                workbook.sheet(0).range("A2:F2").merged(true);
+                workbook.sheet(0).range("G2:L2").merged(true);
+                workbook.sheet(0).range("M2:R2").merged(true);
+                workbook.sheet(0).range("S2:X2").merged(true);
+                workbook.sheet(0).range("D4:E4").merged(true).style("border", true);
+                workbook.sheet(0).range("F4:G4").merged(true).style("border", true);
+                workbook.sheet(0).range("H4:I4").merged(true).style("border", true);
+                workbook.sheet(0).range("J4:K4").merged(true).style("border", true);
+                workbook.sheet(0).range("L4:M4").merged(true).style("border", true);
+                workbook.sheet(0).range("N4:O4").merged(true).style("border", true);
+                workbook.sheet(0).range("P4:Q4").merged(true).style("border", true);
+                workbook.sheet(0).range("R4:S4").merged(true).style("border", true);
+                workbook.sheet(0).range("T4:U4").merged(true).style("border", true);
+                workbook.sheet(0).range("V4:W4").merged(true).style("border", true);
+                workbook.sheet(0).range("X4:Y4").merged(true).style("border", true);
+                const range = workbook.sheet(0).range("A1:Y"+Math.floor(attendance_list.length+5));
+                return workbook.outputAsync()
+                    .then(function (blob) {
+                        if (file_name == '') file_name = 'attendance_list';
+                        FileSaver.saveAs(blob, file_name + ".xlsx");
+                    });
+            });
     }
 }

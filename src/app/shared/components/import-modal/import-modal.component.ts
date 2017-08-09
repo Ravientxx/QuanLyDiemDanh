@@ -23,14 +23,24 @@ export class ImportModalComponent implements OnInit {
     public import_progress = 0;
     public isImporting = false;
     public onSelectFile(files : any){
-        var file_list = Array.prototype.slice.call(files);
-        for(var i = 0 ; i < file_list.length; i++){
+        if(this.import_type == this.appService.import_export_type.attendance_list){
+            var file_list = Array.prototype.slice.call(files);
             var _import = {
-                file : file_list[i],
-                result : '',
-                result_message : ''
-            }
+                    file : file_list[0],
+                    result : '',
+                    result_message : ''
+                }
             this.import_list.push(_import);
+        }else{
+            var file_list = Array.prototype.slice.call(files);
+            for(var i = 0 ; i < file_list.length; i++){
+                var _import = {
+                    file : file_list[i],
+                    result : '',
+                    result_message : ''
+                }
+                this.import_list.push(_import);
+            }
         }
     }
     public onRemoveFile(index : number){
@@ -92,6 +102,9 @@ export class ImportModalComponent implements OnInit {
                         this.readCourseFile(file_index);
                         break;
                     case this.appService.import_export_type.schedule:
+                        break;
+                    case this.appService.import_export_type.attendance_list:
+                        this.readAttendanceListFile(file_index);
                         break;
                     default:
                         break;
@@ -156,6 +169,25 @@ export class ImportModalComponent implements OnInit {
                 },error=>{
                     this.readFileCallback(file_index,{result:'failure',message:"Server error ! Can't import course"});
                 });
+            }
+        }, error => {
+            this.readFileCallback(file_index,{result:'failure',message:"Service error"});
+        });
+    }
+    public readAttendanceListFile(file_index){
+        this.excelService.readAttendanceListFile(this.import_list[file_index].file).subscribe(result => {
+            if (result.result == 'failure') {
+                this.readFileCallback(file_index,result);
+                return;
+            }
+            if (result.result == 'success') {
+                // var course_list = result.attendance_list.slice();
+                // var class_name = this.import_list[file_index].file['name'].split('.')[0];
+                // this.courseService.importCourse(class_name,course_list).subscribe(result=>{
+                //     this.readFileCallback(file_index,result);
+                // },error=>{
+                //     this.readFileCallback(file_index,{result:'failure',message:"Server error ! Can't import course"});
+                // });
             }
         }, error => {
             this.readFileCallback(file_index,{result:'failure',message:"Service error"});

@@ -308,6 +308,12 @@ router.post('/join', function(req, res, next) {
             check = true;
             var class_has_course_id = published_quizzes[i].class_has_course_id;
             var participants = published_quizzes[i].participants;
+            for(var i = 0 ; i < participants.length; i++){
+                if(participants[i].id == student_id){
+                    _global.sendError(res, null, "You're already joined this quiz.");
+                    return console.log("You're already joined this quiz.");
+                }
+            }
             pool_postgres.connect(function(error, connection, done) {
                 connection.query(format(`SELECT * FROM student_enroll_course, students WHERE class_has_course_id = %L AND student_id = %L AND student_id = students.id`, class_has_course_id, student_id), function(error, result, fields) {
                     if (error) {
@@ -315,7 +321,7 @@ router.post('/join', function(req, res, next) {
                         done();
                         return console.log(error);
                     } else {
-                        if (result.cowCount == 0) {
+                        if (result.rowCount == 0) {
                             _global.sendError(res, null, 'You are not in this course');
                             done();
                             return console.log('You are not in this course');
@@ -683,7 +689,7 @@ router.post('/save', function(req, res, next) {
                                     question.answers[i].selected_option,
                                 ]);
                             }
-                            connection.query(format(`INSERT INTO quiz_answers (quiz_question_id,answered_by,answered_at,selected_option) VALUES %L`, new_answers), function(error, result, fields) {
+                            connection.query(format(`INSERT INTO quiz_answers (quiz_question_id,answered_by,answered_at,selected_option) VALUES %L `, new_answers), function(error, result, fields) {
                                 if (error) {
                                     callback(error);
                                 } else {
@@ -735,13 +741,13 @@ router.post('/save', function(req, res, next) {
             },
             //update attendance details
             function(callback) {
-                var query_where = ' (student_id = ' + checked_student_list[0].id;
                 if(checked_student_list.length > 0){
+                    var query_where = ' ( student_id = ' + checked_student_list[0].id;
                     for(var i = 1 ; i < checked_student_list.length; i++){
-                        query_where += ' OR student_id = ' + checked_student_list[0].id;
+                        query_where += ' OR student_id = ' + checked_student_list[i].id;
                     }
-                    query_where += ") AND attendance_id = %L";
-                    connection.query(format(`UPDATE attendance_detail SET attendance_type = %L WHERE` + query_where, _global.attendance_type.quiz, opening_attendance_id), function(error, result, fields) {
+                    query_where += " ) AND attendance_id = %L ";
+                    connection.query(format(`UPDATE attendance_detail SET attendance_type = %L WHERE ` + query_where, _global.attendance_type.quiz, opening_attendance_id), function(error, result, fields) {
                         if (error) {
                             callback(error);
                         } else {

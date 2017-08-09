@@ -2,8 +2,6 @@ import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { FileUploader } from "ng2-file-upload/ng2-file-upload";
 import { CourseService,TeacherService ,StudentService, AppService,ExcelService,ScheduleService  } from '../../shared.module';
 declare var jQuery :any;
-import * as FileSaver from 'file-saver';
-import * as JSZip from 'jszip';
 
 @Component({
     selector: 'export-modal',
@@ -30,7 +28,6 @@ export class ExportModalComponent implements OnInit {
     public file_name = '';
     public larger_modal = false;
     public onOpenModal() {
-        console.log(this.export_type);
         this.file_name = '';
         this.export_progress = 0;
         switch (this.export_type) {
