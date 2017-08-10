@@ -225,7 +225,11 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
 	public onSaveQuiz(){
 		this.quizService.saveQuiz(this.quiz,this.attendance_checked_list).subscribe(result=>{
 			if(result.result == 'failure'){
+				this.appService.showPNotify('failure',result.message,'error');
 				this.is_save_quiz_error = true;
+			}else{
+				this.appService.showPNotify('success',result.message,'success');
+				this.is_save_quiz_error = false;
 			}
 		},error=>{
 			this.is_save_quiz_error = true;

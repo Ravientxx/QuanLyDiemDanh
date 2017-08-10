@@ -42,7 +42,7 @@ export class ExcelService {
                         stt : cells[i][0],
                         stud_id : cells[i][1],
                         name : cells[i][2],
-                        phone : cells[i][2],
+                        phone : cells[i][3],
                     }
                     student_list.push(student);
                 }
@@ -221,77 +221,36 @@ export class ExcelService {
         });
     }
 
-
-
-
-
-
     public readTeacherListFile(file: any): Observable < { result: string, teacher_list: Array < any > , message: string } > {
         return new Observable < any > ((observer) => {
-                let reader: FileReader = new FileReader();
-                reader.onload = function(e: any) {
-                    var binaryString = e.target.result;
-                    var wb: XLSX.WorkBook = XLSX.read(binaryString, { type: 'binary' });
-                    observer.next(wb);
-                };
-                reader.readAsBinaryString(file);
-                return () => {
-                    reader.abort();
-                };
-            }).map((wb: XLSX.WorkBook) => {
-                return wb.SheetNames.map((sheetName: string) => {
-                    let sheet: XLSX.WorkSheet = wb.Sheets[sheetName];
-                    var i = 1;
-                    while (sheet['A' + i] !== undefined) {
-                        if (sheet['A' + i].v.toLowerCase() == 'stt') {
-                            i++;
-                            break;
-                        }
-                        i++;
-                    }
-                    var teachers: Array < any > = [];
-                    while (sheet['A' + i] !== undefined) {
-                        var desired_cell;
-                        var desired_value;
-                        desired_cell = sheet['B' + i];
-                        desired_value = (desired_cell ? desired_cell.v : undefined);
-                        var B = desired_value;
-
-                        desired_cell = sheet['C' + i];
-                        desired_value = (desired_cell ? desired_cell.v : undefined);
-                        var C = desired_value;
-
-                        if (B == undefined && C == undefined) {
-                            return { result: 'failure', message: 'Teacher name is required at line ' + i + ' : ' + file['name'] };
-                        }
-
-                        desired_cell = sheet['D' + i];
-                        desired_value = (desired_cell ? desired_cell.v : undefined);
-                        var D = desired_value;
-
-                        desired_cell = sheet['E' + i];
-                        desired_value = (desired_cell ? desired_cell.v : undefined);
-                        var E = desired_value;
-
-                        if (E == undefined) {
-                            return { result: 'failure', message: 'Teacher email is required at line ' + i + ' : ' + file['name'] };
-                        }
-
-                        var teacher = {
-                            'stt': sheet['A' + i].v,
-                            'first_name': B,
-                            'last_name': C,
-                            'phone': D,
-                            'email': E
-                        };
-                        teachers.push(teacher);
-                        i++;
-                    }
-                    return { result: 'success', message: 'Success', teacher_list: teachers };
+                XlsxPopulate.fromDataAsync(file)
+                .then(workbook => {
+                    observer.next(workbook.sheet(0));
                 });
-            })
-            .catch((error: any) => Observable.of({ result: 'failure', message: error }));
+            }).map((sheet: any) => {
+                var cells = sheet.usedRange().value();
+                var import_start = 0;
+                var teacher_list = [];
+                for(var i = 0 ; i < cells.length; i++){
+                    if(cells[i][0] == 'STT'){
+                        import_start = i+1;
+                        break;
+                    }
+                }
+                for(var i = import_start; i < cells.length; i++){
+                    var teacher = {
+                        stt : cells[i][0],
+                        first_name : cells[i][1],
+                        last_name : cells[i][2],
+                        phone : cells[i][3],
+                        email: cells[i][4]
+                    }
+                    teacher_list.push(teacher);
+                }
+                return { result: 'success', message: 'success', teacher_list : teacher_list};
+            }).catch((error: any) => Observable.of({ result: 'failure', message: error }));
     }
+
     public writeTeacherSearchList(teacher_list: any, file_name: string) {
         XlsxPopulate.fromBlankAsync()
             .then(workbook => {
@@ -316,213 +275,170 @@ export class ExcelService {
             });
     }
 
-
     public readCourseListFile(file: any): Observable < { result: string, course_list: Array < any > , message: string } > {
         return new Observable < any > ((observer) => {
-                let reader: FileReader = new FileReader();
-                reader.onload = function(e: any) {
-                    var binaryString = e.target.result;
-                    var wb: XLSX.WorkBook = XLSX.read(binaryString, { type: 'binary' });
-                    observer.next(wb);
-                };
-                reader.readAsBinaryString(file);
-                return () => {
-                    reader.abort();
-                };
-            }).map((wb: XLSX.WorkBook) => {
-                return wb.SheetNames.map((sheetName: string) => {
-                    let sheet: XLSX.WorkSheet = wb.Sheets[sheetName];
-                    var i = 1;
-                    while (sheet['A' + i] !== undefined) {
-                        if (sheet['A' + i].v.toLowerCase() == 'stt') {
-                            i++;
-                            break;
-                        }
-                        i++;
-                    }
-                    var courses: Array < any > = [];
-                    while (sheet['A' + i] !== undefined) {
-                        var desired_cell;
-                        var desired_value;
-                        desired_cell = sheet['B' + i];
-                        desired_value = (desired_cell ? desired_cell.v : undefined);
-                        var B = desired_value;
-                        if (B == undefined) {
-                            return { result: 'failure', message: 'Course code required at line ' + i + ' : ' + file['name'] };
-                        }
-                        desired_cell = sheet['C' + i];
-                        desired_value = (desired_cell ? desired_cell.v : undefined);
-                        var C = desired_value;
-                        if (C == undefined) {
-                            return { result: 'failure', message: 'Course name required at line ' + i + ' : ' + file['name'] };
-                        }
-                        desired_cell = sheet['D' + i];
-                        desired_value = (desired_cell ? desired_cell.v : undefined);
-                        var D = desired_value;
-                        if (D == undefined) {
-                            return { result: 'failure', message: 'Lecturers required at line ' + i + ' : ' + file['name'] };
-                        } else {
-                            D = D.split('\r\n');
-                        }
-                        desired_cell = sheet['E' + i];
-                        desired_value = (desired_cell ? desired_cell.v : undefined);
-                        var E = desired_value;
-                        if (E != undefined && E != NaN) E = E.split('\r\n');
-
-                        desired_cell = sheet['F' + i];
-                        desired_value = (desired_cell ? desired_cell.v : undefined);
-                        var F = desired_value;
-
-                        desired_cell = sheet['G' + i];
-                        desired_value = (desired_cell ? desired_cell.v : undefined);
-                        var G = desired_value;
-
-                        var course = {
-                            'stt': sheet['A' + i].v,
-                            'code': B,
-                            'name': C,
-                            'lecturers': D,
-                            'TAs': E,
-                            'office_hour': F,
-                            'note': G,
-                        };
-                        courses.push(course);
-                        i++;
-                    }
-                    return { result: 'success', message: 'Success', course_list: courses };
-                });
-            })
-            .catch((error: any) => Observable.of({ result: 'failure', message: error }));
+            XlsxPopulate.fromDataAsync(file)
+            .then(workbook => {
+                observer.next(workbook.sheet(0));
+            });
+        }).map((sheet: any) => {
+            var cells = sheet.usedRange().value();
+            var import_start = 0;
+            var course_list = [];
+            for(var i = 0 ; i < cells.length; i++){
+                if(cells[i][0] == 'STT'){
+                    import_start = i+1;
+                    break;
+                }
+            }
+            for(var i = import_start; i < cells.length; i++){
+                var course = {
+                    stt : cells[i][0],
+                    code : cells[i][1],
+                    name : cells[i][2],
+                    lecturers : cells[i][3],
+                    TAs : cells[i][4],
+                    office_hour : cells[i][5],
+                    note : cells[i][6],
+                }
+                course_list.push(course);
+            }
+            return { result: 'success', message: 'success', course_list : course_list};
+        }).catch((error: any) => Observable.of({ result: 'failure', message: error }));
     }
+
     public writeCourseSearchList(course_list: any, file_name: string) {
-        var ws_name = "Sheet1";
-        var wb = { SheetNames: [], Sheets: {} };
-        wb.SheetNames.push(ws_name);
-        var ws = {};
-        ws[XLSX.utils.encode_cell({ c: 0, r: 0 })] = { v: 'STT' };
-        ws[XLSX.utils.encode_cell({ c: 1, r: 0 })] = { v: 'Mã môn' };
-        ws[XLSX.utils.encode_cell({ c: 2, r: 0 })] = { v: 'Tên môn' };
-        ws[XLSX.utils.encode_cell({ c: 3, r: 0 })] = { v: 'GV Lý Thuyết' };
-        ws[XLSX.utils.encode_cell({ c: 4, r: 0 })] = { v: 'Trợ giảng' };
-        ws[XLSX.utils.encode_cell({ c: 5, r: 0 })] = { v: 'Office hour' };
-        ws[XLSX.utils.encode_cell({ c: 6, r: 0 })] = { v: 'Ghi chú' };
-        for (var i = 1; i <= course_list.length; i++) {
-            ws[XLSX.utils.encode_cell({ c: 0, r: i })] = { v: i };
-            ws[XLSX.utils.encode_cell({ c: 1, r: i })] = { v: course_list[i - 1].code };
-            ws[XLSX.utils.encode_cell({ c: 2, r: i })] = { v: course_list[i - 1].name };
-            ws[XLSX.utils.encode_cell({ c: 3, r: i })] = { v: course_list[i - 1].lecturers };
-            if (course_list[i - 1].TAs) ws[XLSX.utils.encode_cell({ c: 4, r: i })] = { v: course_list[i - 1].TAs };
-            if (course_list[i - 1].office_hour) ws[XLSX.utils.encode_cell({ c: 5, r: i })] = { v: course_list[i - 1].office_hour };
-            if (course_list[i - 1].note) ws[XLSX.utils.encode_cell({ c: 6, r: i })] = { v: course_list[i - 1].note };
-        }
-        ws['!ref'] = XLSX.utils.encode_range({ s: { c: 0, r: 0 }, e: { c: 6, r: course_list.length } });
-        wb.Sheets[ws_name] = ws;
-        var wbout = XLSX.write(wb, { bookType: 'xlsx', bookSST: false, type: 'binary' });
-        if (file_name == '') file_name = 'courses';
-        FileSaver.saveAs(new Blob([this.s2ab(wbout)], { type: "application/octet-stream" }), file_name + ".xlsx");
+        XlsxPopulate.fromBlankAsync()
+        .then(workbook => {
+            workbook.sheet("Sheet1").cell("A1").value("STT").style("border", true).style("horizontalAlignment", "center");
+            workbook.sheet("Sheet1").cell("B1").value("Mã môn").style("border", true).style("horizontalAlignment", "center");
+            workbook.sheet("Sheet1").cell("C1").value("Tên môn").style("border", true).style("horizontalAlignment", "center");
+            workbook.sheet("Sheet1").cell("D1").value("GV Lý Thuyết").style("border", true).style("horizontalAlignment", "center");
+            workbook.sheet("Sheet1").cell("E1").value("Trợ giảng").style("border", true).style("horizontalAlignment", "center");
+            workbook.sheet("Sheet1").cell("F1").value("Office hour").style("border", true).style("horizontalAlignment", "center");
+            workbook.sheet("Sheet1").cell("G1").value("Ghi chú").style("border", true).style("horizontalAlignment", "center");
+
+            for (var i = 0; i < course_list.length; i++) {
+                workbook.sheet("Sheet1").cell("A" + Math.floor(i + 2)).value(i + 1).style("border", true);
+                workbook.sheet("Sheet1").cell("B" + Math.floor(i + 2)).value(course_list[i].code).style("border", true);
+                workbook.sheet("Sheet1").cell("C" + Math.floor(i + 2)).value(course_list[i].name).style("border", true);
+                workbook.sheet("Sheet1").cell("D" + Math.floor(i + 2)).value(course_list[i].lecturers).style("border", true);
+                workbook.sheet("Sheet1").cell("E" + Math.floor(i + 2)).value(course_list[i].TAs).style("border", true);
+                workbook.sheet("Sheet1").cell("F" + Math.floor(i + 2)).value(course_list[i].office_hour).style("border", true);
+                workbook.sheet("Sheet1").cell("G" + Math.floor(i + 2)).value(course_list[i].note).style("border", true);
+            }
+            const range = workbook.sheet(0).range("A1:G"+Math.floor(course_list.length+4));
+            return workbook.outputAsync()
+                .then(function (blob) {
+                    if (file_name == '') file_name = 'courses';
+                    FileSaver.saveAs(blob, file_name + ".xlsx");
+                });
+        });
     }
+
     public writeCourseLists(course_lists: any) {
         var zip = new JSZip();
-        for (var j = 0; j < course_lists.length; j++) {
-            if (course_lists[j].length == 0) continue;
-            var course_list = course_lists[j];
-            var ws_name = "Sheet1";
-            var wb = { SheetNames: [], Sheets: {} };
-            wb.SheetNames.push(ws_name);
-            var ws = {};
-            ws[XLSX.utils.encode_cell({ c: 0, r: 0 })] = { v: 'STT' };
-            ws[XLSX.utils.encode_cell({ c: 1, r: 0 })] = { v: 'Mã môn' };
-            ws[XLSX.utils.encode_cell({ c: 2, r: 0 })] = { v: 'Tên môn' };
-            ws[XLSX.utils.encode_cell({ c: 3, r: 0 })] = { v: 'GV Lý Thuyết' };
-            ws[XLSX.utils.encode_cell({ c: 4, r: 0 })] = { v: 'Trợ giảng' };
-            ws[XLSX.utils.encode_cell({ c: 5, r: 0 })] = { v: 'Office hour' };
-            ws[XLSX.utils.encode_cell({ c: 6, r: 0 })] = { v: 'Ghi chú' };
-            for (var i = 1; i <= course_list.length; i++) {
-                ws[XLSX.utils.encode_cell({ c: 0, r: i })] = { v: i };
-                ws[XLSX.utils.encode_cell({ c: 1, r: i })] = { v: course_list[i - 1].code };
-                ws[XLSX.utils.encode_cell({ c: 2, r: i })] = { v: course_list[i - 1].name };
-                ws[XLSX.utils.encode_cell({ c: 3, r: i })] = { v: course_list[i - 1].lecturers };
-                if (course_list[i - 1].TAs) ws[XLSX.utils.encode_cell({ c: 4, r: i })] = { v: course_list[i - 1].TAs };
-                if (course_list[i - 1].office_hour) ws[XLSX.utils.encode_cell({ c: 5, r: i })] = { v: course_list[i - 1].office_hour };
-                if (course_list[i - 1].note) ws[XLSX.utils.encode_cell({ c: 6, r: i })] = { v: course_list[i - 1].note };
-            }
-            ws['!ref'] = XLSX.utils.encode_range({ s: { c: 0, r: 0 }, e: { c: 6, r: course_list.length } });
-            wb.Sheets[ws_name] = ws;
+        Async.each(course_lists, function(course_list,callback){
+             XlsxPopulate.fromBlankAsync()
+            .then(workbook => {
+                workbook.sheet("Sheet1").cell("A1").value("STT").style("border", true).style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("B1").value("Mã Môn").style("border", true).style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("C1").value("Tên Môn").style("border", true).style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("D1").value("GV Lý Thuyết").style("border", true).style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("E1").value("Trợ Giảng").style("border", true).style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("F1").value("Office hour").style("border", true).style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("G1").value("Ghi chú").style("border", true).style("horizontalAlignment", "center");
 
-            var wbout = XLSX.write(wb, { bookType: 'xlsx', bookSST: false, type: 'binary' });
-            zip.file(course_list[0].class_name + ".xlsx", new Blob([this.s2ab(wbout)]));
-        }
-        zip.generateAsync({ type: "blob" })
-            .then(function(content) {
-                // see FileSaver.js
-                FileSaver.saveAs(content, "courses.zip");
+                for (var i = 0; i < course_list.length; i++) {
+                    workbook.sheet("Sheet1").cell("A" + Math.floor(i + 2)).value(i + 1).style("border", true);
+                    workbook.sheet("Sheet1").cell("B" + Math.floor(i + 2)).value(course_list[i].code).style("border", true);
+                    workbook.sheet("Sheet1").cell("C" + Math.floor(i + 2)).value(course_list[i].name).style("border", true);
+                    workbook.sheet("Sheet1").cell("D" + Math.floor(i + 2)).value(course_list[i].lecturers).style("border", true);
+                    workbook.sheet("Sheet1").cell("E" + Math.floor(i + 2)).value(course_list[i].TAs).style("border", true);
+                    workbook.sheet("Sheet1").cell("F" + Math.floor(i + 2)).value(course_list[i].office_hour).style("border", true);
+                    workbook.sheet("Sheet1").cell("G" + Math.floor(i + 2)).value(course_list[i].note).style("border", true);
+                }
+                const range = workbook.sheet(0).range("A1:G"+Math.floor(course_list.length+4));
+                return workbook.outputAsync()
+                    .then(function (blob) {
+                        zip.file(course_list[0].class_name + ".xlsx", blob);
+                        callback();
+                    });
             });
+        }, function(error) {
+            if (error) {
+                console.log(error);
+            } else {
+                zip.generateAsync({ type: "blob" })
+                .then(function(content) {
+                    FileSaver.saveAs(content, "courses.zip");
+                });  
+            }
+        });
     }
+
+
 
     public writeScheduleSearchList(course_list: any, file_name: string) {
-        var ws_name = "Sheet1";
-        var wb = { SheetNames: [], Sheets: {} };
-        wb.SheetNames.push(ws_name);
-        var ws = {};
-        var wscols = [
-            {wch:20},
-            {wch:20},
-            {wch:20},
-            {wch:20},
-            {wch:20},
-            {wch:20},
-            {wch:20}
-        ];
-        ws['!cols'] = wscols;
-        var sessions = ['','','','','','','','','','','','','','','', '','','','', '','','','','',];
-        var time = ['(LT)7:30-9:10 \r\n (TH)7:30-9:30','(LT)9:30-11:10 \r\n (TH)9:30-11:30',
+        XlsxPopulate.fromBlankAsync()
+        .then(workbook => {
+            var sessions = ['','','','','','','','','','','','','','','', '','','','', '','','','','',];
+            var time = ['(LT)7:30-9:10 \r\n (TH)7:30-9:30','(LT)9:30-11:10 \r\n (TH)9:30-11:30',
                     '(LT)13:30-15:10 \r\n (TH)13:30-15:30','(LT)15:30-17:10 \r\n (TH)15:30-17:30'];
-        ws[XLSX.utils.encode_cell({ c: 0, r: 7 })] = { v: 'STT' };
-        ws[XLSX.utils.encode_cell({ c: 1, r: 7 })] = { v: 'Mã môn' };
-        ws[XLSX.utils.encode_cell({ c: 2, r: 7 })] = { v: 'Tên môn' };
-        ws[XLSX.utils.encode_cell({ c: 3, r: 7 })] = { v: 'GV Lý Thuyết' };
-        ws[XLSX.utils.encode_cell({ c: 4, r: 7 })] = { v: 'Trợ giảng' };
-        ws[XLSX.utils.encode_cell({ c: 5, r: 7 })] = { v: 'Office hour' };
-        ws[XLSX.utils.encode_cell({ c: 6, r: 7 })] = { v: 'Ghi chú' };
-        for (var i = 0; i < course_list.length; i++) {
-            ws[XLSX.utils.encode_cell({ c: 0, r: i + 8 })] = { v: i };
-            ws[XLSX.utils.encode_cell({ c: 1, r: i + 8 })] = { v: course_list[i].code };
-            ws[XLSX.utils.encode_cell({ c: 2, r: i + 8 })] = { v: course_list[i].name };
-            ws[XLSX.utils.encode_cell({ c: 3, r: i + 8 })] = { v: course_list[i].lecturers };
-            if (course_list[i].TAs) ws[XLSX.utils.encode_cell({ c: 4, r: i + 8 })] = { v: course_list[i].TAs };
-            if (course_list[i].office_hour) ws[XLSX.utils.encode_cell({ c: 5, r: i + 8 })] = { v: course_list[i].office_hour };
-            if (course_list[i].note) ws[XLSX.utils.encode_cell({ c: 6, r: i + 8})] = { v: course_list[i].note };
+            workbook.sheet("Sheet1").cell("A11").value("STT").style("border", true).style("horizontalAlignment", "center");
+            workbook.sheet("Sheet1").cell("B11").value("Mã môn").style("border", true).style("horizontalAlignment", "center");
+            workbook.sheet("Sheet1").cell("C11").value("Tên môn").style("border", true).style("horizontalAlignment", "center");
+            workbook.sheet("Sheet1").cell("D11").value("GV Lý Thuyết").style("border", true).style("horizontalAlignment", "center");
+            workbook.sheet("Sheet1").cell("E11").value("Trợ giảng").style("border", true).style("horizontalAlignment", "center");
+            workbook.sheet("Sheet1").cell("F11").value("Office hour").style("border", true).style("horizontalAlignment", "center");
+            workbook.sheet("Sheet1").cell("G11").value("Ghi chú").style("border", true).style("horizontalAlignment", "center");
 
-            var schedules = course_list[i].schedules.split(';');
-            for (var j = 0; j < schedules.length; j++) {
-                var temp = schedules[j].split('-');
-                var index = temp[0];
-                var room = temp[1];
-                var type = temp[2];
-                sessions[index] += course_list[i].code + '-' + course_list[i].class_name + '-' + room + '-' + type + '\r\n';
+            for (var i = 0; i < course_list.length; i++) {
+                workbook.sheet("Sheet1").cell("A" + Math.floor(i + 12)).value(i + 1).style("border", true);
+                workbook.sheet("Sheet1").cell("B" + Math.floor(i + 12)).value(course_list[i].code).style("border", true);
+                workbook.sheet("Sheet1").cell("C" + Math.floor(i + 12)).value(course_list[i].name).style("border", true);
+                workbook.sheet("Sheet1").cell("D" + Math.floor(i + 12)).value(course_list[i].lecturers).style("border", true);
+                workbook.sheet("Sheet1").cell("E" + Math.floor(i + 12)).value(course_list[i].TAs).style("border", true);
+                workbook.sheet("Sheet1").cell("F" + Math.floor(i + 12)).value(course_list[i].office_hour).style("border", true);
+                workbook.sheet("Sheet1").cell("G" + Math.floor(i + 12)).value(course_list[i].note).style("border", true);
+
+                var schedules = course_list[i].schedules.split(';');
+                for (var j = 0; j < schedules.length; j++) {
+                    var temp = schedules[j].split('-');
+                    var index = temp[0];
+                    var room = temp[1];
+                    var type = temp[2];
+                    sessions[index] += course_list[i].code + '-' + course_list[i].class_name + '-' + room + '-' + type + '\r\n';
+                }
             }
-        }
-        ws[XLSX.utils.encode_cell({ c: 1, r: 0 })] = { v: '2' };
-        ws[XLSX.utils.encode_cell({ c: 2, r: 0 })] = { v: '3' };
-        ws[XLSX.utils.encode_cell({ c: 3, r: 0 })] = { v: '4' };
-        ws[XLSX.utils.encode_cell({ c: 4, r: 0 })] = { v: '5' };
-        ws[XLSX.utils.encode_cell({ c: 5, r: 0 })] = { v: '6' };
-        ws[XLSX.utils.encode_cell({ c: 6, r: 0 })] = { v: '7' };
-        for(var i = 0 ; i < 4; i++){
-            ws[XLSX.utils.encode_cell({ c: 0, r: i+1 })] = { v: time[i] };
-            ws[XLSX.utils.encode_cell({ c: 1, r: i+1 })] = { v: sessions[i] };
-            ws[XLSX.utils.encode_cell({ c: 2, r: i+1 })] = { v: sessions[i + 4*1] };
-            ws[XLSX.utils.encode_cell({ c: 3, r: i+1 })] = { v: sessions[i + 4*2] };
-            ws[XLSX.utils.encode_cell({ c: 4, r: i+1 })] = { v: sessions[i + 4*3] };
-            ws[XLSX.utils.encode_cell({ c: 5, r: i+1 })] = { v: sessions[i + 4*4] };
-            ws[XLSX.utils.encode_cell({ c: 6, r: i+1 })] = { v: sessions[i + 4*5] };
-        }
-        ws['!ref'] = XLSX.utils.encode_range({ s: { c: 0, r: 0 }, e: { c: 6, r: course_list.length + 7 } });
-        wb.Sheets[ws_name] = ws;
-        var wbout = XLSX.write(wb, { bookType: 'xlsx', bookSST: false, type: 'binary' });
-        if (file_name == '') file_name = 'schedule';
-        FileSaver.saveAs(new Blob([this.s2ab(wbout)], { type: "application/octet-stream" }), file_name + ".xlsx");
+
+            workbook.sheet("Sheet1").cell("A4").value("").style("border", true).style("horizontalAlignment", "center");
+            workbook.sheet("Sheet1").cell("B4").value("2").style("border", true).style("horizontalAlignment", "center");
+            workbook.sheet("Sheet1").cell("C4").value("3").style("border", true).style("horizontalAlignment", "center");
+            workbook.sheet("Sheet1").cell("D4").value("4").style("border", true).style("horizontalAlignment", "center");
+            workbook.sheet("Sheet1").cell("E4").value("5").style("border", true).style("horizontalAlignment", "center");
+            workbook.sheet("Sheet1").cell("F4").value("6").style("border", true).style("horizontalAlignment", "center");
+            workbook.sheet("Sheet1").cell("G4").value("7").style("border", true).style("horizontalAlignment", "center");
+
+            for(var i = 0 ; i < 4; i++){
+                workbook.sheet("Sheet1").cell("A" + Math.floor(i+5)).value(time[i]).style("border", true).style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("B" + Math.floor(i+5)).value(sessions[i]).style("border", true).style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("C" + Math.floor(i+5)).value(sessions[i + 4]).style("border", true).style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("D" + Math.floor(i+5)).value(sessions[i + 8]).style("border", true).style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("E" + Math.floor(i+5)).value(sessions[i + 12]).style("border", true).style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("F" + Math.floor(i+5)).value(sessions[i + 16]).style("border", true).style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("G" + Math.floor(i+5)).value(sessions[i + 20]).style("border", true).style("horizontalAlignment", "center");
+            }
+
+            const range = workbook.sheet(0).range("A1:G"+Math.floor(course_list.length+12));
+            return workbook.outputAsync()
+                .then(function (blob) {
+                    if (file_name == '') file_name = 'schedule';
+                    FileSaver.saveAs(blob, file_name + ".xlsx");
+                });
+        });
     }
+
 
 
     public readAttendanceListFile(file: any) : Observable < { result: string, attendance_list: Array < any > , message: string } >{

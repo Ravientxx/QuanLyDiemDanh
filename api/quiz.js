@@ -93,17 +93,23 @@ router.post('/published', function(req, res, next) {
         return console.log("quiz_code is required");
     }
     var quiz_code = req.body.quiz_code;
-    for (var i = 0; i < published_quizzes.length; i++) {
-        if (quiz_code == published_quizzes[i].code) {
-            res.send({
-                result: 'success',
-                quiz: published_quizzes[i]
-            });
-            return console.log('Get published quiz successfully------------------------');
+    fs.readFile('./api/data/quiz/' + quiz_code + '.json', 'utf8', function (error, data) {
+        if (error){
+            if (err.code === 'ENOENT') {
+                _global.sendError(res, null, 'Invalid code! The quiz might be already closed');
+                return console.log('Invalid code! The quiz might be already closed');
+            } else {
+                _global.sendError(res, error.message);
+                return console.log(error);
+            }
         }
-    }
-    _global.sendError(res, null, 'Invalid code! The quiz might be already closed');
-    return console.log('Invalid code! The quiz might be already closed');
+        var quiz = JSON.parse(data);
+        res.send({
+            result: 'success',
+            quiz: quiz
+        });
+        return console.log('Get published quiz successfully------------------------');
+    });
 });
 
 //teacher : notify that teacher has started quiz
@@ -113,18 +119,31 @@ router.post('/start', function(req, res, next) {
         return console.log("quiz_code is required");
     }
     var quiz_code = req.body.quiz_code;
-    for (var i = 0; i < published_quizzes.length; i++) {
-        if (quiz_code == published_quizzes[i].code) {
-            published_quizzes[i]['is_started'] = true;
-            published_quizzes[i]['started_at'] = new Date();
+    fs.readFile('./api/data/quiz/' + quiz_code + '.json', 'utf8', function (error, data) {
+        if (error){
+            if (err.code === 'ENOENT') {
+                _global.sendError(res, null, 'Invalid code! The quiz not found');
+                return console.log('Invalid code! The quiz not found');
+            } else {
+                _global.sendError(res, error.message);
+                return console.log(error);
+            }
+        }
+        var quiz = JSON.parse(data);
+        quiz['is_started'] = true;
+        quiz['started_at'] = new Date();
+        //ghi file
+        fs.writeFile('./api/data/quiz/' + quiz_code + '.json',JSON.stringify(quiz),function(error) {
+            if(error) {
+                _global.sendError(res, error.message);
+                return console.log(error);
+            }
             res.send({
                 result: 'success',
             });
             return console.log('Start quiz successfully------------------------');
-        }
-    }
-    _global.sendError(res, null, 'Invalid code! The quiz not found');
-    return console.log('Invalid code! The quiz not found');
+        })
+    });
 });
 
 //Teacher : publish quiz
@@ -264,10 +283,15 @@ router.post('/publish', function(req, res, next) {
                     new_quiz.questions[i - 1].option_d = options_j[random_index];
                     options_j.splice(random_index, 1);
                 }
-                published_quizzes.push(new_quiz);
-                console.log('success publish quiz---------------------------------------');
-                res.send({ result: 'success', quiz_code: new_quiz.code, message: 'Publish quiz successfully' });
-                done();
+                fs.writeFile('./api/data/quiz/' + new_quiz.code + '.json',JSON.stringify(new_quiz),function(error) {
+                    if(error) {
+                        _global.sendError(res, error.message);
+                        return console.log(error);
+                    }
+                    console.log('success publish quiz---------------------------------------');
+                    res.send({ result: 'success', quiz_code: new_quiz.code, message: 'Publish quiz successfully' });
+                    done();
+                });
             }
         });
     });
@@ -281,14 +305,14 @@ router.post('/stop', function(req, res, next) {
     }
     var quiz_code = req.body.quiz_code;
 
-    for (var i = 0; i < published_quizzes.length; i++) {
-        if (quiz_code == published_quizzes[i].code) {
-            published_quizzes.splice(i, 1);
-            break;
-        }
-    }
-    console.log('success stop quiz---------------------------------------');
-    res.send({ result: 'success', message: 'Stop quiz successfully' });
+    fs.unlink('./api/data/quiz/' + quiz_code + '.json', (error) => {
+        if (error){
+            _global.sendError(res, error.message,error);
+            return console.log(error);
+        };
+        console.log('success stop quiz---------------------------------------');
+        res.send({ result: 'success', message: 'Stop quiz successfully' });
+    });
 });
 
 router.post('/join', function(req, res, next) {
@@ -298,39 +322,51 @@ router.post('/join', function(req, res, next) {
     }
     var code = req.body.code;
     var student_id = req.decoded.id;
-    var check = false;
-    for (var i = 0; i < published_quizzes.length; i++) {
-        if (code == published_quizzes[i].code) {
-            if (published_quizzes[i]['is_started']) {
-                _global.sendError(res, null, 'Cannot join because quiz is already started');
-                return console.log('Cannot join because quiz is already started');
+    fs.readFile('./api/data/quiz/' + code + '.json', 'utf8', function (error, data) {
+        if (error){
+            if (error.code === 'ENOENT') {
+                _global.sendError(res, null, 'Invalid code! The quiz might be already closed');
+                return console.log('Invalid code! The quiz might be already closed');
+            } else {
+                _global.sendError(res, error.message);
+                return console.log(error);
             }
-            check = true;
-            var class_has_course_id = published_quizzes[i].class_has_course_id;
-            var participants = published_quizzes[i].participants;
-            for(var i = 0 ; i < participants.length; i++){
-                if(participants[i].id == student_id){
-                    _global.sendError(res, null, "You're already joined this quiz.");
-                    return console.log("You're already joined this quiz.");
-                }
+        }
+        var quiz = JSON.parse(data);
+        if (quiz['is_started']) {
+            _global.sendError(res, null, 'Cannot join because quiz is already started');
+            return console.log('Cannot join because quiz is already started');
+        }
+        var class_has_course_id = quiz.class_has_course_id;
+        var participants = quiz.participants;
+        for(var j = 0 ; j < participants.length; j++){
+            if(participants[j].id == student_id){
+                _global.sendError(res, null, "You're already joined this quiz.");
+                return console.log("You're already joined this quiz.");
             }
-            pool_postgres.connect(function(error, connection, done) {
-                connection.query(format(`SELECT * FROM student_enroll_course, students WHERE class_has_course_id = %L AND student_id = %L AND student_id = students.id`, class_has_course_id, student_id), function(error, result, fields) {
-                    if (error) {
-                        _global.sendError(res, null, error.message);
+        }
+        pool_postgres.connect(function(error, connection, done) {
+            connection.query(format(`SELECT * FROM student_enroll_course, students WHERE class_has_course_id = %L AND student_id = %L AND student_id = students.id`, class_has_course_id, student_id), function(error, result, fields) {
+                if (error) {
+                    _global.sendError(res, null, error.message);
+                    done();
+                    return console.log(error);
+                } else {
+                    if (result.rowCount == 0) {
+                        _global.sendError(res, null, 'You are not in this course');
                         done();
-                        return console.log(error);
+                        return console.log('You are not in this course');
                     } else {
-                        if (result.rowCount == 0) {
-                            _global.sendError(res, null, 'You are not in this course');
-                            done();
-                            return console.log('You are not in this course');
-                        } else {
-                            participants.push({
-                                id: student_id,
-                                code: result.rows[0].stud_id,
-                                name: req.decoded.first_name + ' ' + req.decoded.last_name,
-                            });
+                        participants.push({
+                            id: student_id,
+                            code: result.rows[0].stud_id,
+                            name: req.decoded.first_name + ' ' + req.decoded.last_name,
+                        });
+                        fs.writeFile('./api/data/quiz/' + code.toString() + '.json',JSON.stringify(quiz),function(error) {
+                            if(error) {
+                                _global.sendError(res, error.message);
+                                return console.log(error);
+                            }
                             res.send({
                                 result: 'success'
                             });
@@ -338,16 +374,12 @@ router.post('/join', function(req, res, next) {
                             var socket = req.app.get('socket');
                             socket.emit('joinedQuiz', { 'quiz_code': code.toString() });
                             return console.log('Join quiz successfully------------------------');
-                        }
+                        });
                     }
-                });
+                }
             });
-        }
-    }
-    if (check == false) {
-        _global.sendError(res, null, 'Invalid code! The quiz might be already closed');
-        return console.log('Invalid code! The quiz might be already closed');
-    }
+        });
+    });
 });
 
 router.post('/quit', function(req, res, next) {
@@ -357,16 +389,28 @@ router.post('/quit', function(req, res, next) {
     }
     var code = req.body.code;
     var student_id = req.decoded.id;
-    var check = false;
-    for (var i = 0; i < published_quizzes.length; i++) {
-        if (code == published_quizzes[i].code) {
-            check = true;
-            var participants = published_quizzes[i].participants;
-            for (var j = 0; j < participants.length; j++) {
-                if (participants[j].id == student_id) {
-                    participants.splice(j, 1);
-                    break;
-                }
+    fs.readFile('./api/data/quiz/' + code + '.json', 'utf8', function (error, data) {
+        if (error){
+            if (error.code === 'ENOENT') {
+                _global.sendError(res, null, 'Invalid code! The quiz might be already closed');
+                return console.log('Invalid code! The quiz might be already closed');
+            } else {
+                _global.sendError(res, error.message);
+                return console.log(error);
+            }
+        }
+        var quiz = JSON.parse(data);
+        var participants = quiz.participants;
+        for (var j = 0; j < participants.length; j++) {
+            if (participants[j].id == student_id) {
+                participants.splice(j, 1);
+                break;
+            }
+        }
+        fs.writeFile('./api/data/quiz/' + code + '.json',JSON.stringify(quiz),function(error) {
+            if(error) {
+                _global.sendError(res, error.message);
+                return console.log(error);
             }
             res.send({
                 result: 'success'
@@ -374,12 +418,8 @@ router.post('/quit', function(req, res, next) {
             var socket = req.app.get('socket');
             socket.emit('quittedQuiz', { 'quiz_code': code, 'student_id':student_id });
             return console.log('Quitted quiz successfully------------------------');
-        }
-    }
-    if (check == false) {
-        _global.sendError(res, null, 'Invalid code! The quiz might be already closed');
-        return console.log('Invalid code! The quiz might be already closed');
-    }
+        })
+    });
 });
 
 router.post('/delete', function(req, res, next) {
@@ -759,6 +799,17 @@ router.post('/save', function(req, res, next) {
                     callback();
                 }
             },
+            //delete quiz
+            function(callback){
+                fs.unlink('./api/data/quiz/' + quiz.code + '.json', (error) => {
+                    if (error){
+                        callback(error);
+                    }
+                    else{
+                        callback();
+                    }
+                });
+            },
             //Commit transaction
             function(callback) {
                 connection.query('COMMIT', (error) => {
@@ -775,12 +826,6 @@ router.post('/save', function(req, res, next) {
                 done();
                 return console.log(error);
             } else {
-                for(var i = 0 ; i < published_quizzes.length; i++){
-                    if(quiz.code.toString() == published_quizzes[i].code.toString()){
-                        published_quizzes.splice(i,1);
-                        break;
-                    }
-                }
                 console.log('success save quiz---------------------------------------');
                 res.send({ result: 'success', message: 'Save quiz successfully' });
                 done();
@@ -796,7 +841,7 @@ router.post('/misc-question', function(req, res, next) {
     var number_of_question = req.body.number_of_question ? req.body.number_of_question : 3;
     var questions = [];
 
-    fs.readFile('./api/data/misc_quiz.json', 'utf8', function (error, data) {
+    fs.readFile('./api/data/quiz/misc_quiz.json', 'utf8', function (error, data) {
         if (error){
             _global.sendError(res, error.message);
             return console.log(error);

@@ -322,6 +322,9 @@ export class CourseDetailStaffComponent implements OnInit {
     @ViewChild(ImportModalComponent)
     public  importModal: ImportModalComponent;
     public onCloseImport(attendance_list : any){
+        if(attendance_list == 'close'){
+            return;
+        }
         var temp_attendance_list = this.temp_attendance_lists[this.selected_class_index];
         for(var i = 0 ; i < attendance_list.length; i++){
             var check_new_student = true;
