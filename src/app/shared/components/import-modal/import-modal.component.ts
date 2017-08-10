@@ -11,7 +11,7 @@ export class ImportModalComponent implements OnInit {
 	@Input() public title : string;
     @Input() public note: string;
     @Input() public import_type: number;
-    @Output() public onClose : EventEmitter<string> = new EventEmitter<string>();
+    @Output() public onClose : EventEmitter<any> = new EventEmitter<any>();
     public constructor(public excelService : ExcelService,public appService : AppService,public studentService: StudentService,
         public teacherService:TeacherService, public courseService: CourseService) { }
     public ngOnInit() {
@@ -181,13 +181,8 @@ export class ImportModalComponent implements OnInit {
                 return;
             }
             if (result.result == 'success') {
-                // var course_list = result.attendance_list.slice();
-                // var class_name = this.import_list[file_index].file['name'].split('.')[0];
-                // this.courseService.importCourse(class_name,course_list).subscribe(result=>{
-                //     this.readFileCallback(file_index,result);
-                // },error=>{
-                //     this.readFileCallback(file_index,{result:'failure',message:"Server error ! Can't import course"});
-                // });
+                jQuery("#importModal").modal("hide");
+                this.onClose.emit(result.attendance_list);
             }
         }, error => {
             this.readFileCallback(file_index,{result:'failure',message:"Service error"});

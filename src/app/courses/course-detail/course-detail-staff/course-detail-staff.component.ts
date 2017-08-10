@@ -321,15 +321,67 @@ export class CourseDetailStaffComponent implements OnInit {
     public import_title;
     @ViewChild(ImportModalComponent)
     public  importModal: ImportModalComponent;
-    public onCloseImport(event : any){
-        this.getAttendanceList();
+    public onCloseImport(attendance_list : any){
+        var temp_attendance_list = this.temp_attendance_lists[this.selected_class_index];
+        for(var i = 0 ; i < attendance_list.length; i++){
+            var check_new_student = true;
+            for(var j = 0 ; j < temp_attendance_list.length; j++){
+                if(attendance_list[i].code.toString() == temp_attendance_list[j].code.toString()){
+                    var length = 0;
+                    if(attendance_list[i].attendance_details.length < temp_attendance_list[j].attendance_details.length){
+                        length = attendance_list[i].attendance_details.length;
+                    }else{
+                        length = temp_attendance_list[j].attendance_details.length;
+                    }
+                    for(var k = 0 ; k < length; k++){
+                        temp_attendance_list[j].attendance_details[k].attendance_type = attendance_list[i].attendance_details[k].attendance_type;
+                        temp_attendance_list[j].attendance_details[k].attendance_time = new Date();
+                        temp_attendance_list[j].attendance_details[k].icon = attendance_list[i].attendance_details[k].icon;
+                        temp_attendance_list[j].attendance_details[k].method = attendance_list[i].attendance_details[k].method;
+                    }
+                    check_new_student = false;
+                    break;
+                }
+            }
+            if(check_new_student){
+                var attendance = {
+                    id: 0,
+                    code: attendance_list[i].code,
+                    name: attendance_list[i].name,
+                    attendance_details: []
+                };
+                if(temp_attendance_list.length > 0 && temp_attendance_list[0].attendance_details.length > 0){
+                    var length = 0;
+                    if(attendance_list[i].attendance_details.length < temp_attendance_list[0].attendance_details.length){
+                        length = attendance_list[i].attendance_details.length;
+                    }else{
+                        length = temp_attendance_list[0].attendance_details.length;
+                    }
+                    for (var j = 0; j < length; j++) {
+                        var attendance_detail = {
+                            attendance_id: temp_attendance_list[0].attendance_details[j].attendance_id,
+                            attendance_type: attendance_list[i].attendance_details[j].attendance_type,
+                            attendance_time: new Date(),
+                            created_at: temp_attendance_list[0].attendance_details[j].created_at,
+                            edited_reason: null,
+                            edited_by: null,
+                            editor: null,
+                            icon: attendance_list[i].attendance_details[j].icon,
+                            method: attendance_list[i].attendance_details[j].method,
+                        };
+                        attendance.attendance_details.push(attendance_detail);
+                    }
+                }
+                temp_attendance_list.push(attendance);
+            }
+        }
     }
     public onImportAttendanceList(){
-        this.import_title = 'Import Attendance List ' + this.class_has_course[this.selected_class_index].class_name;
+        this.import_title = 'Load Attendance List For' + this.class_has_course[this.selected_class_index].class_name;
         this.importModal.onOpenModal();
     }
 
     public onExportAttendanceList(){
-        this.excelService.writeAttendanceList(this.attendance_list,this.course['code'] + ' - ' + this.course['name'] + ' (' + this.course['semester_name'] + ')');
+        this.excelService.writeAttendanceList(this.attendance_list,this.course['code'] + ' - ' + this.course['name'] + ' - ' + this.class_has_course[this.selected_class_index].class_name + ' (' + this.course['semester_name'] + ')');
     }
 }

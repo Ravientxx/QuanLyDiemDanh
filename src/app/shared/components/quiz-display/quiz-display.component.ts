@@ -233,7 +233,6 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
 		});
 	}
 	public onEndQuiz(){
-
 		this.studentService.getStudentByCourse(this.selected_attendance['course_id'],this.selected_attendance['class_id']).subscribe(result=>{
 			if(result.result == 'success'){
 				this.student_list = result.student_list;
@@ -251,7 +250,7 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
 											check_no_answer++;
 											continue;
 										}
-										if(this.quiz['questions'][k]['correct_option'] == this.quiz['questions']['option_' + this.quiz['questions'][k]['answers'][l]['selected_option'].toLowerCase()]){
+										if(this.quiz['questions'][k]['correct_option'] == this.quiz['questions'][k]['option_' + this.quiz['questions'][k]['answers'][l]['selected_option'].toLowerCase()]){
 											check_right_answer++;
 										}
 									}
@@ -287,6 +286,7 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
 									name : this.student_list[i]['name']
 								});
 							}else{
+								console.log(check_right_answer);
 								if(check_right_answer < this.miscellaneous_threshold){
 									this.attendance_not_checked_list.push({
 										id : this.student_list[i]['id'],

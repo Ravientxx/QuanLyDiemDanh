@@ -775,6 +775,12 @@ router.post('/save', function(req, res, next) {
                 done();
                 return console.log(error);
             } else {
+                for(var i = 0 ; i < published_quizzes.length; i++){
+                    if(quiz.code.toString() == published_quizzes[i].code.toString()){
+                        published_quizzes.splice(i,1);
+                        break;
+                    }
+                }
                 console.log('success save quiz---------------------------------------');
                 res.send({ result: 'success', message: 'Save quiz successfully' });
                 done();

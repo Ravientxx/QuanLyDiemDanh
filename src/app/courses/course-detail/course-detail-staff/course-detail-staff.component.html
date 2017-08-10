@@ -56,8 +56,8 @@
             <br>
             <div>
                 <div class="pull-right">
-                    <button *ngIf="!course['not_in_current_course']" type="button" class="btn btn-primary btn-round" (click)="onEditAttendance()"> <i class="fa fa-pencil"></i> Edit Attendance</button>
-                    <button type="button" class="btn btn-primary btn-round" (click)="onImportAttendanceList()"> <i class="fa fa-upload"></i> Import</button>
+                    <button *ngIf="!course['not_in_current_course'] && !isEdittingAttendance" type="button" class="btn btn-primary btn-round" (click)="onEditAttendance()"> <i class="fa fa-pencil"></i> Edit Attendance</button>
+                    <button *ngIf="isEdittingAttendance" type="button" class="btn btn-primary btn-round" (click)="onImportAttendanceList()"> <i class="fa fa-upload"></i> Import</button>
                     <button type="button" class="btn btn-primary btn-round" (click)="onExportAttendanceList()"> <i class="fa fa-download"></i> Export</button>
                 </div>
                 <ul class="nav nav-tabs" *ngIf="class_has_course.length > 1">
