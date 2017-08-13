@@ -1,3 +1,5 @@
+var fs = require('fs');
+var nodemailer = require('nodemailer');
 module.exports = {
     db: {
         host: 'localhost',
@@ -85,6 +87,36 @@ module.exports = {
 
     sendError: function(res, detail = null, message = "Server error") {
         res.send({ result: 'failure', detail: detail, message: message });
+    },
+
+    sendMail: function(from, to, subject, text) {
+        fs.readFile('./api/data/settings.json', 'utf8', function (error, data) {
+            if (error){
+                if (error.code === 'ENOENT') {
+                    return console.log('Setting file not found');
+                } else {
+                    return console.log(error);
+                }
+            }
+            var settings = JSON.parse(data);
+            for(var i = 0 ; i < settings.emails.length; i++){
+                if(settings.selected_host == settings.emails[i].host_name){
+                    let transporter = nodemailer.createTransport(settings.emails[i].config);
+                    let mailOptions = {
+                        from: from + ' <' + settings.emails[i].config.auth.user + '>',
+                        to: to,
+                        subject: subject,
+                        text: text,
+                    };
+                    transporter.sendMail(mailOptions, (error, info) => {
+                        if (error) {
+                            return console.log(error);
+                        }
+                        console.log('Message %s sent: %s', info.messageId, info.response);
+                    });
+                }
+            }
+        });
     },
 
     filterListByPage: function(page, limit, list) {

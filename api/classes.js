@@ -166,28 +166,21 @@ router.post('/create', function(req, res, next) {
                                 return console.log(error);
                             }
                             else {
-                                let transporter = nodemailer.createTransport(_global.email_setting);
                                 async.each(new_student_list, function(student, callback) {
                                     var token = jwt.sign({ email: student.email }, _global.jwt_secret_key, { expiresIn: _global.jwt_register_expire_time });
                                     var link = _global.host + '/register;token=' + token;
-                                    let mailOptions = {
-                                        from: '"Giáo vụ"',
-                                        to: student.email,
-                                        subject: 'Register your account',
-                                        text: 'Hi,'+ student.name + '\r\n' + 
-                                            'Your account has been created.To setup your account for the first time, please go to the following web address: \r\n\r\n' +
-                                            link + 
-                                            '\r\n(This link is valid for 7 days from the time you received this email)\r\n\r\n' +
-                                            'If you need help, please contact the site administrator,\r\n' +
-                                            'Admin User \r\n\r\n' +
-                                            'admin@fit.hcmus.edu.vn'
-                                    };
-                                    transporter.sendMail(mailOptions, (error, info) => {
-                                        if (error) {
-                                            console.log(error);
-                                        }
-                                        console.log('Message %s sent: %s', info.messageId, info.response);
-                                    });
+                                    _global.sendMail(
+                                        '"Giáo vụ"',
+                                        student.email,
+                                        'Register your account',
+                                        'Hi,'+ student.name + '\r\n' + 
+                                        'Your account has been created.To setup your account for the first time, please go to the following web address: \r\n\r\n' +
+                                        link + 
+                                        '\r\n(This link is valid for 7 days from the time you received this email)\r\n\r\n' +
+                                        'If you need help, please contact the site administrator,\r\n' +
+                                        'Admin User \r\n\r\n' +
+                                        'admin@fit.hcmus.edu.vn'
+                                    );
                                     callback();
                                 }, function(error) {
                                     if (error) {

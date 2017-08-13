@@ -235,21 +235,14 @@ router.post('/send-reply', function(req, res, next) {
                     done();
                     return console.log(error);
                 }
-
-                let transporter = nodemailer.createTransport(_global.email_setting);
-                let mailOptions = {
-                    from: '"Giáo vụ", giaovu@fit.hcmus.edu.vn', // sender address
-                    to: email, // list of receivers
-                    subject: 'Reply your feedback ' + title, // Subject line
-                    text: `Hi ` + last_name +`,\r\n\r\nTo your feedback:\r\n` + reply_content + `\r\n Reply by ` + req.decoded.first_name + ` ` + req.decoded.last_name + `.\r\n\r\nIf you need help, please contact giaovu@fit.hcmus.edu.vn`,
-                };
-                transporter.sendMail(mailOptions, (error, info) => {
-                    if (error) {
-                        done();
-                        return console.log(error);
-                    }
-                    console.log('Message %s sent: %s', info.messageId, info.response);
-                });
+                var token = jwt.sign({ email: new_email }, _global.jwt_secret_key, { expiresIn: _global.jwt_register_expire_time });
+                var link = _global.host + '/register;token=' + token;
+                _global.sendMail(
+                    '"Giáo vụ"',
+                    email,
+                    'Reply your feedback ' + title,
+                    `Hi ` + last_name +`,\r\n\r\nTo your feedback:\r\n` + reply_content + `\r\n Reply by ` + req.decoded.first_name + ` ` + req.decoded.last_name + `.\r\n\r\nIf you need help, please contact giaovu@fit.hcmus.edu.vn`
+                );
 
                 connection.query(format(`INSERT INTO notifications (to_id,from_id,message,object_id,type) VALUES %L RETURNING id`, [[
                         reply_to,

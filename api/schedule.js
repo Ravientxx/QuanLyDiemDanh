@@ -391,7 +391,6 @@ router.post('/import/', function(req, res, next) {
                                                 role : _global.ta_role
                                             });
                                         }
-                                        let transporter = nodemailer.createTransport(_global.email_setting);
                                         async.each(teachers, function(teacher, callback) {
                                             var is_new_teacher = true;
                                             var teacher_id = 0;

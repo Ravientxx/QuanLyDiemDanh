@@ -10,6 +10,7 @@ var async = require("async");
 var pg = require('pg');
 var format = require('pg-format');
 const pool_postgres = new pg.Pool(_global.db_postgres);
+var fs = require('fs');
 
 router.use(function(req, res, next) {
     // check header or url parameters or post parameters for token
@@ -90,6 +91,58 @@ router.get('/semesters-programs-classes', function(req, res, next) {
     });
 });
 
+router.get('/settings', function(req, res, next) {
+    if(req.decoded.role_id != _global.role.admin){
+        _global.sendError(res, null, "You dont have permission to access");
+        return console.log("You dont have permission to access");
+    }
+    fs.readFile('./api/data/settings.json', 'utf8', function (error, data) {
+        if (error){
+            if (err.code === 'ENOENT') {
+                _global.sendError(res, null, 'Setting file not found');
+                return console.log('Setting file not found');
+            } else {
+                _global.sendError(res, error.message);
+                return console.log(error);
+            }
+        }
+        var settings = JSON.parse(data);
+        res.send({
+                result: 'success',
+                settings : settings
+            });
+        return console.log('get settings successfully------------------------');
+    });
+});
+
+router.post('/settings', function(req, res, next) {
+    if(req.decoded.role_id != _global.role.admin){
+        _global.sendError(res, null, "You dont have permission to access");
+        return console.log("You dont have permission to access");
+    }
+    if(req.body.settings != undefined || req.body.settings == ''){
+        _global.sendError(res, null, "Settings are required");
+        return console.log("Settings are required");
+    }
+    fs.readFile('./api/data/settings.json', 'utf8', function (error, data) {
+        if (error){
+            if (err.code === 'ENOENT') {
+                _global.sendError(res, null, 'Setting file not found');
+                return console.log('Setting file not found');
+            } else {
+                _global.sendError(res, error.message);
+                return console.log(error);
+            }
+        }
+        var settings = JSON.parse(data);
+        res.send({
+            result: 'success',
+            settings : settings
+        });
+        return console.log('Save settings successfully------------------------');
+    });
+});
+
 router.get('/staffs', function(req, res, next) {
     pool_postgres.connect(function(error, connection, done) {
         connection.query(`SELECT * FROM users WHERE role_id = 3`, function(error, result, fields) {
@@ -167,28 +220,20 @@ router.post('/add-staff', function(req, res, next) {
                         done();
                         return console.log("Email already existed");
                     }else{
-                        let transporter = nodemailer.createTransport(_global.email_setting);
                         var token = jwt.sign({ email: new_email }, _global.jwt_secret_key, { expiresIn: _global.jwt_register_expire_time });
-                        console.log(token);
                         var link = _global.host + '/register;token=' + token;
-                        let mailOptions = {
-                            from: '"Giáo vụ"',
-                            to: new_email,
-                            subject: 'Register your account',
-                            text: 'Hi,'+ new_first_name + '\r\n' + 
-                                'Your account has been created.To setup your account for the first time, please go to the following web address: \r\n\r\n' +
-                                link + 
-                                '\r\n(This link is valid for 7 days from the time you received this email)\r\n\r\n' +
-                                'If you need help, please contact the site administrator,\r\n' +
-                                'Admin User \r\n\r\n' +
-                                'admin@fit.hcmus.edu.vn'
-                        };
-                        transporter.sendMail(mailOptions, (error, info) => {
-                            if (error) {
-                                return console.log(error);
-                            }
-                            console.log('Message %s sent: %s', info.messageId, info.response);
-                        });
+                        _global.sendMail(
+                            '"Giáo vụ"',
+                            new_email,
+                            'Register your account',
+                            'Hi,'+ new_first_name + '\r\n' + 
+                            'Your account has been created.To setup your account for the first time, please go to the following web address: \r\n\r\n' +
+                            link + 
+                            '\r\n(This link is valid for 7 days from the time you received this email)\r\n\r\n' +
+                            'If you need help, please contact the site administrator,\r\n' +
+                            'Admin User \r\n\r\n' +
+                            'admin@fit.hcmus.edu.vn'
+                        );
                         res.send({ result: 'success',  message : "ok" });
                         done();
                     }
