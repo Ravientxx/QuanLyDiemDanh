@@ -8,6 +8,7 @@ var pool = mysql.createPool(_global.db);
 var pg = require('pg');
 var format = require('pg-format');
 const pool_postgres = new pg.Pool(_global.db_postgres);
+var fs = require('fs');
 
 router.post('/by-student', function(req, res, next) {
     if (req.body.id == undefined || req.body.id == 0) {
@@ -174,20 +175,12 @@ router.put('/change-status', function(req, res, next) {
                 if(status != _global.absence_request_status.new){
                     var email = absence_request_info.email;
                     var status_text =  status == _global.absence_request_status.accepted ? 'accepted' : 'rejected';
-                    let transporter = nodemailer.createTransport(_global.email_setting);
-                    let mailOptions = {
-                        from: '"Giáo vụ"', // sender address
-                        to: email, // list of receivers
-                        subject: 'Your absence request has been ' + status_text, // Subject line
-                        text: `Hi ` + absence_request_info.last_name +`,\r\n\r\nYour absence request:\r\n_Reason: ` + absence_request_info.reason + `\r\n_From : `+ absence_request_info.start_date + ` to `+ absence_request_info.end_date +`\r\n\r\nHas been ` + status_text + ` by ` + req.decoded.first_name + ` ` + req.decoded.last_name + `.\r\n\r\nIf you need help, please contact giaovu.clc@fit.hcmus.edu.vn`,
-                    };
-                    transporter.sendMail(mailOptions, (error, info) => {
-                        if (error) {
-                            done();
-                            return console.log(error);
-                        }
-                        console.log('Message %s sent: %s', info.messageId, info.response);
-                    });
+                    _global.sendMail(
+                        '"Giáo vụ"',
+                        email,
+                        'Your absence request has been ' + status_text,
+                        `Hi ` + absence_request_info.last_name +`,\r\n\r\nYour absence request:\r\n_Reason: ` + absence_request_info.reason + `\r\n_From : `+ absence_request_info.start_date + ` to `+ absence_request_info.end_date +`\r\n\r\nHas been ` + status_text + ` by ` + req.decoded.first_name + ` ` + req.decoded.last_name + `.\r\n\r\nIf you need help, please contact giaovu.clc@fit.hcmus.edu.vn`
+                    );
                 }
                 console.log('successfully changed request status---------------------------------------');
                 res.send({ result: 'success', message: 'successfully changed request status' });

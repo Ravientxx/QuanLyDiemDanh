@@ -10,7 +10,6 @@ import { ScheduleTeacherComponent }  from './schedule-teacher/schedule-teacher.c
 import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
 import {FileUploadModule} from "ng2-file-upload";
-import { ScheduleUploadComponent } from './schedule-upload/schedule-upload.component';
 import { SharedModule } from '../shared/shared.module';
 const scheduleRoutes: Routes = [
   { path: '',  component: ScheduleComponent }
@@ -31,7 +30,6 @@ const scheduleRoutes: Routes = [
     ScheduleComponent,
     ScheduleStaffComponent,
     ScheduleStudentComponent,
-    ScheduleUploadComponent,
     ScheduleTeacherComponent
   ],
   providers: []

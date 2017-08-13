@@ -146,18 +146,23 @@ export class ExcelService {
                 workbook.sheet("Sheet1").cell("I8").value("Ghi chú").style("border", true);
 
                 for (var i = 0; i < student_list.length; i++) {
-                    workbook.sheet("Sheet1").cell("A" + Math.floor(i + 9)).value(i + 1).style("border", true);
-                    workbook.sheet("Sheet1").cell("B" + Math.floor(i + 9)).value(student_list[i].student_code).style("border", true);
-                    workbook.sheet("Sheet1").cell("C" + Math.floor(i + 9)).value(student_list[i].first_name).style("border", true);
-                    workbook.sheet("Sheet1").cell("D" + Math.floor(i + 9)).value(student_list[i].last_name).style("border", true);
+                    workbook.sheet("Sheet1").cell("A" + Math.floor(i + 10)).value(i + 1).style("border", true);
+                    workbook.sheet("Sheet1").cell("B" + Math.floor(i + 10)).value(student_list[i].student_code).style("border", true);
+                    workbook.sheet("Sheet1").cell("C" + Math.floor(i + 10)).value(student_list[i].first_name).style("border", true);
+                    workbook.sheet("Sheet1").cell("D" + Math.floor(i + 10)).value(student_list[i].last_name).style("border", true);
+                    workbook.sheet("Sheet1").cell("E" + Math.floor(i + 10)).value('').style("border", true);
+                    workbook.sheet("Sheet1").cell("F" + Math.floor(i + 10)).value('').style("border", true);
+                    workbook.sheet("Sheet1").cell("G" + Math.floor(i + 10)).value('').style("border", true);
+                    workbook.sheet("Sheet1").cell("H" + Math.floor(i + 10)).value('').style("border", true);
+                    workbook.sheet("Sheet1").cell("I" + Math.floor(i + 10)).value('').style("border", true);
                 }
 
-                workbook.sheet("Sheet1").cell("A" + Math.floor(student_list.length + 11)).value('Giảng viên: ...................................');
-                workbook.sheet("Sheet1").cell("A" + Math.floor(student_list.length + 12)).value('Ngày: ................................');
+                workbook.sheet("Sheet1").cell("A" + Math.floor(student_list.length + 12)).value('Giảng viên: ...................................');
+                workbook.sheet("Sheet1").cell("A" + Math.floor(student_list.length + 13)).value('Ngày: ................................');
 
                 workbook.sheet(0).range("A3:I3").merged(true);
 
-                const range = workbook.sheet(0).range("A1:I"+Math.floor(student_list.length+12));
+                const range = workbook.sheet(0).range("A1:I"+Math.floor(student_list.length+13));
                 return workbook.outputAsync()
                     .then(function (blob) {
                         zip.file(class_has_course.code + ' - ' + class_has_course.name + ' - ' + class_has_course.class_name + ".xlsx", blob);
@@ -377,31 +382,253 @@ export class ExcelService {
         });
     }
 
+    public readScheduleFile(file: any): Observable < { result: string, schedule: any, message: string } > {
+        return new Observable < any > ((observer) => {
+            XlsxPopulate.fromDataAsync(file)
+            .then(workbook => {
+                observer.next(workbook.sheet(0));
+            });
+        }).map((sheet: any) => {
+            var cells = sheet.usedRange().value();
+            var import_start = 0;
+            var schedule = {};
+            schedule['course_list'] = [];
+            schedule['program'] = file['name'].split('.')[0];
+            for(var i = 0 ; i < cells.length; i++){
+                if(cells[i][0] == 'STT'){
+                    import_start = i+1;
+                    break;
+                }
+            }
+            for(var i = import_start; i < cells.length; i++){
+                if(cells[i][0] == undefined){
+                    break;
+                }
+                if(cells[i][1] == undefined || cells[i][1] == ''){
+                    return { result: 'failure', message: "Course's code is missing in line " + i};
+                }
+                if(cells[i][2] == undefined || cells[i][2] == ''){
+                    return { result: 'failure', message: "Course's name is missing in line " + i};
+                }
+                if(cells[i][3] == undefined || cells[i][3] == ''){
+                    return { result: 'failure', message: 'Class is missing in line ' + i};
+                }
+                if(cells[i][4] == undefined || cells[i][4] == ''){
+                    return { result: 'failure', message: 'Lecturers is missing in line ' + i};
+                }
+                var course = {
+                    stt : cells[i][0],
+                    code : cells[i][1],
+                    name : cells[i][2],
+                    class_name : cells[i][3],
+                    lecturers : cells[i][4],
+                    TAs : cells[i][5] != undefined ? cells[i][5] : '',
+                    office_hour : cells[i][6] != undefined ? cells[i][6] : '',
+                    note : cells[i][7] != undefined ? cells[i][7] : '',
+                    schedules : ''
+                }
+                schedule['course_list'].push(course);
+            }
 
+            for(var i = 4 ; i < 8; i++){
+                for(var j = 1; j < 7; j++){
+                    if(cells[i][j] == undefined){
+                        continue;
+                    }
+                    var session = cells[i][j].split('\r\n');
+                    for(var k = 0; k < session.length; k++){
+                        for(var l = 0; l < schedule['course_list'].length; l++){
+                            var code = session[k].split('-')[0];
+                            var class_name = session[k].split('-')[1];
+                            if(schedule['course_list'][l].code == code && schedule['course_list'][l].class_name == class_name){
+                                if(schedule['course_list'][l].schedules == '')
+                                    schedule['course_list'][l].schedules = session[k];
+                                else
+                                    schedule['course_list'][l].schedules += ';' + session[k];
+                            }
+                        }
+                    }
+                }
+            }
+            console.log(schedule);
+            return { result: 'success', message: 'success', schedule : schedule};
+        }).catch((error: any) => Observable.of({ result: 'failure', message: error }));
+    }
 
-    public writeScheduleSearchList(course_list: any, file_name: string) {
+    public writeScheduleLists(schedules : any) {
+        var zip = new JSZip();
+        Async.each(schedules, function(schedule,callback){
+             XlsxPopulate.fromBlankAsync()
+            .then(workbook => {
+                var sessions = ['','','','','','','','','','','','','','','', '','','','', '','','','','',];
+                var group = [
+                    {
+                       color : 'ff0000',
+                       class : ''
+                    },{
+                       color : '0000ff',
+                       class : ''
+                    },{
+                       color : 'f4a460',
+                       class : ''
+                    },{
+                       color : '00ff00',
+                       class : ''
+                    },{
+                       color : 'ff69b4',
+                       class : ''
+                    }
+                ];
+                var time = ['(LT)7:30-9:10 \r\n (TH)7:30-9:30','(LT)9:30-11:10 \r\n (TH)9:30-11:30',
+                        '(LT)13:30-15:10 \r\n (TH)13:30-15:30','(LT)15:30-17:10 \r\n (TH)15:30-17:30'];
+                workbook.sheet("Sheet1").cell("A11").value("STT").style("border", true).style("bold",true);
+                workbook.sheet("Sheet1").cell("B11").value("Mã môn").style("border", true).style("bold",true);
+                workbook.sheet("Sheet1").cell("C11").value("Tên môn").style("border", true).style("bold",true);
+                workbook.sheet("Sheet1").cell("D11").value("Lớp").style("border", true).style("bold",true);
+                workbook.sheet("Sheet1").cell("E11").value("GV Lý Thuyết").style("border", true).style("bold",true);
+                workbook.sheet("Sheet1").cell("F11").value("Trợ giảng").style("border", true).style("bold",true);
+                workbook.sheet("Sheet1").cell("G11").value("Office hour").style("border", true).style("bold",true);
+                workbook.sheet("Sheet1").cell("H11").value("Ghi chú").style("border", true).style("bold",true);
+
+                for (var i = 0; i < schedule.course_list.length; i++) {
+                    var color = '';
+                    for(var j = 0 ; j < group.length ; j++){
+                        if(group[j].class == ''){
+                            color = group[j].color;
+                            group[j].class = schedule.course_list[i].class_name;
+                            break;
+                        }else{
+                            if(group[j].class == schedule.course_list[i].class_name){
+                                color = group[j].color;
+                                break;
+                            }  
+                        }
+                    }
+
+                    workbook.sheet("Sheet1").cell("A" + Math.floor(i + 12)).value(i + 1).style("border", true);
+                    workbook.sheet("Sheet1").cell("B" + Math.floor(i + 12)).value(schedule.course_list[i].code).style("border", true).style("fontColor",color).style("bold",true);
+                    workbook.sheet("Sheet1").cell("C" + Math.floor(i + 12)).value(schedule.course_list[i].name).style("border", true);
+                    workbook.sheet("Sheet1").cell("D" + Math.floor(i + 12)).value(schedule.course_list[i].classs_name).style("border", true);
+                    workbook.sheet("Sheet1").cell("E" + Math.floor(i + 12)).value(schedule.course_list[i].lecturers).style("border", true);
+                    workbook.sheet("Sheet1").cell("F" + Math.floor(i + 12)).value(schedule.course_list[i].tas).style("border", true);
+                    workbook.sheet("Sheet1").cell("G" + Math.floor(i + 12)).value(schedule.course_list[i].office_hour).style("border", true);
+                    workbook.sheet("Sheet1").cell("H" + Math.floor(i + 12)).value(schedule.course_list[i].note).style("border", true);
+                    workbook.sheet("Sheet1").row(Math.floor(i + 12)).height(30);
+                    var schedules = schedule.course_list[i].schedules.split(';');
+                    for (var j = 0; j < schedules.length; j++) {
+                        var temp = schedules[j].split('-');
+                        var index = temp[0];
+                        var room = temp[1];
+                        var type = temp[2];
+                        sessions[index] += schedule.course_list[i].code + '-' + schedule.course_list[i].class_name + '-' + room + '-' + type + '\r\n';
+                    }
+                }
+
+                workbook.sheet("Sheet1").cell("A1").value("THỜI KHÓA BIỂU ");
+                workbook.sheet("Sheet1").range("A3:G3").merged(true);
+                workbook.sheet("Sheet1").column("A").width(30).style("horizontalAlignment", "center").style("verticalAlignment", "center").style("wrapText",true);
+                workbook.sheet("Sheet1").column("B").width(30).style("horizontalAlignment", "center").style("verticalAlignment", "center").style("wrapText",true);
+                workbook.sheet("Sheet1").column("C").width(30).style("horizontalAlignment", "center").style("verticalAlignment", "center").style("wrapText",true);
+                workbook.sheet("Sheet1").column("D").width(30).style("horizontalAlignment", "center").style("verticalAlignment", "center").style("wrapText",true);
+                workbook.sheet("Sheet1").column("E").width(30).style("horizontalAlignment", "center").style("verticalAlignment", "center").style("wrapText",true);
+                workbook.sheet("Sheet1").column("F").width(30).style("horizontalAlignment", "center").style("verticalAlignment", "center").style("wrapText",true);
+                workbook.sheet("Sheet1").column("G").width(30).style("horizontalAlignment", "center").style("verticalAlignment", "center").style("wrapText",true);
+                workbook.sheet("Sheet1").column("H").width(30).style("horizontalAlignment", "center").style("verticalAlignment", "center").style("wrapText",true);
+                workbook.sheet("Sheet1").cell("A4").value("").style("border", true);
+                workbook.sheet("Sheet1").cell("B4").value("2").style("border", true);
+                workbook.sheet("Sheet1").cell("C4").value("3").style("border", true);
+                workbook.sheet("Sheet1").cell("D4").value("4").style("border", true);
+                workbook.sheet("Sheet1").cell("E4").value("5").style("border", true);
+                workbook.sheet("Sheet1").cell("F4").value("6").style("border", true);
+                workbook.sheet("Sheet1").cell("G4").value("7").style("border", true);
+
+                for(var i = 0 ; i < 4; i++){
+                    workbook.sheet("Sheet1").cell("A" + Math.floor(i+5)).value(time[i]).style("border", true).style("fontColor","0000ff").style("bold",true);
+                    workbook.sheet("Sheet1").cell("B" + Math.floor(i+5)).value(sessions[i]).style("border", true).style("bold",true);
+                    workbook.sheet("Sheet1").cell("C" + Math.floor(i+5)).value(sessions[i + 4]).style("border", true).style("bold",true);
+                    workbook.sheet("Sheet1").cell("D" + Math.floor(i+5)).value(sessions[i + 8]).style("border", true).style("bold",true);
+                    workbook.sheet("Sheet1").cell("E" + Math.floor(i+5)).value(sessions[i + 12]).style("border", true).style("bold",true);
+                    workbook.sheet("Sheet1").cell("F" + Math.floor(i+5)).value(sessions[i + 16]).style("border", true).style("bold",true);
+                    workbook.sheet("Sheet1").cell("G" + Math.floor(i+5)).value(sessions[i + 20]).style("border", true).style("bold",true);
+                    workbook.sheet("Sheet1").row(Math.floor(i + 5)).height(100);
+                }
+                const range = workbook.sheet(0).range("A1:H"+Math.floor(schedule.course_list.length+12));
+
+                return workbook.outputAsync()
+                    .then(function (blob) {
+                        zip.file(schedule.file_name + ".xlsx", blob);
+                        callback();
+                    });
+            });
+        }, function(error) {
+            if (error) {
+                console.log(error);
+            } else {
+                zip.generateAsync({ type: "blob" })
+                .then(function(content) {
+                    FileSaver.saveAs(content, "schedules.zip");
+                });  
+            }
+        });
+    }
+
+    public writeScheduleSearchList(course_list: any, semester: any, file_name: string) {
         XlsxPopulate.fromBlankAsync()
         .then(workbook => {
             var sessions = ['','','','','','','','','','','','','','','', '','','','', '','','','','',];
+            var group = [
+                {
+                   color : 'ff0000',
+                   class : ''
+                },{
+                   color : '0000ff',
+                   class : ''
+                },{
+                   color : 'f4a460',
+                   class : ''
+                },{
+                   color : '00ff00',
+                   class : ''
+                },{
+                   color : 'ff69b4',
+                   class : ''
+                }
+            ];
             var time = ['(LT)7:30-9:10 \r\n (TH)7:30-9:30','(LT)9:30-11:10 \r\n (TH)9:30-11:30',
                     '(LT)13:30-15:10 \r\n (TH)13:30-15:30','(LT)15:30-17:10 \r\n (TH)15:30-17:30'];
-            workbook.sheet("Sheet1").cell("A11").value("STT").style("border", true).style("horizontalAlignment", "center");
-            workbook.sheet("Sheet1").cell("B11").value("Mã môn").style("border", true).style("horizontalAlignment", "center");
-            workbook.sheet("Sheet1").cell("C11").value("Tên môn").style("border", true).style("horizontalAlignment", "center");
-            workbook.sheet("Sheet1").cell("D11").value("GV Lý Thuyết").style("border", true).style("horizontalAlignment", "center");
-            workbook.sheet("Sheet1").cell("E11").value("Trợ giảng").style("border", true).style("horizontalAlignment", "center");
-            workbook.sheet("Sheet1").cell("F11").value("Office hour").style("border", true).style("horizontalAlignment", "center");
-            workbook.sheet("Sheet1").cell("G11").value("Ghi chú").style("border", true).style("horizontalAlignment", "center");
+            workbook.sheet("Sheet1").cell("A11").value("STT").style("border", true).style("bold",true);
+            workbook.sheet("Sheet1").cell("B11").value("Mã môn").style("border", true).style("bold",true);
+            workbook.sheet("Sheet1").cell("C11").value("Tên môn").style("border", true).style("bold",true);
+            workbook.sheet("Sheet1").cell("D11").value("Lớp").style("border", true).style("bold",true);
+            workbook.sheet("Sheet1").cell("E11").value("GV Lý Thuyết").style("border", true).style("bold",true);
+            workbook.sheet("Sheet1").cell("F11").value("Trợ giảng").style("border", true).style("bold",true);
+            workbook.sheet("Sheet1").cell("G11").value("Office hour").style("border", true).style("bold",true);
+            workbook.sheet("Sheet1").cell("H11").value("Ghi chú").style("border", true).style("bold",true);
 
             for (var i = 0; i < course_list.length; i++) {
-                workbook.sheet("Sheet1").cell("A" + Math.floor(i + 12)).value(i + 1).style("border", true);
-                workbook.sheet("Sheet1").cell("B" + Math.floor(i + 12)).value(course_list[i].code).style("border", true);
-                workbook.sheet("Sheet1").cell("C" + Math.floor(i + 12)).value(course_list[i].name).style("border", true);
-                workbook.sheet("Sheet1").cell("D" + Math.floor(i + 12)).value(course_list[i].lecturers).style("border", true);
-                workbook.sheet("Sheet1").cell("E" + Math.floor(i + 12)).value(course_list[i].TAs).style("border", true);
-                workbook.sheet("Sheet1").cell("F" + Math.floor(i + 12)).value(course_list[i].office_hour).style("border", true);
-                workbook.sheet("Sheet1").cell("G" + Math.floor(i + 12)).value(course_list[i].note).style("border", true);
+                var color = '';
+                for(var j = 0 ; j < group.length ; j++){
+                    if(group[j].class == ''){
+                        color = group[j].color;
+                        group[j].class = course_list[i].class_name;
+                        break;
+                    }else{
+                        if(group[j].class == course_list[i].class_name){
+                            color = group[j].color;
+                            break;
+                        }  
+                    }
+                }
 
+                workbook.sheet("Sheet1").cell("A" + Math.floor(i + 12)).value(i + 1).style("border", true);
+                workbook.sheet("Sheet1").cell("B" + Math.floor(i + 12)).value(course_list[i].code).style("border", true).style("fontColor",color).style("bold",true);
+                workbook.sheet("Sheet1").cell("C" + Math.floor(i + 12)).value(course_list[i].name).style("border", true);
+                workbook.sheet("Sheet1").cell("D" + Math.floor(i + 12)).value(course_list[i].classs_name).style("border", true);
+                workbook.sheet("Sheet1").cell("E" + Math.floor(i + 12)).value(course_list[i].lecturers).style("border", true);
+                workbook.sheet("Sheet1").cell("F" + Math.floor(i + 12)).value(course_list[i].tas).style("border", true);
+                workbook.sheet("Sheet1").cell("G" + Math.floor(i + 12)).value(course_list[i].office_hour).style("border", true);
+                workbook.sheet("Sheet1").cell("H" + Math.floor(i + 12)).value(course_list[i].note).style("border", true);
+                workbook.sheet("Sheet1").row(Math.floor(i + 12)).height(30);
                 var schedules = course_list[i].schedules.split(';');
                 for (var j = 0; j < schedules.length; j++) {
                     var temp = schedules[j].split('-');
@@ -412,34 +639,47 @@ export class ExcelService {
                 }
             }
 
-            workbook.sheet("Sheet1").cell("A4").value("").style("border", true).style("horizontalAlignment", "center");
-            workbook.sheet("Sheet1").cell("B4").value("2").style("border", true).style("horizontalAlignment", "center");
-            workbook.sheet("Sheet1").cell("C4").value("3").style("border", true).style("horizontalAlignment", "center");
-            workbook.sheet("Sheet1").cell("D4").value("4").style("border", true).style("horizontalAlignment", "center");
-            workbook.sheet("Sheet1").cell("E4").value("5").style("border", true).style("horizontalAlignment", "center");
-            workbook.sheet("Sheet1").cell("F4").value("6").style("border", true).style("horizontalAlignment", "center");
-            workbook.sheet("Sheet1").cell("G4").value("7").style("border", true).style("horizontalAlignment", "center");
+            workbook.sheet("Sheet1").cell("A1").value("THỜI KHÓA BIỂU " + semester.name);
+            workbook.sheet("Sheet1").range("A1:G1").merged(true);
+            workbook.sheet("Sheet1").cell("A2").value("Thời gian học: " +  semester.start_date.toString('dd-MMM-yyyy') + ' - ' + semester.end_date.toString('dd-MMM-yyyy') );
+            workbook.sheet("Sheet1").range("A2:G2").merged(true);
+            workbook.sheet("Sheet1").cell("A3").value("Thời gian nghỉ: " + semester.vacation_time);
+            workbook.sheet("Sheet1").range("A3:G3").merged(true);
+            workbook.sheet("Sheet1").column("A").width(30).style("horizontalAlignment", "center").style("verticalAlignment", "center").style("wrapText",true);
+            workbook.sheet("Sheet1").column("B").width(30).style("horizontalAlignment", "center").style("verticalAlignment", "center").style("wrapText",true);
+            workbook.sheet("Sheet1").column("C").width(30).style("horizontalAlignment", "center").style("verticalAlignment", "center").style("wrapText",true);
+            workbook.sheet("Sheet1").column("D").width(30).style("horizontalAlignment", "center").style("verticalAlignment", "center").style("wrapText",true);
+            workbook.sheet("Sheet1").column("E").width(30).style("horizontalAlignment", "center").style("verticalAlignment", "center").style("wrapText",true);
+            workbook.sheet("Sheet1").column("F").width(30).style("horizontalAlignment", "center").style("verticalAlignment", "center").style("wrapText",true);
+            workbook.sheet("Sheet1").column("G").width(30).style("horizontalAlignment", "center").style("verticalAlignment", "center").style("wrapText",true);
+            workbook.sheet("Sheet1").column("H").width(30).style("horizontalAlignment", "center").style("verticalAlignment", "center").style("wrapText",true);
+            workbook.sheet("Sheet1").cell("A4").value("").style("border", true);
+            workbook.sheet("Sheet1").cell("B4").value("2").style("border", true);
+            workbook.sheet("Sheet1").cell("C4").value("3").style("border", true);
+            workbook.sheet("Sheet1").cell("D4").value("4").style("border", true);
+            workbook.sheet("Sheet1").cell("E4").value("5").style("border", true);
+            workbook.sheet("Sheet1").cell("F4").value("6").style("border", true);
+            workbook.sheet("Sheet1").cell("G4").value("7").style("border", true);
 
             for(var i = 0 ; i < 4; i++){
-                workbook.sheet("Sheet1").cell("A" + Math.floor(i+5)).value(time[i]).style("border", true).style("horizontalAlignment", "center");
-                workbook.sheet("Sheet1").cell("B" + Math.floor(i+5)).value(sessions[i]).style("border", true).style("horizontalAlignment", "center");
-                workbook.sheet("Sheet1").cell("C" + Math.floor(i+5)).value(sessions[i + 4]).style("border", true).style("horizontalAlignment", "center");
-                workbook.sheet("Sheet1").cell("D" + Math.floor(i+5)).value(sessions[i + 8]).style("border", true).style("horizontalAlignment", "center");
-                workbook.sheet("Sheet1").cell("E" + Math.floor(i+5)).value(sessions[i + 12]).style("border", true).style("horizontalAlignment", "center");
-                workbook.sheet("Sheet1").cell("F" + Math.floor(i+5)).value(sessions[i + 16]).style("border", true).style("horizontalAlignment", "center");
-                workbook.sheet("Sheet1").cell("G" + Math.floor(i+5)).value(sessions[i + 20]).style("border", true).style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("A" + Math.floor(i+5)).value(time[i]).style("border", true).style("fontColor","0000ff").style("bold",true);
+                workbook.sheet("Sheet1").cell("B" + Math.floor(i+5)).value(sessions[i]).style("border", true).style("bold",true);
+                workbook.sheet("Sheet1").cell("C" + Math.floor(i+5)).value(sessions[i + 4]).style("border", true).style("bold",true);
+                workbook.sheet("Sheet1").cell("D" + Math.floor(i+5)).value(sessions[i + 8]).style("border", true).style("bold",true);
+                workbook.sheet("Sheet1").cell("E" + Math.floor(i+5)).value(sessions[i + 12]).style("border", true).style("bold",true);
+                workbook.sheet("Sheet1").cell("F" + Math.floor(i+5)).value(sessions[i + 16]).style("border", true).style("bold",true);
+                workbook.sheet("Sheet1").cell("G" + Math.floor(i+5)).value(sessions[i + 20]).style("border", true).style("bold",true);
+                workbook.sheet("Sheet1").row(Math.floor(i + 5)).height(100);
             }
-
-            const range = workbook.sheet(0).range("A1:G"+Math.floor(course_list.length+12));
+            const range = workbook.sheet(0).range("A1:H"+Math.floor(course_list.length+12));
             return workbook.outputAsync()
                 .then(function (blob) {
+                    console.log(5);
                     if (file_name == '') file_name = 'schedule';
                     FileSaver.saveAs(blob, file_name + ".xlsx");
                 });
         });
     }
-
-
 
     public readAttendanceListFile(file: any) : Observable < { result: string, attendance_list: Array < any > , message: string } >{
         return new Observable < any > ((observer) => {

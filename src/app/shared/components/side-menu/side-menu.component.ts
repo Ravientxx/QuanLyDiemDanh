@@ -19,6 +19,9 @@ export class SideMenuComponent implements OnInit {
             case this.appService.userType.teacher:
                 this.sideMenu = this.teacherMenu;
                 break;
+            case this.appService.userType.admin:
+                this.sideMenu = this.adminMenu;
+                break;
         }
     }
 
@@ -28,6 +31,8 @@ export class SideMenuComponent implements OnInit {
 
     public adminMenu = [
         { title: 'Dashboard', url: '/', icon: 'fa-home' },
+        { title: 'Clear Data', url: '/clear-data', icon: 'fa-database' },
+        { title: 'Settings', url: '/settings', icon: 'fa-cog' },
         { title: 'Logout', url: '/logout', icon: 'fa-sign-out' }
     ];
 
@@ -43,15 +48,6 @@ export class SideMenuComponent implements OnInit {
         { title: 'Classes', url: '/classes', icon: 'fa-users' }, 
         { title: 'Programs', url: '/programs', icon: 'fa-institution' }, 
         { title: 'Semesters', url: '/semesters', icon: 'fa-calendar-plus-o' }, 
-        // {
-        //     title: 'Administration',
-        //     url: '/administration',
-        //     icon: 'fa-key',
-        //     subMenu: [{ title: 'Users', url: '/administration/users' },
-        //         { title: 'Activity Logs', url: '/administration/logs' }
-        //     ]
-        // },
-        { title: 'Settings', url: '/settings', icon: 'fa-cog' },
         { title: 'Logout', url: '/logout', icon: 'fa-sign-out' }
     ];
 

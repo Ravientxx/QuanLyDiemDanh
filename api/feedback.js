@@ -25,7 +25,7 @@ router.post('/list', function(req, res, next) {
         query += ' ORDER BY feedbacks.read , feedbacks.created_at';
         connection.query(query,function(error, result, fields) {
             if (error) {
-                _global.sendError(res, error.message);
+                _global.sendError(res,null,error);
                 done();
                 return console.log(error);
             }
@@ -76,13 +76,13 @@ router.put('/read', function(req, res, next) {
     var feedback_id = req.body.feedback_id;
     pool_postgres.connect(function(error, connection, done) {
         if (error) {
-            _global.sendError(res, error.message);
+            _global.sendError(res,null,error);
             done();
                 return console.log(error);
         }
         connection.query(format(`UPDATE feedbacks SET read = TRUE WHERE id = %L`,feedback_id),function(error, result, fields) {
             if (error) {
-                _global.sendError(res, error.message);
+                _global.sendError(res,null,error);
                 done();
                 return console.log(error);
             }
@@ -109,13 +109,13 @@ router.post('/send', function(req, res, next) {
     ]];
     pool_postgres.connect(function(error, connection, done) {
         if (error) {
-            _global.sendError(res, error.message);
+            _global.sendError(res,null,error);
             done();
                 return console.log(error);
         }
         connection.query(format(`INSERT INTO feedbacks (title,content,from_id,type) VALUES %L RETURNING id`,feedback),function(error, result, fields) {
             if (error) {
-                _global.sendError(res, error.message);
+                _global.sendError(res,null,error);
                 done();
                 return console.log(error);
             }
@@ -126,7 +126,7 @@ router.post('/send', function(req, res, next) {
                     _global.notification_type.send_feedback
                 ]]), function(error, result, fields) {
                 if (error) {
-                    _global.sendError(res, error.message);
+                    _global.sendError(res,null,error);
                     done();
                     return console.log(error);
                 }
@@ -139,30 +139,54 @@ router.post('/send', function(req, res, next) {
 
 router.post('/history', function(req, res, next) {
     var user_id = req.decoded.id;
-
+    var search_text = req.body.search_text ? req.body.search_text : '';
+    var page = req.body.page != null ? req.body.page : _global.default_page;
+    var limit = req.body.limit != null ? req.body.limit : _global.detail_limit;
     pool_postgres.connect(function(error, connection, done) {
         if (error) {
-            _global.sendError(res, error.message);
+            _global.sendError(res,null,error);
             done();
-                return console.log(error);
+            return console.log(error);
         }
 
-        var query = `SELECT id, title, content, feedbacks.read, created_at as time, replied FROM feedbacks WHERE from_id = %L ORDER BY feedbacks.read, feedbacks.created_at DESC LIMIT 10`;
+        var query = `SELECT id, title, content, feedbacks.read, created_at as time, replied FROM feedbacks 
+        WHERE from_id = %L ORDER BY feedbacks.read, feedbacks.created_at DESC`;
 
+        connection.query(query,function(error, result, fields) {
+            
+            done();
+        });
         connection.query(format(query, user_id), function(error, result, fields) {
             if (error) {
-                _global.sendError(res, error.message);
+                _global.sendError(res, null, error);
                 done();
                 return console.log(error);
             }
 
             var feedbacks = result.rows;
-
-            res.send({ 
-                result: 'success',
-                total_items: feedbacks.length,
-                feedbacks: feedbacks
-            });
+            var search_list = [];
+            if (search_text == null) {
+                search_list = feedbacks;
+            } else {
+                for (var i = 0; i < feedbacks.length; i++) {
+                    if (feedbacks[i].title.toLowerCase().indexOf(search_text.toLowerCase()) != -1) {
+                        search_list.push(feedbacks[i]);
+                    }
+                }
+            }
+            if (limit != -1) {
+                res.send({
+                    result: 'success',
+                    total_items: search_list.length,
+                    feedbacks: _global.filterListByPage(page, limit, search_list)
+                });
+            } else {
+                res.send({
+                    result: 'success',
+                    total_items: search_list.length,
+                    feedbacks: search_list
+                });
+            }
             done();
         });
     });
@@ -184,7 +208,7 @@ router.post('/send-reply', function(req, res, next) {
 
     pool_postgres.connect(function(error, connection, done) {
         if (error) {
-            _global.sendError(res, error.message);
+            _global.sendError(res,null,error);
             done();
                 return console.log(error);
         }
@@ -196,7 +220,7 @@ router.post('/send-reply', function(req, res, next) {
             WHERE id = %L`;
         connection.query(format(query, feedback_id),function(error, result, fields) {
             if (error) {
-                _global.sendError(res, error.message);
+                _global.sendError(res,null,error);
                 done();
                 return console.log(error);
             }
@@ -211,21 +235,14 @@ router.post('/send-reply', function(req, res, next) {
                     done();
                     return console.log(error);
                 }
-
-                let transporter = nodemailer.createTransport(_global.email_setting);
-                let mailOptions = {
-                    from: '"Giáo vụ", giaovu@fit.hcmus.edu.vn', // sender address
-                    to: email, // list of receivers
-                    subject: 'Reply your feedback ' + title, // Subject line
-                    text: `Hi ` + last_name +`,\r\n\r\nTo your feedback:\r\n` + reply_content + `\r\n Reply by ` + req.decoded.first_name + ` ` + req.decoded.last_name + `.\r\n\r\nIf you need help, please contact giaovu@fit.hcmus.edu.vn`,
-                };
-                transporter.sendMail(mailOptions, (error, info) => {
-                    if (error) {
-                        done();
-                        return console.log(error);
-                    }
-                    console.log('Message %s sent: %s', info.messageId, info.response);
-                });
+                var token = jwt.sign({ email: new_email }, _global.jwt_secret_key, { expiresIn: _global.jwt_register_expire_time });
+                var link = _global.host + '/register;token=' + token;
+                _global.sendMail(
+                    '"Giáo vụ"',
+                    email,
+                    'Reply your feedback ' + title,
+                    `Hi ` + last_name +`,\r\n\r\nTo your feedback:\r\n` + reply_content + `\r\n Reply by ` + req.decoded.first_name + ` ` + req.decoded.last_name + `.\r\n\r\nIf you need help, please contact giaovu@fit.hcmus.edu.vn`
+                );
 
                 connection.query(format(`INSERT INTO notifications (to_id,from_id,message,object_id,type) VALUES %L RETURNING id`, [[
                         reply_to,
@@ -248,4 +265,40 @@ router.post('/send-reply', function(req, res, next) {
     });
 });
 
+router.post('/delete', function(req, res, next) {
+    if (req.body.id == undefined || req.body.id == 0) {
+        _global.sendError(res, null, "Feedback id is required");
+        return;
+    }
+    var feedback_id = req.body.id;
+    pool_postgres.connect(function(error, connection, done) {
+        if (error) {
+            _global.sendError(res,null,error);
+            done();
+                return console.log(error);
+        }
+        connection.query(format(`SELECT * FROM feedbacks WHERE id = %L AND from_id = %L`,feedback_id,req.decoded.id),function(error, result, fields) {
+            if (error) {
+                _global.sendError(res,null,error);
+                done();
+                return console.log(error);
+            }
+            if(result.rowCount == 0){
+                _global.sendError(res,null,'Feedback not existed or not belong to you');
+                done();
+                return console.log('Feedback not existed or not belong to you');
+            }else{
+                connection.query(format(`DELETE FROM feedbacks WHERE id = %L`, feedback_id), function(error, result, fields) {
+                    if (error) {
+                        _global.sendError(res,null,error);
+                        done();
+                        return console.log(error);
+                    }
+                    res.send({ result: 'success', message: 'Feedback deleted successfully'});
+                    done();
+                });
+            }
+        });
+    });
+});
 module.exports = router;

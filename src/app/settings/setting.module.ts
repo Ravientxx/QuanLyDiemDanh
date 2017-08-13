@@ -8,6 +8,7 @@ import { SettingComponent }    from './setting.component';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { TabsModule } from 'ngx-bootstrap/tabs';
 import {FileUploadModule} from "ng2-file-upload";
+import { AutosizeModule } from '../shared/module/autosize/autosize.module';
 
 const Routes: Routes = [
   { path: '',  component: SettingComponent }
@@ -22,7 +23,8 @@ const Routes: Routes = [
     PaginationModule.forRoot(),
     TabsModule,
     FileUploadModule,
-    TextMaskModule
+    TextMaskModule,
+    AutosizeModule
   ],
   declarations: [
     SettingComponent,

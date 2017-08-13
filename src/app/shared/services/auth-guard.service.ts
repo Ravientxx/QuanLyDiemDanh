@@ -23,37 +23,74 @@ export class AuthGuardService implements CanActivate, CanActivateChild, CanLoad 
 
     public checkRole(url:string): boolean{
         if(this.authService.current_user.role_id == this.appService.userType.teacher){
-            switch (url) {
-                case "/courses":
-                case "/absence-requests":
-                case "/semesters":
-                case "/classes":
-                case "/teachers":
-                case "/programs":
-                case "/students":
-                case "/statistic":
-                case "/settings":
-                    this.router.navigate(['/dashboard']);
-                    return false;
-                default:
-                    return true;
+            if(
+                url.indexOf('/statistic') >= 0 ||
+                url.indexOf("/semesters") >= 0 ||
+                url.indexOf("/classes") >= 0  ||
+                url.indexOf("/programs") >= 0 ||
+                url.indexOf("/settings") >= 0 ||
+                url.indexOf("/absence-requests") >= 0 ||
+                url.indexOf('/teachers') >= 0 ||
+                url.indexOf('/courses/add') >= 0 ||
+                (url.indexOf('/courses') >= 0  && url.indexOf('/edit') >= 0) ||
+                url.indexOf('/students') >= 0
+                ){
+                this.router.navigate(['/dashboard']);
+                return false;
+            }else{    
+                return true;
             }
         }
-
         if(this.authService.current_user.role_id == this.appService.userType.student){
-            switch (url) {
-                case "/courses":
-                case "/semesters":
-                case "/classes":
-                case "/teachers":
-                case "/programs":
-                case "/students":
-                case "/statistic":
-                case "/settings":
-                    this.router.navigate(['/dashboard']);
-                    return false;
-                default:
-                    return true;
+            if(
+                url.indexOf('/statistic') >= 0 ||
+                url.indexOf("/semesters") >= 0 ||
+                url.indexOf("/classes") >= 0  ||
+                url.indexOf("/programs") >= 0 ||
+                url.indexOf("/settings") >= 0 ||
+                url.indexOf('/teachers') >= 0 ||
+                url.indexOf('/courses') >= 0 ||
+                url.indexOf('/students') >= 0 ||
+                url == '/quiz' ||
+                url == '/quiz/display'
+                ){
+                this.router.navigate(['/dashboard']);
+                return false;
+            }else{    
+                return true;
+            }
+        }
+        if(this.authService.current_user.role_id == this.appService.userType.staff){
+            if(
+                url.indexOf("/settings") >= 0 ||
+                url.indexOf('/check-attendance') >= 0 ||
+                url == '/quiz' ||
+                url == '/quiz/display'
+                ){
+                this.router.navigate(['/dashboard']);
+                return false;
+            }else{    
+                return true;
+            }
+        }
+        if(this.authService.current_user.role_id == this.appService.userType.admin){
+            if(
+                url.indexOf('/statistic') >= 0 ||
+                url.indexOf("/semesters") >= 0 ||
+                url.indexOf("/classes") >= 0  ||
+                url.indexOf("/programs") >= 0 ||
+                url.indexOf('/teachers') >= 0 ||
+                url.indexOf('/courses') >= 0 ||
+                url.indexOf('/students') >= 0 ||
+                url.indexOf('/check-attendance') >= 0 ||
+                url.indexOf("/absence-requests") >= 0 ||
+                url == '/quiz' ||
+                url == '/quiz/display'
+                ){
+                this.router.navigate(['/dashboard']);
+                return false;
+            }else{    
+                return true;
             }
         }
         return true;

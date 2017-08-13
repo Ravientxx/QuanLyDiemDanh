@@ -57,6 +57,7 @@ export class FeedbackService {
                 return Observable.throw(error || 'Server error');
             });
     }
+
     public  sendFeedbacksUrl = this.appConfig.apiHost + '/feedback/send';
     public sendFeedbacks(title: string, content:string, isAnonymous: boolean): Observable < { result: string, message:string} > {
         var params = {
@@ -93,6 +94,28 @@ export class FeedbackService {
         headers.append('x-access-token', `${authToken}`);
         let options = new RequestOptions({ headers: headers });
         return this.http.post(this.getFeedbackHistoryUrl,params,options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => {
+                if (error.status == 401) {
+                    this.authService.tokenExpired(this.router.url);
+                }
+                //this.authService.tokenExpired(this.router.url);
+                return Observable.throw(error || 'Server error');
+            });
+    }
+
+    public deleteFeedbackUrl = this.appConfig.apiHost + '/feedback/delete';
+    public deleteFeedback(id: number): Observable < { result: string, message:string} > {
+        var params = {
+            'id' : id
+        };
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.deleteFeedbackUrl,params,options)
             // ...and calling .json() on the response to return data
             .map((res: Response) => res.json())
             //...errors if any

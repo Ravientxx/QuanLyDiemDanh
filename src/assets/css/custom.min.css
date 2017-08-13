@@ -4979,7 +4979,7 @@ th {
 table td {
     white-space:pre-line !important;
     word-wrap: break-word !important;
-    word-break: break-all !important;
+    /*word-break: break-all !important;*/
     vertical-align:middle !important;
 }
 

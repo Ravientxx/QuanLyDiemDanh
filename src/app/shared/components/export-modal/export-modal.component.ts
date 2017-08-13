@@ -188,14 +188,22 @@ export class ExportModalComponent implements OnInit {
                 }
             }
             if (selected_classes.length == 0 && selected_programs.length == 0) {
+                this.scheduleService.exportSchedule(selected_programs,selected_classes).subscribe(result=>{
+                    this.excelService.writeScheduleLists(result.schedules);
+                },error=>{ this.appService.showPNotify('failure', "Server Error! Can't export schedules", 'error'); });
                 return;
             } else {
+                this.scheduleService.exportSchedule(selected_programs,selected_classes)
+                .subscribe(result => {
+                    var schedules = result.schedules;
+                    //this.excelService.writeScheduleLists(schedules);
+                }, error => { this.appService.showPNotify('failure', "Server Error! Can't get schedules", 'error'); });
             }
         } else {
             this.scheduleService.getSchedulesAndCourses(this.search_data['program_id'],this.search_data['class_id'],this.search_data['semester_id'])
             .subscribe(result => {
                 var courses = result.courses;
-                this.excelService.writeScheduleSearchList(courses, this.file_name);
+                this.excelService.writeScheduleSearchList(courses, this.search_data['semester'], this.file_name);
             }, error => { this.appService.showPNotify('failure', "Server Error! Can't get schedule and courses", 'error'); });
         }
     }

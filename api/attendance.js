@@ -429,24 +429,18 @@ router.post('/update-list-by-course', function(req, res, next) {
                         async.each(new_student_list, function(student, callback) {
                             var token = jwt.sign({ email: student.email }, _global.jwt_secret_key, { expiresIn: _global.jwt_register_expire_time });
                             var link = _global.host + '/register;token=' + token;
-                            let mailOptions = {
-                                from: '"Giáo vụ"',
-                                to: student.email,
-                                subject: 'Register your account',
-                                text: 'Hi,'+ student.name + '\r\n' + 
-                                    'Your account has been created.To setup your account for the first time, please go to the following web address: \r\n\r\n' +
-                                    link + 
-                                    '\r\n(This link is valid for 7 days from the time you received this email)\r\n\r\n' +
-                                    'If you need help, please contact the site administrator,\r\n' +
-                                    'Admin User \r\n\r\n' +
-                                    'admin@fit.hcmus.edu.vn'
-                            };
-                            transporter.sendMail(mailOptions, (error, info) => {
-                                if (error) {
-                                    console.log(error);
-                                }
-                                console.log('Message %s sent: %s', info.messageId, info.response);
-                            });
+                            _global.sendMail(
+                                '"Giáo vụ"',
+                                student.email,
+                                'Register your account',
+                                'Hi,'+ student.name + '\r\n' + 
+                                'Your account has been created.To setup your account for the first time, please go to the following web address: \r\n\r\n' +
+                                link + 
+                                '\r\n(This link is valid for 7 days from the time you received this email)\r\n\r\n' +
+                                'If you need help, please contact the site administrator,\r\n' +
+                                'Admin User \r\n\r\n' +
+                                'admin@fit.hcmus.edu.vn'
+                            );
                             callback();
                         }, function(error) {
                             if (error) {
@@ -779,7 +773,6 @@ router.post('/close', function(req, res, next) {
                 done();
                 return console.log(error);
             } else {
-                let transporter = nodemailer.createTransport(_global.email_setting);
                 async.each(absent_students, function(student, callback) {
                     //count absences and total attendance
                     if(!student['skip_send_email']){
@@ -796,20 +789,13 @@ router.post('/close', function(req, res, next) {
                                     if (result.rows[i].attendance_type == _global.attendance_type.absent) absence = result.rows[i].count;
                                     total += result.rows[i].count;
                                 }
-                                let mailOptions = {
-                                    from: '"Giáo vụ" <giaovu.clc@fit.hcmus.edu.vn>', // sender address
-                                    to: student.email, // list of receivers
-                                    subject: 'Update on your absence from ' + student.course_code + '-' + student.course_name, // Subject line
-                                    text: `Hi ` + student.last_name + `,\r\n\r\n Today, you were absent from the class ` + student.course_code + '-' + student.course_name + `.Currently, your absence/total is ` + absence + `/` + total + ` (` + Math.floor(100 * absence / total) + `%).` + `Please be aware that if you exceed 30% of the total attendance, you won't be able to attend the final exam.\r\n\r\n If you need help, please contact giaovu.clc@fit.hcmus.edu.vn`,
-                                };
-                                transporter.sendMail(mailOptions, (error, info) => {
-                                    if (error) {
-                                        callback(error);
-                                    } else {
-                                        console.log(mailOptions);
-
-                                    }
-                                });
+                                _global.sendMail(
+                                    '"Giáo vụ"',
+                                    student.email,
+                                    'Update on your absence from ' + student.course_code + '-' + student.course_name, // Subject line
+                                    'Hi,'+ student.name + '\r\n' + 
+                                    `Hi ` + student.last_name + `,\r\n\r\n Today, you were absent from the class ` + student.course_code + '-' + student.course_name + `.Currently, your absence/total is ` + absence + `/` + total + ` (` + Math.floor(100 * absence / total) + `%).` + `Please be aware that if you exceed 30% of the total attendance, you won't be able to attend the final exam.\r\n\r\n If you need help, please contact giaovu.clc@fit.hcmus.edu.vn`
+                                );
                                 callback();
                             }
                         });

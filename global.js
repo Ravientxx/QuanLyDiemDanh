@@ -1,3 +1,5 @@
+var fs = require('fs');
+var nodemailer = require('nodemailer');
 module.exports = {
     db: {
         host: 'localhost',
@@ -87,6 +89,36 @@ module.exports = {
         res.send({ result: 'failure', detail: detail, message: message });
     },
 
+    sendMail: function(from, to, subject, text) {
+        fs.readFile('./api/data/settings.json', 'utf8', function (error, data) {
+            if (error){
+                if (error.code === 'ENOENT') {
+                    return console.log('Setting file not found');
+                } else {
+                    return console.log(error);
+                }
+            }
+            var settings = JSON.parse(data);
+            for(var i = 0 ; i < settings.emails.length; i++){
+                if(settings.selected_host == settings.emails[i].host_name){
+                    let transporter = nodemailer.createTransport(settings.emails[i].config);
+                    let mailOptions = {
+                        from: from + ' <' + settings.emails[i].config.auth.user + '>',
+                        to: to,
+                        subject: subject,
+                        text: text,
+                    };
+                    transporter.sendMail(mailOptions, (error, info) => {
+                        if (error) {
+                            return console.log(error);
+                        }
+                        console.log('Message %s sent: %s', info.messageId, info.response);
+                    });
+                }
+            }
+        });
+    },
+
     filterListByPage: function(page, limit, list) {
         var result = [];
         var length = list.length;
@@ -150,10 +182,33 @@ module.exports = {
             name = name.substr(i + 1, name.length - 1);
         }
         //cắt (+TA)
-        i = name.lastIndexOf('(');
+        i = name.lastIndexOf('(+TA)');
         if (i != -1) {
-            name = name.substr(0, i - 1);
+            name = name.splice(i, 5);
         }
         return name;
+    },
+    removeEmailTeacherName: function(teacher_name) {
+        var name = teacher_name;
+        //cắt học vị
+        var i = name.indexOf(' (');
+        if (i != -1) {
+            name = name.substr(i + 1, name.length - 1);
+        }
+        i = name.indexOf('(');
+        if (i != -1) {
+            name = name.substr(i + 1, name.length - 1);
+        }
+        return name;
+    },
+
+    getEmailFromTeacherName: function(teacher_name) {
+        var email = '';
+        var i1 = teacher_name.lastIndexOf('(');
+        var i2 = teacher_name.lastIndexOf(')');
+        if (i1 != -1) {
+            email = teacher_name.substr(i1+1, i2);
+        }
+        return email;
     }
 };
