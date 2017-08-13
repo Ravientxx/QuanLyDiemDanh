@@ -48,6 +48,17 @@ export class FeedbackHistoryComponent implements OnInit {
             this.getFeedbacks();
         }
     }
+    public deleteFeedback(){
+        this.feebackService.deleteFeedback(this.feedbacks[this.selected_feedback].id).subscribe(result=>{
+            if(result.result == 'success'){
+                this.getFeedbacks();
+                jQuery('#feedbackDetailModal').modal('hide');
+                this.appService.showPNotify('success',result.message,'success');
+            }else{
+                this.appService.showPNotify('failure',result.message,'error');
+            }
+        },error=>{ this.appService.showPNotify('failure',"Server Error! Can't delete feedback",'error'); });
+    }
 
     @ViewChild(SendFeedbackModalComponent)
     public  sendFeedbackModal: SendFeedbackModalComponent;

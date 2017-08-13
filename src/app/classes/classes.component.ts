@@ -7,7 +7,8 @@ declare var jQuery: any;
 })
 export class ClassesComponent implements OnInit {
 
-	public constructor(public  appService: AppService,public  excelService: ExcelService,public  authService: AuthService,public classesService: ClassesService) {
+	public constructor(public  appService: AppService,public  excelService: ExcelService,public  authService: AuthService,
+        public classesService: ClassesService) {
 	}
 	public apiResult;
 	public apiResultMessage;
@@ -96,19 +97,4 @@ export class ClassesComponent implements OnInit {
             }
         }, error => {this.appService.showPNotify('failure',"Server Error! Can't read student list file",'error');});
 	}
-    @ViewChild(ImportModalComponent)
-    public  importModal: ImportModalComponent;
-    public onImportClass(){
-        this.importModal.onOpenModal();
-    }
-    public onCloseImport(event : any){
-        this.getClassList();
-    }
-
-    @ViewChild(ExportModalComponent)
-    public  exportModal: ExportModalComponent;
-    public export_search_data : any = {};
-    public onExportClass(){
-        this.exportModal.onOpenModal();
-    }
 }

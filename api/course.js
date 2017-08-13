@@ -7,7 +7,9 @@ var pg = require('pg');
 var format = require('pg-format');
 const pool_postgres = new pg.Pool(_global.db_postgres);
 var connection = mysql.createConnection(_global.db);
+var jwt = require('jsonwebtoken'); 
 var pool = mysql.createPool(_global.db);
+var nodemailer = require('nodemailer');
 var bcrypt = require('bcrypt');
 var teacher_list = [];
 

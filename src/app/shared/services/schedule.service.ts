@@ -88,4 +88,49 @@ export class ScheduleService {
                 return Observable.throw(error || 'Server error');
             });
     }
+
+    public exportScheduleUrl = this.appConfig.apiHost + '/schedule/export/';
+    public exportSchedule(programs : any , classes : any): Observable < { result: string, schedules: Array<any> ,message : string} > {
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        var params = {
+            'programs': programs,
+            'classes' : classes
+        };
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.exportScheduleUrl,params,options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => {
+                if (error.status == 401) {
+                    this.authService.tokenExpired(this.router.url);
+                }
+                //this.authService.tokenExpired(this.router.url);
+                return Observable.throw(error || 'Server error');
+            });
+    }
+
+    public importScheduleUrl = this.appConfig.apiHost + '/schedule/import/';
+    public importSchedule(schedule : any): Observable < { result: string ,message : string} > {
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        var params = {
+            'schedule': schedule
+        };
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.importScheduleUrl,params,options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => {
+                if (error.status == 401) {
+                    this.authService.tokenExpired(this.router.url);
+                }
+                //this.authService.tokenExpired(this.router.url);
+                return Observable.throw(error || 'Server error');
+            });
+    }
 }

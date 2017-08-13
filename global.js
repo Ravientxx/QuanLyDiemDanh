@@ -150,10 +150,33 @@ module.exports = {
             name = name.substr(i + 1, name.length - 1);
         }
         //cắt (+TA)
-        i = name.lastIndexOf('(');
+        i = name.lastIndexOf('(+TA)');
         if (i != -1) {
-            name = name.substr(0, i - 1);
+            name = name.splice(i, 5);
         }
         return name;
+    },
+    removeEmailTeacherName: function(teacher_name) {
+        var name = teacher_name;
+        //cắt học vị
+        var i = name.indexOf(' (');
+        if (i != -1) {
+            name = name.substr(i + 1, name.length - 1);
+        }
+        i = name.indexOf('(');
+        if (i != -1) {
+            name = name.substr(i + 1, name.length - 1);
+        }
+        return name;
+    },
+
+    getEmailFromTeacherName: function(teacher_name) {
+        var email = '';
+        var i1 = teacher_name.lastIndexOf('(');
+        var i2 = teacher_name.lastIndexOf(')');
+        if (i1 != -1) {
+            email = teacher_name.substr(i1+1, i2);
+        }
+        return email;
     }
 };

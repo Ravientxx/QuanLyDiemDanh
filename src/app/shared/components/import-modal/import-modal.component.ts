@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, Output , EventEmitter} from '@angular/core';
 import { FileUploader } from "ng2-file-upload/ng2-file-upload";
-import { CourseService,TeacherService ,StudentService, AppService,ExcelService  } from '../../shared.module';
+import { CourseService,TeacherService ,StudentService, AppService,ExcelService,ScheduleService  } from '../../shared.module';
 declare var jQuery: any;
 
 @Component({
@@ -13,7 +13,7 @@ export class ImportModalComponent implements OnInit {
     @Input() public import_type: number;
     @Output() public onClose : EventEmitter<any> = new EventEmitter<any>();
     public constructor(public excelService : ExcelService,public appService : AppService,public studentService: StudentService,
-        public teacherService:TeacherService, public courseService: CourseService) { }
+        public teacherService:TeacherService, public courseService: CourseService, public scheduleService: ScheduleService) { }
     public ngOnInit() {
         this.import_progress = 0;
     }
@@ -102,6 +102,7 @@ export class ImportModalComponent implements OnInit {
                         this.readCourseFile(file_index);
                         break;
                     case this.appService.import_export_type.schedule:
+                        this.readScheduleFile(file_index);
                         break;
                     case this.appService.import_export_type.attendance_list:
                         this.readAttendanceListFile(file_index);
@@ -112,6 +113,15 @@ export class ImportModalComponent implements OnInit {
             },2000);
         }
     }
+    public checkFileExtension(file_index) : boolean{
+        var file_extenstion = this.import_list[file_index].file['name'].split('.').pop();
+        if(file_extenstion == 'xlsx' || file_extenstion == 'xls'){
+            return true;
+        }else{
+            this.readFileCallback(file_index,{result:'failure',message:"Not supported file type!"});
+            return false;
+        }
+    }
     public readFileCallback(file_index,result){
         this.import_list[file_index].result = result.result;
         this.import_list[file_index].result_message = result.message;
@@ -119,73 +129,102 @@ export class ImportModalComponent implements OnInit {
         this.loopReadFile();
     }
     public readStudentFile(file_index){
-        this.excelService.readStudentListFile(this.import_list[file_index].file).subscribe(result => {
-            if (result[0].result == 'failure') {
-                this.readFileCallback(file_index,result[0]);
-                return;
-            }
-            if (result[0].result == 'success') {
-                var student_list = result[0].student_list.slice();
-                var class_name = this.import_list[file_index].file['name'].split('.')[0];
-                this.studentService.importStudent(class_name,student_list).subscribe(result=>{
+        if(this.checkFileExtension(file_index)){
+            this.excelService.readStudentListFile(this.import_list[file_index].file).subscribe(result => {
+                if (result.result == 'failure') {
                     this.readFileCallback(file_index,result);
-                },error=>{
-                    this.readFileCallback(file_index,{result:'failure',message:"Server error ! Can't import student"});
-                });
-            }
-        }, error => {
-            this.readFileCallback(file_index,{result:'failure',message:"Service error"});
-        });
+                    return;
+                }
+                if (result.result == 'success') {
+                    var student_list = result.student_list.slice();
+                    var class_name = this.import_list[file_index].file['name'].split('.')[0];
+                    this.studentService.importStudent(class_name,student_list).subscribe(result=>{
+                        this.readFileCallback(file_index,result);
+                    },error=>{
+                        this.readFileCallback(file_index,{result:'failure',message:"Server error ! Can't import student"});
+                    });
+                }
+            }, error => {
+                this.readFileCallback(file_index,{result:'failure',message:"Service error"});
+            });
+        }
     }
     public readTeacherFile(file_index){
-        this.excelService.readTeacherListFile(this.import_list[file_index].file).subscribe(result => {
-            if (result[0].result == 'failure') {
-                this.readFileCallback(file_index,result[0]);
-                return;
-            }
-            if (result[0].result == 'success') {
-                var teacher_list = result[0].teacher_list.slice();
-                this.teacherService.importTeacher(teacher_list).subscribe(result=>{
+        if(this.checkFileExtension(file_index)){
+            this.excelService.readTeacherListFile(this.import_list[file_index].file).subscribe(result => {
+                if (result.result == 'failure') {
                     this.readFileCallback(file_index,result);
-                },error=>{
-                    this.readFileCallback(file_index,{result:'failure',message:"Server error ! Can't import teacher"});
-                });
-            }
-        }, error => {
-            this.readFileCallback(file_index,{result:'failure',message:"Service error"});
-        });
+                    return;
+                }
+                if (result.result == 'success') {
+                    var teacher_list = result.teacher_list.slice();
+                    this.teacherService.importTeacher(teacher_list).subscribe(result=>{
+                        this.readFileCallback(file_index,result);
+                    },error=>{
+                        this.readFileCallback(file_index,{result:'failure',message:"Server error ! Can't import teacher"});
+                    });
+                }
+            }, error => {
+                this.readFileCallback(file_index,{result:'failure',message:"Service error"});
+            });
+        }
     }
     public readCourseFile(file_index){
-        this.excelService.readCourseListFile(this.import_list[file_index].file).subscribe(result => {
-            if (result[0].result == 'failure') {
-                this.readFileCallback(file_index,result[0]);
-                return;
-            }
-            if (result[0].result == 'success') {
-                var course_list = result[0].course_list.slice();
-                var class_name = this.import_list[file_index].file['name'].split('.')[0];
-                this.courseService.importCourse(class_name,course_list).subscribe(result=>{
+        if(this.checkFileExtension(file_index)){
+            this.excelService.readCourseListFile(this.import_list[file_index].file).subscribe(result => {
+                if (result.result == 'failure') {
                     this.readFileCallback(file_index,result);
-                },error=>{
-                    this.readFileCallback(file_index,{result:'failure',message:"Server error ! Can't import course"});
-                });
-            }
-        }, error => {
-            this.readFileCallback(file_index,{result:'failure',message:"Service error"});
-        });
+                    return;
+                }
+                if (result.result == 'success') {
+                    var course_list = result.course_list.slice();
+                    var class_name = this.import_list[file_index].file['name'].split('.')[0];
+                    this.courseService.importCourse(class_name,course_list).subscribe(result=>{
+                        this.readFileCallback(file_index,result);
+                    },error=>{
+                        this.readFileCallback(file_index,{result:'failure',message:"Server error ! Can't import course"});
+                    });
+                }
+            }, error => {
+                this.readFileCallback(file_index,{result:'failure',message:"Service error"});
+            });
+        }
     }
     public readAttendanceListFile(file_index){
-        this.excelService.readAttendanceListFile(this.import_list[file_index].file).subscribe(result => {
-            if (result.result == 'failure') {
-                this.readFileCallback(file_index,result);
-                return;
-            }
-            if (result.result == 'success') {
-                jQuery("#importModal").modal("hide");
-                this.onClose.emit(result.attendance_list);
-            }
-        }, error => {
-            this.readFileCallback(file_index,{result:'failure',message:"Service error"});
-        });
+        if(this.checkFileExtension(file_index)){
+            this.excelService.readAttendanceListFile(this.import_list[file_index].file).subscribe(result => {
+                if (result.result == 'failure') {
+                    this.readFileCallback(file_index,result);
+                    return;
+                }
+                if (result.result == 'success') {
+                    jQuery("#importModal").modal("hide");
+                    this.onClose.emit(result.attendance_list);
+                }
+            }, error => {
+                this.readFileCallback(file_index,{result:'failure',message:"Service error"});
+            });
+        }
+    }
+    public readScheduleFile(file_index){
+        if(this.checkFileExtension(file_index)){
+            this.excelService.readScheduleFile(this.import_list[file_index].file).subscribe(result => {
+                if (result.result == 'failure') {
+                    this.readFileCallback(file_index,result);
+                    return;
+                }
+                if (result.result == 'success') {
+                    this.readFileCallback(file_index,result);
+                    var schedule = result.schedule;
+                    this.scheduleService.importSchedule(schedule).subscribe(result=>{
+                        this.readFileCallback(file_index,result);
+                    },error=>{
+                        this.readFileCallback(file_index,{result:'failure',message:"Server error ! Can't import schedule"});
+                    });
+                }
+            }, error => {
+                this.readFileCallback(file_index,{result:'failure',message:"Service error"});
+            });
+        }
     }
 }

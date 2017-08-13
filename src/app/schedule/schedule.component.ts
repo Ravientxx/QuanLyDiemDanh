@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { ScheduleUploadResult } from './schedule-upload/schedule-upload.component';
 import { ScheduleService, AppService, AuthService } from '../shared/shared.module';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 @Component({

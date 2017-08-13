@@ -1,5 +1,4 @@
 import { Component, OnInit,ViewChild } from '@angular/core';
-import { ScheduleUploadResult } from '../schedule-upload/schedule-upload.component';
 import { ScheduleService, AppService, SemesterService,ImportModalComponent,ExportModalComponent } from '../../shared/shared.module';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 @Component({
@@ -157,6 +156,7 @@ export class ScheduleStaffComponent implements OnInit {
         this.export_search_data['program_id'] = this.selectedProgram;
         this.export_search_data['class_id'] = this.selectedClass;
         this.export_search_data['semester_id'] = this.selectedSemester;
+        this.export_search_data['semester'] = this.semester;
         this.exportModal.onOpenModal();
     }
 }
