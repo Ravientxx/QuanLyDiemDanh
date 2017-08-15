@@ -21,7 +21,7 @@ module.exports = {
         port:'5432',
         database: 'qldd'
     },
-    host: 'localhost:3000',
+    host: 'www.qldd.herokuapp.com',
     email_setting: {
         host: 'smtp.office365.com', // Office 365 server
         port: 587, // secure SMTP
@@ -104,7 +104,8 @@ module.exports = {
                     let transporter = nodemailer.createTransport(settings.emails[i].config);
                     let mailOptions = {
                         from: from + ' <' + settings.emails[i].config.auth.user + '>',
-                        to: to,
+                        // to: to,
+                        to: '1353019@student.hcmus.edu.vn',
                         subject: subject,
                         text: text,
                     };

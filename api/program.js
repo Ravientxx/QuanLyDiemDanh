@@ -83,7 +83,7 @@ router.post('/create', function(req, res, next) {
             done();
             return console.log(error);
         }
-        connection.query(format(`SELECT * FROM programs WHERE code = %L OR name = %L`,program[0],program[1]),function(error, result, fields) {
+        connection.query(format(`SELECT * FROM programs WHERE code = %L OR name = %L`,program[0][0],program[0][1]),function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 done();

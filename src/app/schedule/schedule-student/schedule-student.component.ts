@@ -108,7 +108,7 @@ export class ScheduleStudentComponent implements OnInit {
     public ngOnInit() {
         this.appService.getSemesterProgramClass().subscribe(results => {
             this.semesters = results.semesters;
-            this.selectedSemester = this.semesters[this.semesters.length - 1].id;
+            this.selectedSemester = this.semesters.length > 0 ? this.semesters[this.semesters.length - 1].id : 0;
             this.getSemesterInfo();
             this.getSchedulesAndCourses();
         }, error => { this.appService.showPNotify('failure', "Server Error! Can't semester program class", 'error'); });

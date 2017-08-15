@@ -44,7 +44,9 @@ export class ExcelService {
                         name : cells[i][2],
                         phone : cells[i][3],
                     }
-                    student_list.push(student);
+                    if(student.stud_id != undefined || student.name != undefined){
+                        student_list.push(student);
+                    }
                 }
                 return { result: 'success', message: 'success', student_list : student_list};
             }).catch((error: any) => Observable.of({ result: 'failure', message: error }));
@@ -53,7 +55,7 @@ export class ExcelService {
     public writeStudentSearchList(student_list: any, file_name: string) {
         XlsxPopulate.fromBlankAsync()
         .then(workbook => {
-            workbook.sheet("Sheet1").cell("A1").value("Danh sách sinh viên " + student_list[0].class_name).style("horizontalAlignment", "center");
+            workbook.sheet("Sheet1").cell("A1").value("Danh sách sinh viên").style("horizontalAlignment", "center");
 
             workbook.sheet("Sheet1").cell("A3").value("STT").style("border", true).style("horizontalAlignment", "center");
             workbook.sheet("Sheet1").cell("B3").value("MSSV").style("border", true).style("horizontalAlignment", "center");
@@ -78,12 +80,12 @@ export class ExcelService {
         });
     }
 
-    public writeStudentLists(student_lists: any) {
+    public writeStudentLists(student_lists: any,file_names: any) {
         var zip = new JSZip();
-        Async.each(student_lists, function(student_list,callback){
+        Async.eachOf(student_lists, function(student_list,index,callback){
              XlsxPopulate.fromBlankAsync()
             .then(workbook => {
-                workbook.sheet("Sheet1").cell("A1").value("Danh sách sinh viên " + student_list[0].class_name).style("horizontalAlignment", "center");
+                workbook.sheet("Sheet1").cell("A1").value("Danh sách sinh viên " + file_names[index]).style("horizontalAlignment", "center");
 
                 workbook.sheet("Sheet1").cell("A3").value("STT").style("border", true).style("horizontalAlignment", "center");
                 workbook.sheet("Sheet1").cell("B3").value("MSSV").style("border", true).style("horizontalAlignment", "center");
@@ -99,10 +101,10 @@ export class ExcelService {
                     workbook.sheet("Sheet1").cell("E" + Math.floor(i + 4)).value(student_list[i].class_name).style("border", true);
                 }
                 workbook.sheet(0).range("A1:E1").merged(true);
-                const range = workbook.sheet(0).range("A1:Y"+Math.floor(student_list.length+4));
+                const range = workbook.sheet(0).range("A1:Y"+Math.floor(student_list.length+3));
                 return workbook.outputAsync()
                     .then(function (blob) {
-                        zip.file(student_list[0].class_name + ".xlsx", blob);
+                        zip.file(file_names[index] + ".xlsx", blob);
                         callback();
                     });
             });
@@ -508,7 +510,7 @@ export class ExcelService {
                     workbook.sheet("Sheet1").cell("A" + Math.floor(i + 12)).value(i + 1).style("border", true);
                     workbook.sheet("Sheet1").cell("B" + Math.floor(i + 12)).value(schedule.course_list[i].code).style("border", true).style("fontColor",color).style("bold",true);
                     workbook.sheet("Sheet1").cell("C" + Math.floor(i + 12)).value(schedule.course_list[i].name).style("border", true);
-                    workbook.sheet("Sheet1").cell("D" + Math.floor(i + 12)).value(schedule.course_list[i].classs_name).style("border", true);
+                    workbook.sheet("Sheet1").cell("D" + Math.floor(i + 12)).value(schedule.course_list[i].class_name).style("border", true);
                     workbook.sheet("Sheet1").cell("E" + Math.floor(i + 12)).value(schedule.course_list[i].lecturers).style("border", true);
                     workbook.sheet("Sheet1").cell("F" + Math.floor(i + 12)).value(schedule.course_list[i].tas).style("border", true);
                     workbook.sheet("Sheet1").cell("G" + Math.floor(i + 12)).value(schedule.course_list[i].office_hour).style("border", true);
@@ -623,7 +625,7 @@ export class ExcelService {
                 workbook.sheet("Sheet1").cell("A" + Math.floor(i + 12)).value(i + 1).style("border", true);
                 workbook.sheet("Sheet1").cell("B" + Math.floor(i + 12)).value(course_list[i].code).style("border", true).style("fontColor",color).style("bold",true);
                 workbook.sheet("Sheet1").cell("C" + Math.floor(i + 12)).value(course_list[i].name).style("border", true);
-                workbook.sheet("Sheet1").cell("D" + Math.floor(i + 12)).value(course_list[i].classs_name).style("border", true);
+                workbook.sheet("Sheet1").cell("D" + Math.floor(i + 12)).value(course_list[i].class_name).style("border", true);
                 workbook.sheet("Sheet1").cell("E" + Math.floor(i + 12)).value(course_list[i].lecturers).style("border", true);
                 workbook.sheet("Sheet1").cell("F" + Math.floor(i + 12)).value(course_list[i].tas).style("border", true);
                 workbook.sheet("Sheet1").cell("G" + Math.floor(i + 12)).value(course_list[i].office_hour).style("border", true);

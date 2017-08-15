@@ -121,9 +121,11 @@ export class ExportModalComponent implements OnInit {
     public exportStudent(){
         if (!this.export_on_search) {
             var selected_classes = [];
+            var selected_classes_name = [];
             for (var i = 0; i < this.classes.length; i++) {
                 if (this.classes[i].selected) {
                     selected_classes.push(this.classes[i].id);
+                    selected_classes_name.push(this.classes[i].name);
                 }
             }
             if (selected_classes.length == 0) {
@@ -131,7 +133,7 @@ export class ExportModalComponent implements OnInit {
             } else {
                 this.studentService.exportStudent(selected_classes).subscribe(result => {
                     var student_lists = result.student_lists;
-                    this.excelService.writeStudentLists(student_lists);
+                    this.excelService.writeStudentLists(student_lists,selected_classes_name);
                     this.isExporting = false;
                 }, error => { this.appService.showPNotify('failure', "Server Error! Can't get student list", 'error') });
             }
@@ -188,15 +190,12 @@ export class ExportModalComponent implements OnInit {
                 }
             }
             if (selected_classes.length == 0 && selected_programs.length == 0) {
-                this.scheduleService.exportSchedule(selected_programs,selected_classes).subscribe(result=>{
-                    this.excelService.writeScheduleLists(result.schedules);
-                },error=>{ this.appService.showPNotify('failure', "Server Error! Can't export schedules", 'error'); });
                 return;
             } else {
                 this.scheduleService.exportSchedule(selected_programs,selected_classes)
                 .subscribe(result => {
                     var schedules = result.schedules;
-                    //this.excelService.writeScheduleLists(schedules);
+                    this.excelService.writeScheduleLists(schedules);
                 }, error => { this.appService.showPNotify('failure', "Server Error! Can't get schedules", 'error'); });
             }
         } else {

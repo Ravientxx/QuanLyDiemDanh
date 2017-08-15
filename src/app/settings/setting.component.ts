@@ -9,11 +9,25 @@ export class SettingComponent implements OnInit {
 
     public constructor(public  scheduleService: ScheduleService, public  appService: AppService, public  router: Router, public  semesterService: SemesterService) {}
     public mask = [/\d/, /\d/, ':', /\d/, /\d/];
-    public settings = {};
+    public settings = { 
+        emails : [
+            {
+                host_name : '',
+                signature : '',
+                config: {
+                    auth:{
+                        user : '',
+                        pass : ''
+                    }
+                },
+            }
+        ]
+    };
     public selected_email_index = 0;
     public ngOnInit() {
         this.appService.getSettings().subscribe(result=>{
             this.settings = result.settings;
+            console.log(this.settings.emails);
             this.onChangeHost();
         },error=>{this.appService.showPNotify('failure',"Server Error! Can't get settings",'error');});
     }

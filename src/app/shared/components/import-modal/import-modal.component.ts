@@ -22,6 +22,7 @@ export class ImportModalComponent implements OnInit {
     public uploader: FileUploader = new FileUploader({ url: '' });
     public import_progress = 0;
     public isImporting = false;
+    public file_index = 0;
     public onSelectFile(files : any){
         if(this.import_type == this.appService.import_export_type.attendance_list){
             var file_list = Array.prototype.slice.call(files);
@@ -61,6 +62,7 @@ export class ImportModalComponent implements OnInit {
     }
     public onImport(){
         this.import_progress = 0;
+        this.file_index = 0;
         this.isImporting = true;
         if(this.import_list.length > 0){
             this.loopReadFile();
@@ -90,22 +92,21 @@ export class ImportModalComponent implements OnInit {
                     console.log('loop end');
                     return;
                 }
-                var file_index = this.import_progress / (100 / this.import_list.length);
                 switch (this.import_type) {
                     case this.appService.import_export_type.student:
-                        this.readStudentFile(file_index);
+                        this.readStudentFile(this.file_index);
                         break;
                     case this.appService.import_export_type.teacher:
-                        this.readTeacherFile(file_index);
+                        this.readTeacherFile(this.file_index);
                         break;
                     case this.appService.import_export_type.course:
-                        this.readCourseFile(file_index);
+                        this.readCourseFile(this.file_index);
                         break;
                     case this.appService.import_export_type.schedule:
-                        this.readScheduleFile(file_index);
+                        this.readScheduleFile(this.file_index);
                         break;
                     case this.appService.import_export_type.attendance_list:
-                        this.readAttendanceListFile(file_index);
+                        this.readAttendanceListFile(this.file_index);
                         break;
                     default:
                         break;
@@ -126,6 +127,7 @@ export class ImportModalComponent implements OnInit {
         this.import_list[file_index].result = result.result;
         this.import_list[file_index].result_message = result.message;
         this.import_progress += 100 / this.import_list.length;
+        this.file_index++;
         this.loopReadFile();
     }
     public readStudentFile(file_index){

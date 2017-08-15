@@ -6,6 +6,7 @@ var connection = mysql.createConnection(_global.db);
 var pool = mysql.createPool(_global.db);
 var bcrypt = require('bcrypt');
 var async = require("async");
+var jwt = require('jsonwebtoken');
 var nodemailer = require('nodemailer');
 var randomstring = require("randomstring");
 var pg = require('pg');
@@ -425,7 +426,6 @@ router.post('/update-list-by-course', function(req, res, next) {
                         done();
                         return console.log(error);
                     } else {
-                        let transporter = nodemailer.createTransport(_global.email_setting);
                         async.each(new_student_list, function(student, callback) {
                             var token = jwt.sign({ email: student.email }, _global.jwt_secret_key, { expiresIn: _global.jwt_register_expire_time });
                             var link = _global.host + '/register;token=' + token;

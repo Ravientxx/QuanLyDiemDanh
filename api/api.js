@@ -120,27 +120,21 @@ router.post('/settings', function(req, res, next) {
         _global.sendError(res, null, "You dont have permission to access");
         return console.log("You dont have permission to access");
     }
-    if(req.body.settings != undefined || req.body.settings == ''){
+    if(req.body.settings == undefined || req.body.settings == {}){
         _global.sendError(res, null, "Settings are required");
         return console.log("Settings are required");
     }
-    fs.readFile('./api/data/settings.json', 'utf8', function (error, data) {
-        if (error){
-            if (err.code === 'ENOENT') {
-                _global.sendError(res, null, 'Setting file not found');
-                return console.log('Setting file not found');
-            } else {
+    fs.writeFile('./api/data/settings.json',JSON.stringify(req.body.settings),function(error) {
+            if(error) {
                 _global.sendError(res, error.message);
                 return console.log(error);
             }
-        }
-        var settings = JSON.parse(data);
-        res.send({
-            result: 'success',
-            settings : settings
-        });
-        return console.log('Save settings successfully------------------------');
-    });
+            res.send({
+                result: 'success',
+                message : 'Save settings successfully'
+            });
+            return console.log('Save settings successfully------------------------');
+        })
 });
 
 router.get('/staffs', function(req, res, next) {
@@ -210,11 +204,10 @@ router.post('/add-staff', function(req, res, next) {
                     new_last_name,
                     new_email,
                     new_phone,
-                    bcrypt.hashSync(new_password, 10),
                     _global.role.staff
                 ]];
                 
-                connection.query(format('INSERT INTO users (first_name,last_name,email,phone,password,role_id) VALUES %L RETURNING id', new_user), function(error, result, fields) {
+                connection.query(format('INSERT INTO users (first_name,last_name,email,phone,role_id) VALUES %L RETURNING id', new_user), function(error, result, fields) {
                     if (error) {
                         _global.sendError(res, "Email already existed");
                         done();
@@ -234,7 +227,7 @@ router.post('/add-staff', function(req, res, next) {
                             'Admin User \r\n\r\n' +
                             'admin@fit.hcmus.edu.vn'
                         );
-                        res.send({ result: 'success',  message : "ok" });
+                        res.send({ result: 'success',  message : "Created staff successfully" });
                         done();
                     }
                 });
@@ -268,7 +261,7 @@ router.post('/remove-staff', function(req, res, next) {
                 done();
                 return console.log(error.message + ' at delete staff');
             } else {
-                res.send({ result: 'success' });
+                res.send({ result: 'success' ,message:'Deleted staff successfully'});
                 done();
             }
         });
