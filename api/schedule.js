@@ -478,14 +478,15 @@ router.post('/import', function(req, res, next) {
                                                                 }
                                                             }
                                                         });
-                                                    }
-                                                    connection.query(format(`INSERT INTO teacher_teach_course (teacher_id,course_id,teacher_role) 
-                                                        VALUES %L`, [[teacher_id, course_id, teacher.role]]), function(error, result, fields) {
-                                                        if(error) callback(error + ' at insert teacher_teach_course');
-                                                        else{
-                                                            callback();
-                                                        }
+                                                    }else{
+                                                        connection.query(format(`INSERT INTO teacher_teach_course (teacher_id,course_id,teacher_role) 
+                                                            VALUES %L`, [[teacher_id, course_id, teacher.role]]), function(error, result, fields) {
+                                                            if(error) callback(error + ' at insert teacher_teach_course');
+                                                            else{
+                                                                callback();
+                                                            }
                                                     });
+                                                    }
                                                 },
                                             ], function(error) {
                                                 if (error) callback(error);
