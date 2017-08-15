@@ -298,7 +298,7 @@ router.post('/import', function(req, res, next) {
     pool_postgres.connect(function(error, connection, done) {
         async.series([
             function(callback){
-                connection.query(format(`SELECT MAX(id) FROM semesters`), function(error, result, fields) {
+                connection.query(format(`SELECT MAX(id) as id FROM semesters`), function(error, result, fields) {
                     if (error) {
                         callback(error + ' at get semester id');
                     } else {
@@ -486,7 +486,7 @@ router.post('/import', function(req, res, next) {
                                                                 callback();
                                                             }
                                                     });
-                                                    }
+                                                    } 
                                                 },
                                             ], function(error) {
                                                 if (error) callback(error);
