@@ -92,7 +92,6 @@ router.post('/forgot-password', function(req, res, next) {
                     done();
                     return console.log("Old password not found. Please use the register link in your email to set up your account.");
                 }
-                let transporter = nodemailer.createTransport(_global.email_setting);
                 var token = jwt.sign({ email: email }, _global.jwt_secret_key, { expiresIn: _global.jwt_reset_password_expire_time });
                 var link = _global.host + '/forgot-password;token=' + token;
                 _global.sendMail(

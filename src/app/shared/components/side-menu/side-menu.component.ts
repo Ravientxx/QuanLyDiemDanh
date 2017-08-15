@@ -31,7 +31,7 @@ export class SideMenuComponent implements OnInit {
 
     public adminMenu = [
         { title: 'Dashboard', url: '/', icon: 'fa-home' },
-        { title: 'Clear Data', url: '/clear-data', icon: 'fa-database' },
+        // { title: 'Clear Data', url: '/clear-data', icon: 'fa-database' },
         { title: 'Settings', url: '/settings', icon: 'fa-cog' },
         { title: 'Logout', url: '/logout', icon: 'fa-sign-out' }
     ];

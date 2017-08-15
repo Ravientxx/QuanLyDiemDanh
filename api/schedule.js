@@ -4,6 +4,7 @@ var _global = require('../global.js');
 var mysql = require('mysql');
 var pool = mysql.createPool(_global.db);
 var async = require("async");
+var jwt = require('jsonwebtoken');
 var pg = require('pg');
 var format = require('pg-format');
 const pool_postgres = new pg.Pool(_global.db_postgres);
@@ -189,7 +190,7 @@ router.post('/export/', function(req, res, next) {
         async.series([
             function(callback){
                 async.each(programs, function(program, callback) {
-                    connection.query(format(`SELECT name FROM programs WHERE id = %L`, program), function(error, program_result, fields) {
+                    connection.query(format(`SELECT code FROM programs WHERE id = %L`, program), function(error, program_result, fields) {
                         if (error) {
                             callback(error);
                         } else {
@@ -212,7 +213,7 @@ router.post('/export/', function(req, res, next) {
                                 } else {
                                     schedules.push({
                                         course_list: result.rows,
-                                        file_name: program_result.rows[0].name
+                                        file_name: program_result.rows[0].code
                                     });
                                     callback();
                                 }
@@ -229,28 +230,34 @@ router.post('/export/', function(req, res, next) {
             },
             function(callback){
                 async.each(classes, function(_class, callback) {
-                    connection.query(format(`SELECT courses.*,class_has_course.schedules,classes.name as class_name,
-                            (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name)), E'\r\n')
-                            FROM teacher_teach_course,users 
-                            WHERE users.id = teacher_teach_course.teacher_id AND 
-                            courses.id = teacher_teach_course.course_id AND 
-                            teacher_teach_course.teacher_role = 0) as lecturers,
-                            (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name)), E'\r\n')
-                            FROM teacher_teach_course,users 
-                            WHERE users.id = teacher_teach_course.teacher_id AND 
-                            courses.id = teacher_teach_course.course_id AND 
-                            teacher_teach_course.teacher_role = 1) as TAs  
-                            FROM courses, class_has_course, classes 
-                            WHERE class_has_course.course_id = courses.id AND courses.semester_id = (SELECT MAX(id) FROM semesters) AND class_has_course.class_id = classes.id AND classes.id = %L
-                            ORDER BY classes.name DESC`, _class), function(error, result, fields) {
+                    connection.query(format(`SELECT name FROM classes WHERE id = %L`, _class), function(error, class_result, fields) {
                         if (error) {
                             callback(error);
                         } else {
-                            schedules.push({
-                                course_list: result.rows,
-                                file_name: result.rows[0].class_name
+                            connection.query(format(`SELECT courses.*,class_has_course.schedules,classes.name as class_name,
+                                    (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name)), E'\r\n')
+                                    FROM teacher_teach_course,users 
+                                    WHERE users.id = teacher_teach_course.teacher_id AND 
+                                    courses.id = teacher_teach_course.course_id AND 
+                                    teacher_teach_course.teacher_role = 0) as lecturers,
+                                    (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name)), E'\r\n')
+                                    FROM teacher_teach_course,users 
+                                    WHERE users.id = teacher_teach_course.teacher_id AND 
+                                    courses.id = teacher_teach_course.course_id AND 
+                                    teacher_teach_course.teacher_role = 1) as TAs  
+                                    FROM courses, class_has_course, classes 
+                                    WHERE class_has_course.course_id = courses.id AND courses.semester_id = (SELECT MAX(id) FROM semesters) AND class_has_course.class_id = classes.id AND classes.id = %L
+                                    ORDER BY classes.name DESC`, _class), function(error, result, fields) {
+                                if (error) {
+                                    callback(error);
+                                } else {
+                                    schedules.push({
+                                        course_list: result.rows,
+                                        file_name: class_result.rows[0].name
+                                    });
+                                    callback();
+                                }
                             });
-                            callback();
                         }
                     });
                 }, function(error) {
@@ -275,7 +282,7 @@ router.post('/export/', function(req, res, next) {
     });
 });
 
-router.post('/import/', function(req, res, next) {
+router.post('/import', function(req, res, next) {
     if (req.body.schedule == undefined || req.body.schedule == {}) {
         _global.sendError(res, null, "Schedule is required");
         return;
@@ -291,7 +298,7 @@ router.post('/import/', function(req, res, next) {
     pool_postgres.connect(function(error, connection, done) {
         async.series([
             function(callback){
-                connection.query(format(`SELECT MAX(id) FROM semesters`), function(error, result, fields) {
+                connection.query(format(`SELECT MAX(id) as id FROM semesters`), function(error, result, fields) {
                     if (error) {
                         callback(error + ' at get semester id');
                     } else {
@@ -299,12 +306,13 @@ router.post('/import/', function(req, res, next) {
                             callback('Semester not found');
                         }else{
                             semester_id = result.rows[0].id;
+                            callback();
                         }
                     }
                 });
             },
             function(callback){
-                connection.query(format(`SELECT id FROM programs WHERE name = %L`, program), function(error, result, fields) {
+                connection.query(format(`SELECT id FROM programs WHERE code = %L`, program), function(error, result, fields) {
                     if (error) {
                         callback(error + ' at get program info');
                     } else {
@@ -312,6 +320,7 @@ router.post('/import/', function(req, res, next) {
                             callback('Program not found');
                         }else{
                             program_id = result.rows[0].id;
+                            callback();
                         }
                     }
                 });
@@ -338,7 +347,7 @@ router.post('/import/', function(req, res, next) {
                                             course.note,
                                             course.office_hour
                                         ]];
-                                        connection.query(format(`INSERT INTO course (name,code,semester_id,program_id,note,office_hour) VALUES %L RETURNING id`,new_course), function(error, result, fields) {
+                                        connection.query(format(`INSERT INTO courses (name,code,semester_id,program_id,note,office_hour) VALUES %L RETURNING id`,new_course), function(error, result, fields) {
                                             if (error) callback(error + ' at insert course');
                                             else {
                                                 course_id = result.rows[0].id;
@@ -351,23 +360,26 @@ router.post('/import/', function(req, res, next) {
                                         connection.query(format(`SELECT id FROM classes WHERE name = %L`, course.class_name), function(error, result, fields) {
                                             if (error) callback(error + ' at get class_id');
                                             else {
-                                                var class_id = result.rows[0].id;
-                                                var new_class_has_course = [[
-                                                    class_id,
-                                                    course_id,
-                                                    course.schedules
-                                                ]];
-                                                connection.query(format(`INSERT INTO class_has_course (class_id,course_id,schedules) VALUES %L RETURNING id`,new_class_has_course), function(error, result, fields) {
-                                                    if (error) callback(error + ' at insert class_has_course');
-                                                    else callback();
-                                                });
+                                                if(result.rowCount == 0){
+                                                    callback('Class ' + course.class_name + ' not found');
+                                                }else{
+                                                    var class_id = result.rows[0].id;
+                                                    var new_class_has_course = [[
+                                                        class_id,
+                                                        course_id,
+                                                        course.schedules
+                                                    ]];
+                                                    connection.query(format(`INSERT INTO class_has_course (class_id,course_id,schedules) VALUES %L RETURNING id`,new_class_has_course), function(error, result, fields) {
+                                                        if (error) callback(error + ' at insert class_has_course');
+                                                        else callback();
+                                                    });
+                                                }
                                             }
                                         });
                                     },
                                     //insert teacher
                                     function(callback){
                                         var lecturers = course.lecturers.split('\r\n');
-                                        var tas = course.tas.split('\r\n');
                                         var teachers = [];
                                         for(var i = 0 ; i < lecturers.length; i++){
                                             var name = _global.removeExtraFromTeacherName(lecturers[i]);
@@ -380,16 +392,19 @@ router.post('/import/', function(req, res, next) {
                                                 role : _global.lecturer_role
                                             });
                                         }
-                                        for(var i = 0 ; i < tas.length; i++){
-                                            var name = _global.removeExtraFromTeacherName(lecturers[i]);
-                                            var email = _global.getEmailFromTeacherName(name);
-                                            name = _global.removeEmailTeacherName(name);
-                                            teachers.push({
-                                                first_name : _global.getFirstName(name),
-                                                last_name : _global.getLastName(name),
-                                                email : email,
-                                                role : _global.ta_role
-                                            });
+                                        if(course.tas != undefined){
+                                            var tas = course.tas.split('\r\n');
+                                            for(var i = 0 ; i < tas.length; i++){
+                                                var name = _global.removeExtraFromTeacherName(lecturers[i]);
+                                                var email = _global.getEmailFromTeacherName(name);
+                                                name = _global.removeEmailTeacherName(name);
+                                                teachers.push({
+                                                    first_name : _global.getFirstName(name),
+                                                    last_name : _global.getLastName(name),
+                                                    email : email,
+                                                    role : _global.ta_role
+                                                });
+                                            }
                                         }
                                         async.each(teachers, function(teacher, callback) {
                                             var is_new_teacher = true;
@@ -425,25 +440,19 @@ router.post('/import/', function(req, res, next) {
                                                             else{
                                                                 teacher_id = result.rows[0].id;
                                                                 var token = jwt.sign({ email: teacher.email }, _global.jwt_secret_key, { expiresIn: _global.jwt_register_expire_time });
-                                                                 var link = _global.host + '/register;token=' + token;
-                                                                let mailOptions = {
-                                                                    from: '"Giáo vụ"',
-                                                                    to: teacher.email,
-                                                                    subject: 'Register your account',
-                                                                    text: 'Hi,'+ teacher.first_name + '\r\n' + 
-                                                                        'Your account has been created.To setup your account for the first time, please go to the following web address: \r\n\r\n' +
-                                                                        link + 
-                                                                        '\r\n(This link is valid for 7 days from the time you received this email)\r\n\r\n' +
-                                                                        'If you need help, please contact the site administrator,\r\n' +
-                                                                        'Admin User \r\n\r\n' +
-                                                                        'admin@fit.hcmus.edu.vn'
-                                                                };
-                                                                transporter.sendMail(mailOptions, (error, info) => {
-                                                                    if (error) {
-                                                                        console.log(error);
-                                                                    }
-                                                                    console.log('Message %s sent: %s', info.messageId, info.response);
-                                                                });
+                                                                var link = _global.host + '/register;token=' + token;
+                                                                _global.sendMail(
+                                                                    '"Giáo vụ"',
+                                                                    teacher.email,
+                                                                    'Register your account',
+                                                                    'Hi,'+ teacher.first_name + '\r\n' + 
+                                                                    'Your account has been created.To setup your account for the first time, please go to the following web address: \r\n\r\n' +
+                                                                    link + 
+                                                                    '\r\n(This link is valid for 7 days from the time you received this email)\r\n\r\n' +
+                                                                    'If you need help, please contact the site administrator,\r\n' +
+                                                                    'Admin User \r\n\r\n' +
+                                                                    'admin@fit.hcmus.edu.vn'
+                                                                );
                                                                 callback();
                                                             }
                                                         });
@@ -457,20 +466,27 @@ router.post('/import/', function(req, res, next) {
                                                             if(error) callback(error + ' at check teacher_teach_course');
                                                             else{
                                                                 if(result.rowCount == 0){
-                                                                    
+                                                                    connection.query(format(`INSERT INTO teacher_teach_course (teacher_id,course_id,teacher_role) 
+                                                                        VALUES %L`, [[teacher_id, course_id, teacher.role]]), function(error, result, fields) {
+                                                                        if(error) callback(error + ' at insert teacher_teach_course');
+                                                                        else{
+                                                                            callback();
+                                                                        }
+                                                                    });
                                                                 }else{
                                                                     callback();
                                                                 }
                                                             }
                                                         });
-                                                    }
-                                                    connection.query(format(`INSERT INTO teacher_teach_course (teacher_id,course_id,teacher_role) 
-                                                        VALUES %L`, [[teacher_id, course_id, teacher.role]]), function(error, result, fields) {
-                                                        if(error) callback(error + ' at insert teacher_teach_course');
-                                                        else{
-                                                            callback();
-                                                        }
+                                                    }else{
+                                                        connection.query(format(`INSERT INTO teacher_teach_course (teacher_id,course_id,teacher_role) 
+                                                            VALUES %L`, [[teacher_id, course_id, teacher.role]]), function(error, result, fields) {
+                                                            if(error) callback(error + ' at insert teacher_teach_course');
+                                                            else{
+                                                                callback();
+                                                            }
                                                     });
+                                                    } 
                                                 },
                                             ], function(error) {
                                                 if (error) callback(error);

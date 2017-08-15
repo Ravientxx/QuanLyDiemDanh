@@ -4,6 +4,7 @@ var _global = require('../global.js');
 var mysql = require('mysql');
 var async = require("async");
 var pg = require('pg');
+var jwt = require('jsonwebtoken');
 var format = require('pg-format');
 const pool_postgres = new pg.Pool(_global.db_postgres);
 var connection = mysql.createConnection(_global.db);
@@ -102,7 +103,7 @@ router.post('/create', function(req, res, next) {
                 done(error);
                 return console.log("Class's existed");
             }else{
-                connection.query(format(`INSERT INTO classes (name,email,program_id) VALUES %L`,_class),function(error, result, fields) {
+                connection.query(format(`INSERT INTO classes (name,email,program_id) VALUES %L RETURNING id`,_class),function(error, result, fields) {
                     if (error) {
                         _global.sendError(res, error.message);
                         done(error);
@@ -134,7 +135,7 @@ router.post('/create', function(req, res, next) {
                                             name: _global.getLastName(student.name),
                                             email : student.stud_id + '@student.hcmus.edu.vn'
                                         });
-                                        connection.query(format(`INSERT INTO users (first_name,last_name,email,phone,role_id,password) VALUES %L`, new_user), function(error, results, fields) {
+                                        connection.query(format(`INSERT INTO users (first_name,last_name,email,phone,role_id,password) VALUES %L RETURNING id`, new_user), function(error, results, fields) {
                                             if (error) {
                                                 callback(error);
                                             } else {

@@ -23,20 +23,15 @@ export class ClassesComponent implements OnInit {
     public totalItems: number = 0;
     public itemsPerPage: number = 10;
 
-    public programs: Array < any > = [
-        {
-            id: 0,
-            name: ''
-        }
-    ];
+    public programs = [];
     public current_classes: Array < any > = [];
 
     public selectedProgram: any;
 
 	public ngOnInit() {
 		this.appService.getSemesterProgramClass().subscribe(results => {
-            this.programs = results.programs;
-            this.selectedProgram = this.programs[0].id;
+            this.programs = this.new_programs = results.programs;
+            this.selectedProgram = this.programs.length > 0 ? this.programs[0].id : 0;
             this.getClassList();
         }, error => { this.appService.showPNotify('failure', "Server Error! Can't get semester_program_class", 'error'); });
 	}
@@ -58,11 +53,12 @@ export class ClassesComponent implements OnInit {
     public onCellClick(id: any) {
         
     }
+    public new_programs = [];
     public new_class_name = '';
 	public new_class_email = '';
 	public new_student_list = [];
 	public addStudentFromFile = '';
-	public new_class_program;
+	public new_class_program = 0;
 	public onSelectFile(file: any) {
         this.addStudentFromFile = file;
     }
@@ -74,14 +70,13 @@ export class ClassesComponent implements OnInit {
     }
 	public onAddClass(){
 		this.new_class_name = '';
-		this.new_class_program = 0;
+        this.new_class_program = this.new_programs.length > 0 ? this.new_programs[0].id : 0;
 		this.new_class_email = '@student.hcmus.edu.vn';
 		jQuery("#addClassModal").modal("show");
 	}
 
 	public confirmAddClass(){
-		this.excelService.readStudentListFile(this.addStudentFromFile).subscribe(results => {
-			var result = results[0];
+		this.excelService.readStudentListFile(this.addStudentFromFile).subscribe(result => {
 			this.apiResult = result.result;
             this.apiResultMessage = result.message;
             if (this.apiResult == 'success') {
@@ -93,6 +88,7 @@ export class ClassesComponent implements OnInit {
 		                this.getClassList();
 		            }
 			        this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
+                    jQuery("#addClassModal").modal("hide");
 		        },error=>{this.appService.showPNotify('failure',"Server Error! Can't add class",'error');});
             }
         }, error => {this.appService.showPNotify('failure',"Server Error! Can't read student list file",'error');});

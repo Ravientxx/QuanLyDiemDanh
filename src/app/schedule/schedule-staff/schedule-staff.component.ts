@@ -107,32 +107,36 @@ export class ScheduleStaffComponent implements OnInit {
     public getSchedulesAndCourses() {
         this.scheduleService.getSchedulesAndCourses(this.selectedProgram, this.selectedClass, this.selectedSemester)
             .subscribe(result => {
-                this.courses = result.courses;
-                for (var i = 0; i < this.courses.length; i++) {
-                    for (var j = 0; j < this.filteredClasses.length; j++) {
-                        if (this.courses[i].class_name == this.filteredClasses[j].name) {
-                            this.courses[i]['color_class'] = 'class_color_' + j;
-                            break;
+                if(result.result == 'success'){
+                    this.courses = result.courses;
+                    for (var i = 0; i < this.courses.length; i++) {
+                        for (var j = 0; j < this.filteredClasses.length; j++) {
+                            if (this.courses[i].class_name == this.filteredClasses[j].name) {
+                                this.courses[i]['color_class'] = 'class_color_' + j;
+                                break;
+                            }
                         }
                     }
+                    this.loadSchedules();
                 }
-                this.loadSchedules();
             }, error => { this.appService.showPNotify('failure', "Server Error! Can't get schedule and courses", 'error'); });
     }
     public getSemesterInfo() {
         this.semesterService.getSemester(this.selectedSemester)
             .subscribe(result => {
-                this.semester = result.semester;
+                if(result.result == 'success'){
+                    this.semester = result.semester;
+                }
             }, error => { this.appService.showPNotify('failure', "Server Error! Can't get semester", 'error'); });
     }
     public ngOnInit() {
         this.appService.getSemesterProgramClass().subscribe(results => {
             this.semesters = results.semesters;
-            this.selectedSemester = this.semesters[this.semesters.length - 1].id;
+            this.selectedSemester = this.semesters.length > 0 ? this.semesters[this.semesters.length - 1].id : 0;
             this.getSemesterInfo();
             this.classes = results.classes;
             this.programs = results.programs;
-            this.selectedProgram = this.programs[0].id;
+            this.selectedProgram = this.programs.length > 0 ? this.programs[0].id : 0;
             this.onChangeProgram();
         }, error => { this.appService.showPNotify('failure', "Server Error! Can't get schedule program class", 'error'); });
     }

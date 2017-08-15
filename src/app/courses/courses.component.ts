@@ -62,10 +62,10 @@ export class CoursesComponent implements OnInit {
     public ngOnInit() {
         this.appService.getSemesterProgramClass().subscribe(results => {
             this.semesters = results.semesters;
-            this.selectedSemester = this.semesters[this.semesters.length - 1].id;
+            this.selectedSemester = this.semesters.length > 0 ? this.semesters[this.semesters.length - 1].id : 0;
             this.classes = results.classes;
             this.programs = results.programs;
-            this.selectedProgram = this.programs[0].id;
+            this.selectedProgram = this.programs.length > 0 ? this.programs[0].id : 0;
             this.onChangeProgram();
         }, error => { this.appService.showPNotify('failure', "Server Error! Can't get semester_program_class", 'error'); });
     }

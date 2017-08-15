@@ -112,7 +112,7 @@ export class ScheduleService {
             });
     }
 
-    public importScheduleUrl = this.appConfig.apiHost + '/schedule/import/';
+    public importScheduleUrl = this.appConfig.apiHost + '/schedule/import';
     public importSchedule(schedule : any): Observable < { result: string ,message : string} > {
         let authToken = this.authService.token;
         let headers = new Headers();

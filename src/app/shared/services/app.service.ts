@@ -290,13 +290,13 @@ export class AppService {
     public saveSettingsUrl = this.appConfig.apiHost + '/settings';
     public saveSettings(settings : any): Observable < { result: any, message: string} > {
         var params = {
-            settings : settings
+            'settings' : settings
         }
         let authToken = this.authService.token;
         let headers = new Headers();
         headers.append('x-access-token', `${authToken}`);
         let options = new RequestOptions({ headers: headers });
-        return this.http.post(this.getSettingsUrl,params, options)
+        return this.http.post(this.saveSettingsUrl,params, options)
             // ...and calling .json() on the response to return data
             .map((res: Response) => res.json())
             //...errors if any

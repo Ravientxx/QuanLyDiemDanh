@@ -102,13 +102,13 @@ export class AddCourseComponent implements OnInit {
         }
         else{
             this.excelService.readStudentListFile(this.selectedClasses[index].addStudentFromFile).subscribe(result => {
-                this.apiResult = result[0].result;
+                this.apiResult = result.result;
                 if (this.apiResult == 'failure') {
-                    this.apiResultMessage = result[0].message;
+                    this.apiResultMessage = result.message;
                     return;
                 }
                 if (this.apiResult == 'success') {
-                    this.selectedClasses[index].studentListFromFile = result[0].student_list.slice();
+                    this.selectedClasses[index].studentListFromFile = result.student_list.slice();
                     if(index < this.selectedClasses.length-1){
                         this.loopReadStudentFile(index+1);
                     }else{

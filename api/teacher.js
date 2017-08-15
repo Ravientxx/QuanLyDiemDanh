@@ -6,6 +6,7 @@ var pool = mysql.createPool(_global.db);
 var bcrypt = require('bcrypt');
 var teacher_list = [];
 var async = require("async");
+var jwt = require('jsonwebtoken');
 var pg = require('pg');
 var format = require('pg-format');
 const pool_postgres = new pg.Pool(_global.db_postgres);
@@ -371,28 +372,21 @@ router.post('/import', function(req, res, next) {
                 done();
                 return console.log(error);
             } else {
-                let transporter = nodemailer.createTransport(_global.email_setting);
                 async.each(new_teacher, function(teacher, callback) {
                     var token = jwt.sign({ email: teacher.email }, _global.jwt_secret_key, { expiresIn: _global.jwt_register_expire_time });
                     var link = _global.host + '/register;token=' + token;
-                    let mailOptions = {
-                        from: '"Giáo vụ"',
-                        to: teacher.email,
-                        subject: 'Register your account',
-                        text: 'Hi,'+ teacher.name + '\r\n' + 
+                    _global.sendMail(
+                        '"Giáo vụ"',
+                        teacher.email,
+                        'Register your account',
+                        'Hi,'+ teacher.name + '\r\n' + 
                             'Your account has been created.To setup your account for the first time, please go to the following web address: \r\n\r\n' +
                             link + 
                             '\r\n(This link is valid for 7 days from the time you received this email)\r\n\r\n' +
                             'If you need help, please contact the site administrator,\r\n' +
                             'Admin User \r\n\r\n' +
                             'admin@fit.hcmus.edu.vn'
-                    };
-                    transporter.sendMail(mailOptions, (error, info) => {
-                        if (error) {
-                            console.log(error);
-                        }
-                        console.log('Message %s sent: %s', info.messageId, info.response);
-                    });
+                    );
                     callback();
                 }, function(error) {
                     if (error) {

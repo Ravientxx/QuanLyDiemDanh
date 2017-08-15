@@ -45,10 +45,10 @@ export class StudentsComponent implements OnInit {
     public getSemesterProgramClass(){
         this.appService.getSemesterProgramClass().subscribe(results => {
             this.semesters = results.semesters;
-            this.selectedSemester = this.semesters[this.semesters.length - 1].id;
+            this.selectedSemester = this.semesters.length > 0 ? this.semesters[this.semesters.length - 1].id : 0;
             this.classes = results.classes;
             this.programs = this.new_programs = results.programs;
-            this.selectedProgram = this.programs[0].id;
+            this.selectedProgram = this.programs.length > 0 ? this.programs[0].id : 0;
             this.onChangeProgram();
         }, error => { this.appService.showPNotify('failure', "Server Error! Can't semester class program", 'error'); });   
     }
@@ -83,7 +83,7 @@ export class StudentsComponent implements OnInit {
         this.newEmail = this.newCode + "@student.hcmus.edu.vn";
     }
     public onOpenAddStudent() {
-        this.newProgram = this.new_programs[this.new_programs.length - 1].id;
+        this.newProgram = this.programs.length > 0 ? this.new_programs[this.new_programs.length - 1].id : 0;
         this.newEmail = "@student.hcmus.edu.vn";
         this.onChangeNewProgram();
         jQuery("#addStudentModal").modal("show");
