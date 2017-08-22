@@ -11,6 +11,11 @@ const pool_postgres = new pg.Pool(_global.db_postgres);
 router.get('/:id', function(req, res, next) {
     var id = req.params['id'];
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         connection.query(format(`SELECT * FROM semesters WHERE id = %L`, id), function(error, result, fields) {
             if (error) {
                 var message = error.message + ' at get semester info';

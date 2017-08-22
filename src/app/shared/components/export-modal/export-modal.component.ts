@@ -27,6 +27,21 @@ export class ExportModalComponent implements OnInit {
     public select_all_program = 0;
     public file_name = '';
     public larger_modal = false;
+
+    public semesters: Array < any > = [];
+    public selectedSemester;
+    public onGetProgramHasCourse(){
+        this.courseService.getProgramHasCourse(this.selectedSemester).subscribe(result => {
+            this.program_has_course = result.program_has_course;
+            for (var i = 0; i < this.program_has_course.length; i++) {
+                for(var j = 0 ; j < this.program_has_course[i].courses.length; j++){
+                    this.program_has_course[i].courses[j]['selected'] = false;
+                }
+                this.select_all_program_has_course.push(0);
+            }
+        }, error => { this.appService.showPNotify('failure', "Server Error! Can't get program_has_course", 'error'); });
+    }
+
     public onOpenModal() {
         this.file_name = '';
         this.export_progress = 0;
@@ -51,17 +66,14 @@ export class ExportModalComponent implements OnInit {
                 break;
             case this.appService.import_export_type.examinees:
             case this.appService.import_export_type.attendance_summary:
+            case this.appService.import_export_type.attendance_lists:
                 this.export_on_search = 0;
                 this.larger_modal = true;
-                this.courseService.getProgramHasCourse().subscribe(result => {
-                    this.program_has_course = result.program_has_course;
-                    for (var i = 0; i < this.program_has_course.length; i++) {
-                        for(var j = 0 ; j < this.program_has_course[i].courses.length; j++){
-                            this.program_has_course[i].courses[j]['selected'] = false;
-                        }
-                        this.select_all_program_has_course.push(0);
-                    }
-                }, error => { this.appService.showPNotify('failure', "Server Error! Can't get program_has_course", 'error'); });
+                this.appService.getSemesterProgramClass().subscribe(results => {
+                    this.semesters = results.semesters;
+                    this.selectedSemester = this.semesters.length > 0 ? this.semesters[this.semesters.length - 1].id : 0;
+                    this.onGetProgramHasCourse();
+                }, error => { this.appService.showPNotify('failure', "Server Error! Can't get semester_program_class", 'error'); });
                 break;
             default:
                 // code...
@@ -108,6 +120,9 @@ export class ExportModalComponent implements OnInit {
                 break;
             case this.appService.import_export_type.attendance_summary:
                 this.exportAttendanceSummary();
+                break;
+            case this.appService.import_export_type.attendance_lists:
+                this.exportAttendanceLists();
                 break;
             default:
                 // code...
@@ -245,6 +260,26 @@ export class ExportModalComponent implements OnInit {
                 var attendance_summary_lists = result.attendance_summary_lists;
                 this.excelService.writeAttendanceSummary(attendance_summary_lists, selected_class_has_course);
             }, error => { this.appService.showPNotify('failure', "Server Error! Can't get attendance summary", 'error') });
+        }
+    }
+    public exportAttendanceLists(){
+        var selected_class_has_course_id = [];
+        var selected_class_has_course = [];
+        for(var i = 0 ; i < this.program_has_course.length; i++){
+            for(var j = 0 ; j < this.program_has_course[i].courses.length; j++){
+                if (this.program_has_course[i].courses[j].selected) {
+                    selected_class_has_course_id.push(this.program_has_course[i].courses[j].id);
+                    selected_class_has_course.push(this.program_has_course[i].courses[j]);
+                }
+            }
+        }
+        if (selected_class_has_course_id.length == 0) {
+            return;
+        } else {
+            this.studentService.exportAttendanceLists(selected_class_has_course_id).subscribe(result => {
+                var attendance_lists = result.attendance_lists;
+                this.excelService.writeAttendanceLists(attendance_lists, selected_class_has_course);
+            }, error => { this.appService.showPNotify('failure', "Server Error! Can't get attendance lists", 'error') });
         }
     }
 }

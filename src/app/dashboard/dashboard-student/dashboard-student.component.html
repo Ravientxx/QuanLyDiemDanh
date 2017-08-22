@@ -70,8 +70,12 @@
                 <table class="table table-bordered text-center">
                     <thead>
                         <tr>
+                            <ng-template #predictedTemplate>
+                                <div>The predicted percentages are based on a specific lecturer. Calculated by all attendances and No. courses that lecturer opened and teached, respectively.</div>
+                            </ng-template>
                             <th>Course</th>
-                            <th>Absences</th>
+                            <th>Actual % Absences</th>
+                            <th>Predicted % Absences <i [tooltip]="predictedTemplate" container="body" class="fa fa-question"></i></th>
                             <th colspan="2">Week 1</th>
                             <th colspan="2">Week 2</th>
                             <th colspan="2">Week 3</th>
@@ -89,6 +93,7 @@
                         <tr *ngFor="let course of attendance_list_by_student;let i = index">
                             <td>{{course.code}} - {{course.name}}</td>
                             <td>{{course.absences}}/{{course.attendance_details.length}} ({{(course.absences/course.attendance_details.length) | percent:'2.1-1'}})</td>
+                            <td></td>
                             <ng-container *ngFor="let attendance_detail of course.attendance_details;let j = index">
                                 <ng-template #tolTemplate>
                                     <div>Method : {{attendance_detail.method}}</div>

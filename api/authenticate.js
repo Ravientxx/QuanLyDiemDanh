@@ -14,15 +14,15 @@ const pool_postgres = new pg.Pool(_global.db_postgres);
 var invalid_token = [];
 
 router.post('/login', function(req, res, next) {
-    if (req.body.email == undefined || req.body.email == '') {
-        _global.sendError(res, null, 'Email is required');
+    if (req.body.username == undefined || req.body.username == '') {
+        _global.sendError(res, null, 'Username is required');
         return;
     }
     if (req.body.password == undefined || req.body.password == '') {
         _global.sendError(res, null, 'Password is required');
         return;
     }
-    var email = req.body.email;
+    var username = req.body.username;
     var password = req.body.password;
     pool_postgres.connect(function(error, connection, done) {
         if (error) {
@@ -31,19 +31,24 @@ router.post('/login', function(req, res, next) {
             return console.log(error);
         }
 
-        connection.query(format(`SELECT * FROM users WHERE email = %L LIMIT 1`, email), function(error, result, fields) {
+        connection.query(format(`SELECT * FROM users WHERE email LIKE %L LIMIT 1`, username + '@%'), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 done();
                 return console.log(error);
             }
-            //check email exist
+            //check user exist
             if (result.rowCount == 0) {
-                _global.sendError(res, null, "Email not found");
+                _global.sendError(res, null, "Username not found");
                 done();
-                return console.log("Email is not existed");
+                return console.log("Username is not existed");
             }
             var password_hash = result.rows[0].password;
+            if(password_hash == null || password_hash == ''){
+                _global.sendError(res, null, "Complete the register link first");
+                done();
+                return console.log("Complete the register link first");
+            }
             if (bcrypt.compareSync(password, password_hash)) {
                 var token = jwt.sign(result.rows[0], _global.jwt_secret_key, { expiresIn: _global.jwt_expire_time });
                 res.send({ result: 'success', token: token, user: result.rows[0] });

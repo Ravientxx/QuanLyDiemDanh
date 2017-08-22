@@ -15,13 +15,13 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
         public authService: AuthService, public attendanceService: AttendanceService, public localStorage: LocalStorageService, public appService: AppService, public router: Router) {
         socketService.consumeEventOnCheckAttendanceStopped();
         socketService.invokeCheckAttendanceStopped.subscribe(result=>{
-            if(this.selected_attendance['course_id'] == result['course_id'] && this.selected_attendance['class_id'] == result['class_id']){
-                
+            if(this.selected_attendance['course_id'] == result['course_id'] && this.selected_attendance['class_id'] == result['class_id']){  
                 this.appService.showPNotify('Info',"Attendance session is " + result['message'],'info');
                 this.router.navigate(['/dashboard']);
             }
         });
     }
+    public is_edit_quiz = false;
     public is_published = false;
     public apiResult;
     public apiResultMessage;
@@ -35,7 +35,7 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
         code: '',
         is_randomize_questions: true,
         is_randomize_answers: true,
-        is_auto_move_through_questions: true,
+        required_correct_answers: 0,
         type: this.appService.quiz_type.miscellaneous.id,
         title: 'Attendance Quiz',
         questions: [{
@@ -114,10 +114,12 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
     public onChangeQuiz(){
         for(var i = 0 ; i < this.quizzes.length; i++){
             if(this.selected_quiz == this.quizzes[i].id){
+                this.is_edit_quiz = (this.quizzes[i].id == 0);
                 this.quiz.questions = [];
                 this.quiz.id = this.quizzes[i].id;
                 this.quiz.title = this.quizzes[i].title;
                 this.quiz.code = this.quizzes[i].code;
+                this.quiz.required_correct_answers = this.quizzes[i].required_correct_answers;
                 for(var j = 0; j < this.quizzes[i].questions.length; j++){
                     this.quiz.questions.push({
                         text : this.quizzes[i].questions[j].text,
@@ -149,13 +151,18 @@ export class CheckAttendanceQuizTeacherComponent implements OnInit, OnDestroy {
             if(this.apiResult == 'failure'){
                 this.appService.showPNotify(this.apiResult,this.apiResultMessage,'error');
             }else{
-                this.quizzes = result.quiz_list;
+                this.quizzes = [];
+                for(var i = 0 ; i < result.quiz_list.length; i++){
+                    if(result.quiz_list[i].is_template){
+                        this.quizzes.push(result.quiz_list[i]);
+                    }
+                }
                 this.quizzes.unshift({
                     id: 0,
                     code: result.quiz_code,
                     is_randomize_questions: true,
                     is_randomize_answers: true,
-                    is_auto_move_through_questions: false,
+                    required_correct_answers: 0,
                     type: 0,
                     title: 'New quiz',
                     questions: [{

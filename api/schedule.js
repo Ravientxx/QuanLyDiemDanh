@@ -21,6 +21,11 @@ router.put('/update/', function(req, res, next) {
         classes.push(req.body.classes);
     }
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         async.each(classes, function(_class, callback) {
             connection.query(format(`UPDATE class_has_course SET schedules = %L WHERE class_id = %L AND course_id = %L`,_class.schedules, _class.class_id, _class.course_id), function(error, result, fields) {
                 if (error) {
@@ -58,6 +63,11 @@ router.post('/schedules-and-courses/', function(req, res, next) {
     var semester_id = req.body.semester_id;
     var class_id = req.body.class_id ? req.body.class_id : 0;
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         if (class_id == 0) {
             connection.query(format(`SELECT courses.*,class_has_course.schedules,classes.name as class_name,
                                     (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name, ' (', users.email, ')')), E'\r\n')
@@ -115,6 +125,11 @@ router.post('/schedules-and-courses/', function(req, res, next) {
 router.get('/schedules-and-courses-by-student/', function(req, res, next) {
     var student_id = req.decoded.id;
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         connection.query(format(`SELECT courses.*,class_has_course.schedules,classes.name as class_name,
                                     (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name, ' (', users.email, ')')), E'\r\n')
                                     FROM teacher_teach_course,users 
@@ -147,6 +162,11 @@ router.get('/schedules-and-courses-by-student/', function(req, res, next) {
 router.get('/schedules-and-courses-by-teacher/', function(req, res, next) {
     var teacher_id = req.decoded.id;
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         connection.query(format(`SELECT courses.*,class_has_course.schedules,classes.name as class_name,
                             (SELECT array_to_string(array_agg(CONCAT(users.first_name,' ',users.last_name, ' (', users.email, ')')), E'\r\n')
                             FROM teacher_teach_course,users 
@@ -187,6 +207,11 @@ router.post('/export/', function(req, res, next) {
     var schedules = [];
 
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         async.series([
             function(callback){
                 async.each(programs, function(program, callback) {
@@ -296,6 +321,11 @@ router.post('/import', function(req, res, next) {
     var semester_id = 0;
     var course_list = req.body.schedule.course_list;
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         async.series([
             function(callback){
                 connection.query(format(`SELECT MAX(id) as id FROM semesters`), function(error, result, fields) {

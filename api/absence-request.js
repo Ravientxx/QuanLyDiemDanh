@@ -19,6 +19,11 @@ router.post('/by-student', function(req, res, next) {
     var status = req.body.status ? req.body.status : -1;
     var search_text = req.body.search_text ? req.body.search_text : '';
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         var query = 'SELECT * FROM absence_requests WHERE student_id = ' + id;
         if (status != -1) {
             query += " AND status = " + status;
@@ -63,6 +68,11 @@ router.put('/change-status', function(req, res, next) {
     var status = req.body.status;
     var absence_request_info ;
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         async.series([
             //Start transaction
             function(callback) {
@@ -196,6 +206,11 @@ router.post('/list', function(req, res, next) {
     var page = req.body.page != null ? req.body.page : _global.default_page;
     var limit = req.body.limit != null ? req.body.limit : _global.detail_limit;
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         connection.query(format(`SELECT absence_requests.*,students.stud_id as code, CONCAT(users.first_name,' ', users.last_name) as name 
             FROM absence_requests,students,users 
             WHERE users.id = students.id AND absence_requests.student_id = students.id AND absence_requests.status = %L`, status), function(error, result, fields) {
@@ -254,6 +269,11 @@ router.post('/create', function(req, res, next) {
     var current_user = req.decoded;
 
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         var absence_request = [[
             current_user.id,
             reason,
@@ -297,6 +317,11 @@ router.post('/cancel', function(req, res, next) {
     var current_user = req.decoded;
 
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         connection.query(format(`SELECT student_id FROM absence_requests WHERE id = %L`, id), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);

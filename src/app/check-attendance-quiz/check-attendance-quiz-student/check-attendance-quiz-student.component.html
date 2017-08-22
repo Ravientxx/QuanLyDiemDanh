@@ -71,6 +71,9 @@
                             <div *ngIf="quiz['type'] == appService.quiz_type.academic.id || correct_answers == quiz['questions']['length']" class="row text-center green_text">
                                 <h2>Your Attendance is checked</h2>
                             </div>
+                            <div *ngIf="quiz['type'] == appService.quiz_type.academic.id && correct_answers < quiz.required_correct_answers" class="row text-center red_text">
+                                <h2>Your Attendance is not checked. This quiz requires you to have at least {{quiz.required_correct_answers}} correct answers</h2>
+                            </div>
                             <div *ngIf="quiz['type'] == appService.quiz_type.miscellaneous.id && correct_answers != quiz['questions']['length']" class="row text-center red_text">
                                 <h2>Your Attendance is not checked. Miscellaneous quiz requires you to be 100% correct to be checked</h2>
                             </div>

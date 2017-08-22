@@ -86,7 +86,7 @@
                                     <td>{{course.lecturers}}</td>
                                     <td>{{course.absence_count}}</td>
                                     <td *ngIf="course.attendance_status == appService.attendance_status.normal"><button class="btn btn-primary" (click)="onChangeAttendanceStatus(course.id,appService.attendance_status.exemption)">Normal</button></td>
-                                    <td *ngIf="course.attendance_status == appService.attendance_status.exemption"><button class="btn btn-primary" (click)="onChangeAttendanceStatus(course.id,appService.attendance_status.normal)">Exemption</button></td>
+                                    <td *ngIf="course.attendance_status == appService.attendance_status.exemption"><button class="btn btn-warning" (click)="onChangeAttendanceStatus(course.id,appService.attendance_status.normal)">Exemption</button></td>
                                     <!-- <td *ngIf="course.enrollment_status == appService.enrollment_status.compulsory">Compulsory</td>
                                     <td *ngIf="course.enrollment_status == appService.enrollment_status.elective">Elective</td> -->
                                 </tr>

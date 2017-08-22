@@ -15,6 +15,11 @@ router.post('/list', function(req, res, next) {
     var page = req.body.page != null ? req.body.page : _global.default_page;
     var limit = req.body.limit != null ? req.body.limit : _global.detail_limit;
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         var query = `SELECT id, title, content, replied, feedbacks.read, created_at , 
             (SELECT CONCAT(users.first_name,' ',users.last_name,E'\r\n',users.email) FROM users WHERE users.id = feedbacks.from_id) as _from, 
             (SELECT CONCAT(first_name,' ',last_name) FROM users WHERE users.id = feedbacks.to_id) as _to 

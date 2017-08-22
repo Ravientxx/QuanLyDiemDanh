@@ -23,6 +23,11 @@ router.post('/check-list', function(req, res, next) {
     var attendance_id = req.body.attendance_id;
     var attendance_type = req.body.attendance_type;
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         connection.query(format(`UPDATE attendance_detail SET attendance_type = %L, attendance_time = %L WHERE attendance_id = %L AND student_id = %L`,attendance_type, new Date(), attendance_id, student_id), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, null, 'error at update attendance_detail');
@@ -51,6 +56,11 @@ router.post('/qr-code/:id', function(req, res, next) {
     var class_id = 0;
     var course_id = 0;
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         async.series([
             //Check attendance id
             function(callback) {

@@ -65,6 +65,11 @@ router.get('/semesters-programs-classes', function(req, res, next) {
     var class_id = req.body.class_id;
     var semester_id = req.body.semester_id;
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         connection.query(`SELECT * FROM semesters`, function(error, result, fields) {         
             if (error){
                 done(error);
@@ -139,6 +144,11 @@ router.post('/settings', function(req, res, next) {
 
 router.get('/staffs', function(req, res, next) {
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         connection.query(`SELECT * FROM users WHERE role_id = 3`, function(error, result, fields) {
             if (error) {
                 done(error);
@@ -179,6 +189,11 @@ router.post('/add-staff', function(req, res, next) {
     var new_phone = req.body.phone;
 
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         if (error) {
             _global.sendError(res, error.message);
             done();
@@ -249,6 +264,11 @@ router.post('/remove-staff', function(req, res, next) {
     var email = req.body.email;
     
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         if (error) {
             _global.sendError(res, error.message);
             done();
