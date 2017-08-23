@@ -11,7 +11,7 @@
                     <div class="clearfix"></div>
                 </form>
                 <form *ngIf="reset_token">
-                    <h1>Enter your information</h1>
+                    <h1>Enter information</h1>
                     <div *ngIf="error_message" class="alert alert-danger text-center" style="padding-top: 6px;padding-bottom: 6px">
                         <i class="fa fa-warning"></i> {{error_message}}
                     </div>
@@ -32,6 +32,9 @@
                         </div>
                         <div>
                             <input type='text' class="form-control" name="phone" placeholder="Phone" [(ngModel)]="phone" />
+                        </div>
+                        <div>
+                            <label class="control-label">Your username will be the part before '@' in your email.</label>
                         </div>
                         <div>
                             <input type="password" class="form-control" name="password" placeholder="Password" [(ngModel)]="password" />

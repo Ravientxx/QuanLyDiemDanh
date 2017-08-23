@@ -763,52 +763,113 @@ router.post('/import', function(req, res, next) {
                                 }
                             });
                         },
-                        //insert teacher_teach_course
+                        //insert teacher & teacher_teach_course
                         function(callback) {
                             var teacher_list = [];
                             for (var i = 0; i < course.lecturers.length; i++) {
                                 if (course.lecturers[i] == undefined) continue;
-                                var name = _global.removeExtraFromTeacherName(course.lecturers[i]);
+                                var temp = _global.removeExtraFromTeacherName(course.lecturers[i]);
+                                var email = _global.getEmailFromTeacherName(temp);
+                                var name = _global.removeEmailTeacherName(temp);
                                 teacher_list.push({
                                     first_name: _global.getFirstName(name),
                                     last_name: _global.getLastName(name),
+                                    email : email,
                                     role: _global.lecturer_role
                                 });
                             }
                             if (course.TAs != undefined) {
                                 for (var i = 0; i < course.TAs.length; i++) {
                                     if (course.TAs[i] == undefined) continue;
-                                    var name = _global.removeExtraFromTeacherName(course.TAs[i]);
+                                    var temp = _global.removeExtraFromTeacherName(course.TAs[i]);
+                                    var email = _global.getEmailFromTeacherName(temp);
+                                    var name = _global.removeEmailTeacherName(temp);
                                     teacher_list.push({
                                         first_name: _global.getFirstName(name),
                                         last_name: _global.getLastName(name),
+                                        email : email,
                                         role: _global.ta_role
                                     });
                                 }
                             }
                             async.each(teacher_list, function(teacher, callback) {
-                                connection.query(format(`SELECT users.id FROM users,teachers WHERE users.id = teachers.id AND first_name = %L AND last_name = %L LIMIT 1`, teacher.first_name, teacher.last_name), function(error, result, fields) {
-                                    if (error) {
-                                        callback(error);
-                                    } else {
-                                        if (result.rowCount == 0) {
-                                            callback('Teacher' + teacher.first_name + ' ' + teacher.last_name + ' not found');
-                                        } else {
-                                            var new_teacher_teach_course = [[
-                                                result.rows[0].id,
-                                                teacher.role,
-                                                new_course_id
+                                var check_new_teacher = false;
+                                var teacher_id = 0;
+                                async.series([
+                                    //check if teacher exist
+                                    function(callback) {
+                                        connection.query(format(`SELECT users.id FROM users,teachers WHERE users.id = teachers.id AND email = %L LIMIT 1`, teacher.email), function(error, result, fields) {
+                                            if (error) {
+                                                callback(error);
+                                            } else {
+                                                if (result.rowCount == 0) {
+                                                    check_new_teacher = true;
+                                                    callback();
+                                                } else {
+                                                    teacher_id = result.rows[0].id;
+                                                    callback();
+                                                }
+                                            }
+                                        });
+                                    },
+                                    //insert teacher if needed
+                                    function(callback) {
+                                        if(check_new_teacher){
+                                            var new_teacher = [[
+                                                teacher.first_name,
+                                                teacher.last_name,
+                                                teacher.email,
+                                                _global.role.teacher
                                             ]];
-                                            connection.query(format(`INSERT INTO teacher_teach_course (teacher_id,teacher_role,course_id) VALUES %L`, new_teacher_teach_course), function(error, result, fields) {
+                                            connection.query(format(`INSERT INTO users (first_name,last_name,email,role_id) VALUES %L RETURNING id`, new_teacher), function(error, result, fields) {
                                                 if (error) {
                                                     callback(error);
                                                 } else {
+                                                    teacher_id = result.rows[0].id;
+                                                    var token = jwt.sign({ email: teacher.email }, _global.jwt_secret_key, { expiresIn: _global.jwt_register_expire_time });
+                                                    var link = _global.host + '/register;token=' + token;
+                                                    _global.sendMail(
+                                                        '"Giáo vụ"',
+                                                        teacher.email,
+                                                        'Register your account',
+                                                        'Hi,'+ teacher.first_name + ' ' + teacher.last_name + '\r\n' + 
+                                                            'Your account has been created.To setup your account for the first time, please go to the following web address: \r\n\r\n' +
+                                                            link + 
+                                                            '\r\n(This link is valid for 7 days from the time you received this email)\r\n\r\n' +
+                                                            'If you need help, please contact the site administrator,\r\n' +
+                                                            'Admin User \r\n\r\n' +
+                                                            'admin@fit.hcmus.edu.vn'
+                                                    );
                                                     callback();
                                                 }
                                             });
+                                        }else{
+                                            callback();
                                         }
+                                    },
+                                    //insert teacher_teach_coures
+                                    function(callback) {
+                                        var new_teacher_teach_course = [[
+                                           teacher_.id,
+                                            teacher.role,
+                                            new_course_id
+                                        ]];
+                                        connection.query(format(`INSERT INTO teacher_teach_course (teacher_id,teacher_role,course_id) VALUES %L`, new_teacher_teach_course), function(error, result, fields) {
+                                            if (error) {
+                                                callback(error);
+                                            } else {
+                                                callback();
+                                            }
+                                        });
+                                    },
+                                ], function(error) {
+                                    if (error) {
+                                        callback(error);
+                                    } else {
+                                        callback();
                                     }
                                 });
+                                
                             }, function(error) {
                                 if (error) {
                                     callback(error);

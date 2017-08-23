@@ -103,99 +103,127 @@ router.post('/create', function(req, res, next) {
                 done(error);
                 return console.log("Class's existed");
             }else{
-                connection.query(format(`INSERT INTO classes (name,email,program_id) VALUES %L RETURNING id`,_class),function(error, result, fields) {
-                    if (error) {
-                        _global.sendError(res, error.message);
-                        done(error);
-                        return console.log(error);
-                    }
-                    var class_id = result.rows[0].id;
-                    if(student_list == undefined || student_list == []){
-                        res.send({ result: 'success', message: 'Class added successfully'});
-                        done();
-                        return;
-                    }else{
-                        async.each(student_list, function(student, callback) {
-                            connection.query(format(`SELECT id FROM students WHERE stud_id = %L LIMIT 1`, student.stud_id), function(error, result, fields) {
-                                if (error) {
-                                    console.log(error.message + ' at get student_id from datbase (file)');
-                                    callback(error);
-                                } else {
-                                    if(result.rowCount == 0){
-                                        //new student to system
-                                        var new_user = [[
-                                            _global.getFirstName(student.name),
-                                            _global.getLastName(student.name),
-                                            student.stud_id + '@student.hcmus.edu.vn',
-                                            student.phone,
-                                            _global.role.student,
-                                            bcrypt.hashSync(student.stud_id.toString(), 10),
-                                        ]];
-                                        new_student_list.push({
-                                            name: _global.getLastName(student.name),
-                                            email : student.stud_id + '@student.hcmus.edu.vn'
-                                        });
-                                        connection.query(format(`INSERT INTO users (first_name,last_name,email,phone,role_id,password) VALUES %L RETURNING id`, new_user), function(error, results, fields) {
-                                            if (error) {
-                                                callback(error);
-                                            } else {
-                                                var student_id = results.rows[0].id;
-                                                var new_student = [[
-                                                    student_id,
-                                                    student.stud_id,
-                                                    class_id,
-                                                ]];
-                                                connection.query(format(`INSERT INTO students (id,stud_id,class_id) VALUES %L`, new_student), function(error, results, fields) {
-                                                    if (error) {
-                                                        callback(error);
-                                                    } else {
-                                                        callback();
-                                                    }
-                                                });
-                                            }
-                                        });
-                                    }else{
-                                        //old student => ignore
-                                        callback();
-                                    }
-                                }
-                            });
-                        }, function(error) {
+                var class_id = 0;
+                async.series([
+                    //Start transaction
+                    function(callback) {
+                        connection.query('BEGIN', (error) => {
+                            if(error) callback(error);
+                            else callback();
+                        });
+                    },
+                    //Insert class
+                    function(callback) {
+                        connection.query(format(`INSERT INTO classes (name,email,program_id) VALUES %L RETURNING id`,_class),function(error, result, fields) {
                             if (error) {
-                                _global.sendError(res, error.message,'Error at add student to class from file');
-                                done(error);
-                                return console.log(error);
-                            }
-                            else {
-                                async.each(new_student_list, function(student, callback) {
-                                    var token = jwt.sign({ email: student.email }, _global.jwt_secret_key, { expiresIn: _global.jwt_register_expire_time });
-                                    var link = _global.host + '/register;token=' + token;
-                                    _global.sendMail(
-                                        '"Giáo vụ"',
-                                        student.email,
-                                        'Register your account',
-                                        'Hi,'+ student.name + '\r\n' + 
-                                        'Your account has been created.To setup your account for the first time, please go to the following web address: \r\n\r\n' +
-                                        link + 
-                                        '\r\n(This link is valid for 7 days from the time you received this email)\r\n\r\n' +
-                                        'If you need help, please contact the site administrator,\r\n' +
-                                        'Admin User \r\n\r\n' +
-                                        'admin@fit.hcmus.edu.vn'
-                                    );
-                                    callback();
-                                }, function(error) {
-                                    if (error) {
-                                        _global.sendError(res, error.message);
-                                        done();
-                                        return console.log(error);
-                                    } else {
-                                        console.log('Class added successfully!---------------------------------------');
-                                        res.send({ result: 'success', message: 'Class added successfully'});
-                                        done();
-                                    }
-                                });
+                                callback(error);
+                            }else{
+                                class_id = result.rows[0].id;
+                                callback();
                             }
                         });
+                    },
+                    //Add student from file
+                    function(callback) {
+                        if(student_list == undefined || student_list == []){
+                            callback();
+                        }else{
+                            async.each(student_list, function(student, callback) {
+                                connection.query(format(`SELECT id FROM students WHERE stud_id = %L LIMIT 1`, student.stud_id), function(error, result, fields) {
+                                    if (error) {
+                                        console.log(error.message + ' at get student_id from datbase (file)');
+                                        callback(error);
+                                    } else {
+                                        if(result.rowCount == 0){
+                                            //new student to system
+                                            var new_user = [[
+                                                _global.getFirstName(student.name),
+                                                _global.getLastName(student.name),
+                                                student.stud_id + '@student.hcmus.edu.vn',
+                                                student.phone,
+                                                _global.role.student,
+                                                bcrypt.hashSync(student.stud_id.toString(), 10),
+                                            ]];
+                                            new_student_list.push({
+                                                name: _global.getLastName(student.name),
+                                                email : student.stud_id + '@student.hcmus.edu.vn'
+                                            });
+                                            connection.query(format(`INSERT INTO users (first_name,last_name,email,phone,role_id,password) VALUES %L RETURNING id`, new_user), function(error, results, fields) {
+                                                if (error) {
+                                                    callback(error);
+                                                } else {
+                                                    var student_id = results.rows[0].id;
+                                                    var new_student = [[
+                                                        student_id,
+                                                        student.stud_id,
+                                                        class_id,
+                                                    ]];
+                                                    connection.query(format(`INSERT INTO students (id,stud_id,class_id) VALUES %L`, new_student), function(error, results, fields) {
+                                                        if (error) {
+                                                            callback(error);
+                                                        } else {
+                                                            callback();
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }else{
+                                            //old student => ignore
+                                            callback();
+                                        }
+                                    }
+                                });
+                            }, function(error) {
+                                if (error) {
+                                    callback(error + ' Error at add student to class from file');
+                                }
+                                else {
+                                    async.each(new_student_list, function(student, callback) {
+                                        var token = jwt.sign({ email: student.email }, _global.jwt_secret_key, { expiresIn: _global.jwt_register_expire_time });
+                                        var link = _global.host + '/register;token=' + token;
+                                        _global.sendMail(
+                                            '"Giáo vụ"',
+                                            student.email,
+                                            'Register your account',
+                                            'Hi,'+ student.name + '\r\n' + 
+                                            'Your account has been created.To setup your account for the first time, please go to the following web address: \r\n\r\n' +
+                                            link + 
+                                            '\r\n(This link is valid for 7 days from the time you received this email)\r\n\r\n' +
+                                            'If you need help, please contact the site administrator,\r\n' +
+                                            'Admin User \r\n\r\n' +
+                                            'admin@fit.hcmus.edu.vn'
+                                        );
+                                        callback();
+                                    }, function(error) {
+                                        if (error) {
+                                            callback(error + ' at send mail');
+                                        } else {
+                                            callback();
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    },
+                    //Commit transaction
+                    function(callback) {
+                        connection.query('COMMIT', (error) => {
+                            if (error) callback(error);
+                            else callback();
+                        });
+                    },
+                ], function(error) {
+                    if (error) {
+                        _global.sendError(res, error.message);
+                        connection.query('ROLLBACK', (error) => {
+                            if (error) return console.log(error);
+                        });
+                        done(error);
+                        return console.log(error);
+                    } else {
+                        console.log('success add class!---------------------------------------');
+                        res.send({ result: 'success', message: 'Class Added Successfully' });
+                        done();
                     }
                 });
             }

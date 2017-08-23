@@ -977,6 +977,125 @@ router.post('/export-attendance-lists', function(req, res, next) {
     });
 });
 
+router.post('/export-exceeded-absence-limit', function(req, res, next) {
+    if (req.body.class_has_course_id == undefined || req.body.class_has_course_id.length == 0) {
+        _global.sendError(res, null, "class_has_course_id is required");
+        return;
+    }
+    var class_has_course_ids = req.body.class_has_course_id;
+    var student_lists = [];
+    var attendance_summary_lists = [];
+    pool_postgres.connect(function(error, connection, done) {
+        if (error) {
+            _global.sendError(res, error.message);
+            done();
+            return console.log(error);
+        }
+        async.series([
+            //Start transaction
+            function(callback) {
+                connection.query('BEGIN', (error) => {
+                    if(error) callback(error);
+                    else callback();
+                });
+            },
+            //get student from each class_has_course
+            function(callback) {
+                async.each(class_has_course_ids, function(class_has_course_id, callback) {
+                    connection.query(format(`SELECT student_enroll_course.*,users.last_name,users.first_name, students.stud_id as student_code, students.id,
+                                    class_has_course.class_id, class_has_course.course_id, class_has_course.attendance_count 
+                        FROM student_enroll_course,users, students, class_has_course 
+                        WHERE class_has_course.id = class_has_course_id AND users.id = student_enroll_course.student_id AND users.id = students.id AND class_has_course_id = %L 
+                        ORDER BY students.stud_id`, class_has_course_id), function(error, result, fields) {
+                        if (error) {
+                            console.log(error.message + ' at get student by class_has_course');
+                            callback(error);
+                        } else {
+                            student_lists.push(result.rows);
+                            callback();
+                        }
+                    });
+                }, function(error) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            //check student attendance progression from each list
+            function(callback) {
+                async.eachOf(student_lists, function(student_list, student_list_index, callback) {
+                    var attendance_summary_list = [];
+                    async.eachOf(student_list, function(student, student_index, callback) {
+                        if (student.attendance_status == _global.attendance_status.exemption) {
+                            //Sinh viên được miễn điểm danh => bỏ qua
+                            callback();
+                        } else {
+                            //Sinh viên ko được miễn điểm danh
+                            //count absences and total attendance
+                            connection.query(format(`SELECT COUNT(*) as count, attendance_type FROM attendance,attendance_detail 
+                                WHERE attendance.closed = TRUE AND id = attendance_id AND student_id = %L AND course_id = %L AND class_id = %L 
+                                GROUP BY attendance_type`, student.id, student.course_id, student.class_id), function(error, result, fields) {
+                                if (error) {
+                                    console.log(error.message + ' at count attendance_details');
+                                    callback(error);
+                                } else {
+                                    var total = 0;
+                                    var absence = 0;
+                                    for (var i = 0; i < result.rowCount; i++) {
+                                        if (result.rows[i].attendance_type == _global.attendance_type.absent) absence = (+result.rows[i].count);
+                                        total += (+result.rows[i].count);
+                                    }
+                                    student['absent_count'] = +absence;
+                                    student['absent_percentage'] = Math.floor(100 * absence / total);
+                                    if(student['absent_percentage'] > 30){
+                                        attendance_summary_list.push(student);
+                                    }
+                                    callback();
+                                }
+                            });
+                        }
+                    }, function(error) {
+                        if (error) {
+                            callback(error);
+                        } else {
+                            attendance_summary_lists.push(attendance_summary_list);
+                            callback();
+                        }
+                    });
+                }, function(error) {
+                    if (error) {
+                        callback(error);
+                    } else {
+                        callback();
+                    }
+                });
+            },
+            //Commit transaction
+            function(callback) {
+                connection.query('COMMIT', (error) => {
+                    if (error) callback(error);
+                    else callback();
+                });
+            },
+        ], function(error) {
+            if (error) {
+                _global.sendError(res, error.message);
+                connection.query('ROLLBACK', (error) => {
+                    if (error) return console.log(error);
+                });
+                done(error);
+                return console.log(error);
+            } else {
+                console.log('success export exceeded absence limit!---------------------------------------');
+                res.send({ result: 'success', message: 'Exceeded absence limit exported successfully', exceeded_absence_limit: attendance_summary_lists });
+                done();
+            }
+        });
+    });
+});
+
 router.post('/detail-by-code', function(req, res, next) {
     if (req.body.code == undefined || req.body.code == '') {
         _global.sendError(res, null, "Student code is required");

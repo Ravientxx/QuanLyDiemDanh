@@ -5145,3 +5145,12 @@ table td {
     overflow: hidden;
     vertical-align:middle;
 }
+
+.button_text {
+    white-space:pre-line !important;
+    word-wrap: break-word !important;
+}
+.button_icon_center {
+    width: 150px;
+    height: 120px;
+}

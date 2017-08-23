@@ -31,7 +31,7 @@ router.post('/login', function(req, res, next) {
             return console.log(error);
         }
 
-        connection.query(format(`SELECT * FROM users WHERE email LIKE %L LIMIT 1`, username + '@%'), function(error, result, fields) {
+        connection.query(format(`SELECT * FROM users WHERE email LIKE %L`, username + '@%'), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
                 done();
@@ -43,21 +43,20 @@ router.post('/login', function(req, res, next) {
                 done();
                 return console.log("Username is not existed");
             }
-            var password_hash = result.rows[0].password;
-            if(password_hash == null || password_hash == ''){
-                _global.sendError(res, null, "Complete the register link first");
-                done();
-                return console.log("Complete the register link first");
+            for(var i = 0 ; i < result.rowCount ; i++){
+                var password_hash = result.rows[i].password;
+                if(password_hash != null && password_hash != ''){
+                    if (bcrypt.compareSync(password, password_hash)) {
+                        var token = jwt.sign(result.rows[i], _global.jwt_secret_key, { expiresIn: _global.jwt_expire_time });
+                        res.send({ result: 'success', token: token, user: result.rows[i] });
+                        done();
+                        return
+                    }
+                }
             }
-            if (bcrypt.compareSync(password, password_hash)) {
-                var token = jwt.sign(result.rows[0], _global.jwt_secret_key, { expiresIn: _global.jwt_expire_time });
-                res.send({ result: 'success', token: token, user: result.rows[0] });
-                done();
-            } else {
-                _global.sendError(res, null, "Wrong password");
-                done();
-                return console.log("Wrong password");
-            }
+            _global.sendError(res, null, "Wrong password");
+            done();
+            return console.log("Wrong password");
         });
     });
 });

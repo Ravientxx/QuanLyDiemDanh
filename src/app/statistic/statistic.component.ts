@@ -41,4 +41,12 @@ export class StatisticComponent implements OnInit {
 			this.exportModal.onOpenModal();
         },500);
 	}
+
+	public onExportExceededAbsence(){
+		this.export_type = this.appService.import_export_type.exceeded_absence_limit;
+		this.export_title = 'Export Exceeded Absences Limit';
+		setTimeout(()=>{
+			this.exportModal.onOpenModal();
+        },500);
+	}
 }

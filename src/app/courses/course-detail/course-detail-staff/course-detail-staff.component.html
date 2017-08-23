@@ -89,18 +89,23 @@
                             <td>{{i+1}}</td>
                             <td>{{attendance.code}}</td>
                             <td>{{attendance.name}}</td>
-                            <ng-container *ngFor="let attendance_detail of attendance.attendance_details;let j = index">
-                                <ng-template #tolTemplate>
-                                    <div>Method : {{attendance_detail.method}}</div>
-                                    <div>Created at : {{attendance_detail.created_at | date:'short'}}</div>
-                                    <div>Edited at : {{attendance_detail.attendance_time | date:'short'}}</div>
-                                    <div *ngIf="attendance_detail.edited_by">Edited by : {{attendance_detail.editor}}</div>
-                                    <div *ngIf="attendance_detail.edited_by">Reason : {{attendance_detail.edited_reason}}</div>
-                                </ng-template>
-                                <td width="3%" [tooltip]="tolTemplate" container="body" [ngClass]="{'warning_background': attendance_detail.edited_by}"><i [ngClass]="['fa attendance-check', attendance_detail.icon]"></i></td>
+                            <ng-container *ngIf="attendance.exemption">
+                                <td class="gray_background" colspan="22" style="font-weight: bold;">Exempted</td>
                             </ng-container>
-                            <ng-container *ngFor="let number of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22]">
-                                <td class="gray_background" width="3%" *ngIf="number > attendance.attendance_details.length"></td>
+                            <ng-container *ngIf="!attendance.exemption">
+                                <ng-container *ngFor="let attendance_detail of attendance.attendance_details;let j = index">
+                                    <ng-template #tolTemplate>
+                                        <div>Method : {{attendance_detail.method}}</div>
+                                        <div>Created at : {{attendance_detail.created_at | date:'short'}}</div>
+                                        <div>Edited at : {{attendance_detail.attendance_time | date:'short'}}</div>
+                                        <div *ngIf="attendance_detail.edited_by">Edited by : {{attendance_detail.editor}}</div>
+                                        <div *ngIf="attendance_detail.edited_by">Reason : {{attendance_detail.edited_reason}}</div>
+                                    </ng-template>
+                                    <td width="3%" [tooltip]="tolTemplate" container="body" [ngClass]="{'warning_background': attendance_detail.edited_by}"><i [ngClass]="['fa attendance-check', attendance_detail.icon]"></i></td>
+                                </ng-container>
+                                <ng-container *ngFor="let number of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22]">
+                                    <td class="gray_background" width="3%" *ngIf="number > attendance.attendance_details.length"></td>
+                                </ng-container>
                             </ng-container>
                         </tr>
                     </tbody>
@@ -131,18 +136,23 @@
                             <td (click)="onRemoveAttendanceClick(i)"><i class="fa fa-close attendance-check" style="color:red"></i></td>
                             <td>{{attendance.code}}</td>
                             <td><input class="form-control" [(ngModel)]="attendance.name" name="name{{i}}" /></td>
-                            <ng-container *ngFor="let attendance_detail of attendance.attendance_details;let j = index">
-                                <ng-template #tolTemplate>
-                                    <div>Method : {{attendance_detail.method}}</div>
-                                    <div>Created at : {{attendance_detail.created_at | date:'short'}}</div>
-                                    <div>Edited at : {{attendance_detail.attendance_time | date:'short'}}</div>
-                                    <div *ngIf="attendance_detail.edited_by">Edited by : {{attendance_detail.editor}}</div>
-                                    <div *ngIf="attendance_detail.edited_by">Reason : {{attendance_detail.edited_reason}}</div>
-                                </ng-template>
-                                <td width="3%" [tooltip]="tolTemplate" container="body" [ngClass]="{'warning_background': attendance_detail.edited_by}" (click)="onAttendanceCheckClick(i,j)"><i [ngClass]="['fa attendance-check', attendance_detail.icon]"></i></td>
+                            <ng-container *ngIf="attendance.exemption">
+                                <td class="gray_background" colspan="22" style="font-weight: bold;">Exempted</td>
                             </ng-container>
-                            <ng-container *ngFor="let number of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22]">
-                                <td class="gray_background" width="3%" *ngIf="number > attendance.attendance_details.length"></td>
+                            <ng-container *ngIf="!attendance.exemption">
+                                <ng-container *ngFor="let attendance_detail of attendance.attendance_details;let j = index">
+                                    <ng-template #tolTemplate>
+                                        <div>Method : {{attendance_detail.method}}</div>
+                                        <div>Created at : {{attendance_detail.created_at | date:'short'}}</div>
+                                        <div>Edited at : {{attendance_detail.attendance_time | date:'short'}}</div>
+                                        <div *ngIf="attendance_detail.edited_by">Edited by : {{attendance_detail.editor}}</div>
+                                        <div *ngIf="attendance_detail.edited_by">Reason : {{attendance_detail.edited_reason}}</div>
+                                    </ng-template>
+                                    <td width="3%" [tooltip]="tolTemplate" container="body" [ngClass]="{'warning_background': attendance_detail.edited_by}" (click)="onAttendanceCheckClick(i,j)"><i [ngClass]="['fa attendance-check', attendance_detail.icon]"></i></td>
+                                </ng-container>
+                                <ng-container *ngFor="let number of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22]">
+                                    <td class="gray_background" width="3%" *ngIf="number > attendance.attendance_details.length"></td>
+                                </ng-container>
                             </ng-container>
                         </tr>
                     </tbody>

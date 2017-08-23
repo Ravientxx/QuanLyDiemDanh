@@ -38,23 +38,17 @@
                             <div class="form-group">
                                 <label class="control-label col-md-3 col-sm-3 col-xs-12"> Lecturer*</label>
                                 <div class="col-md-6 col-sm-6 col-xs-12">
-                                    <div class="form-control tag_list col-md-7 col-xs-12">
+                                    <div class="form-control tag_list col-md-7 col-xs-12" (click)="onOpenChooseLecturer()">
                                         <button class="btn btn-primary disabled" *ngFor="let lecturer of selected_lecturers" style="margin-bottom:5px">{{lecturer.first_name}} {{lecturer.last_name}}</button>
                                     </div>
-                                </div>
-                                <div class="col-md-3 col-sm-3 col-xs-12">
-                                    <button class="btn btn-primary" (click)="onOpenChooseLecturer()"><i class="fa fa-pencil"></i> Edit</button>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="control-label col-md-3 col-sm-3 col-xs-12"> TA </label>
                                 <div class="col-md-6 col-sm-6 col-xs-12">
-                                    <div class="form-control tag_list col-md-7 col-xs-12 ">
+                                    <div class="form-control tag_list col-md-7 col-xs-12 " (click)="onOpenChooseTA()">
                                         <button class="btn btn-primary disabled" *ngFor="let lecturer of selected_TAs" style="margin-bottom:5px">{{lecturer.first_name}} {{lecturer.last_name}}</button>
                                     </div>
-                                </div>
-                                <div class="col-md-3 col-sm-3 col-xs-12">
-                                    <button class="btn btn-primary" (click)="onOpenChooseTA()"><i class="fa fa-pencil"></i> Edit</button>
                                 </div>
                             </div>
                         </div>

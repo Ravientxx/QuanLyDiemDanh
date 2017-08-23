@@ -271,6 +271,28 @@ export class StudentService {
             });
     }
 
+    public exportExceededAbsenceLimitUrl = this.appConfig.apiHost + '/student/export-exceeded-absence-limit';
+    public exportExceededAbsenceLimit(class_has_course_id:Array<any>): Observable < { result: string,exceeded_absence_limit:Array<any>, message: string } > {
+        var params = {
+            'class_has_course_id': class_has_course_id,
+        };
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.exportExceededAbsenceLimitUrl, params, options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => {
+                if (error.status == 401) {
+                    this.authService.tokenExpired(this.router.url);
+                }
+                //this.authService.tokenExpired(this.router.url);
+                return Observable.throw(error || 'Server error');
+            });
+    }
+
     public  updateStudentInteractionUrl = this.appConfig.apiHost + '/attendance/update-interaction';
     public updateStudentInteraction(id:number, attendance_id:number, interaction_type: number): Observable < { result: string, message: string } > {
         var params = {

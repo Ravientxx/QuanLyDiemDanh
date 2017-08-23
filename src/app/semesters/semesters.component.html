@@ -26,8 +26,8 @@
                 <tbody>
                     <tr *ngFor="let semester of semesters" (click)='onCellClick()'>
                         <td>{{semester.name}}</td>
-                        <td>{{semester.start_date | date: "short"}}</td>
-                        <td>{{semester.end_date | date: "short"}}</td>
+                        <td>{{semester.start_date | date: 'shortDate'}}</td>
+                        <td>{{semester.end_date | date: 'shortDate'}}</td>
                         <td>{{semester.vacation_time}}</td>
                     </tr>
                 </tbody>
