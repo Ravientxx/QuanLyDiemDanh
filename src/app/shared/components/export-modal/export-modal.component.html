@@ -7,7 +7,7 @@
                 </div>
                 <div class="row modal-body">
                     <div class="col-sm-6">
-                        <div *ngIf="export_type != appService.import_export_type.examinees && export_type != appService.import_export_type.attendance_summary" class="radio">
+                        <div *ngIf="export_type != appService.import_export_type.examinees && export_type != appService.import_export_type.attendance_summary && export_type != appService.import_export_type.attendance_lists" class="radio">
                             <label>
                                 <input type="radio" name="optradio" [value]="1" [(ngModel)]="export_on_search">Export based on Search results</label>
                         </div>
@@ -21,8 +21,19 @@
                             <input placeholder="File name" class="form-control" [(ngModel)]="file_name" />
                         </div>
                     </div>
-                    <div *ngIf="!export_on_search && (export_type == appService.import_export_type.examinees || export_type == appService.import_export_type.attendance_summary)">
+                    <div *ngIf="!export_on_search && (export_type == appService.import_export_type.examinees || export_type == appService.import_export_type.attendance_summary || export_type == appService.import_export_type.attendance_lists)">
+                        <div class="col-sm-6 form-horizontal">
+                            <div class="col-sm-6">
+                                <h4 class="pull-right">Semester : </h4>
+                            </div>
+                            <div class="col-sm-6">
+                                <select class="form-control" [(ngModel)]="selectedSemester" (ngModelChange)="onGetProgramHasCourse()">
+                                    <option *ngFor="let semester of semesters" [value]="semester.id">{{semester.name}}</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="row col-xs-12">
+                            <hr>
                             <ng-container *ngFor="let program of program_has_course; let i = index">
                                 <div class="col-sm-4">
                                     <label>{{program.name}}</label>

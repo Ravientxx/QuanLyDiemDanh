@@ -25,6 +25,11 @@ router.post('/list', function(req, res, next) {
     var course_id = req.body.course_id;
     var quiz_list = [];
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         connection.query(format(`SELECT quiz.* FROM quiz,class_has_course 
             WHERE quiz.class_has_course_id = class_has_course.id AND class_has_course.class_id = %L AND
              class_has_course.course_id = %L`, class_id, course_id), function(error, quizzes, fields) {
@@ -171,6 +176,11 @@ router.post('/publish', function(req, res, next) {
     var quiz = req.body.quiz;
     var class_id = req.body.class_id;
     var course_id = req.body.course_id;
+    var required_correct_answers = req.body.quiz.required_correct_answers ? req.body.quiz.required_correct_answers : 0;
+    if (req.body.quiz.type == _global.quiz_type.academic && req.body.quiz.questions.length < required_correct_answers) {
+        _global.sendError(res, null, "No. required musn't exceed No. questions");
+        return console.log("No. required musn't exceed No. questions");
+    }
     for (var i = 0; i < quiz.questions.length; i++) {
         if (req.body.quiz.questions[i].text == null || req.body.quiz.questions[i].text == '') {
             _global.sendError(res, null, "Title of question " + (i + 1) + " are required");
@@ -198,6 +208,11 @@ router.post('/publish', function(req, res, next) {
         }
     }
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         connection.query(format(`SELECT id FROM class_has_course WHERE class_id = %L AND course_id = %L`, class_id, course_id), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);
@@ -211,7 +226,7 @@ router.post('/publish', function(req, res, next) {
                     started_at: '',
                     is_randomize_answers: quiz.is_randomize_answers,
                     is_randomize_questions: quiz.is_randomize_questions,
-                    is_auto_move_through_questions: quiz.is_auto_move_through_questions,
+                    required_correct_answers: quiz.required_correct_answers,
                     code: randomstring.generate({ length: 5, capitalization: 'uppercase', charset: 'numeric' }),
                     created_by: req.decoded.id,
                     type: quiz.type,
@@ -346,6 +361,11 @@ router.post('/join', function(req, res, next) {
             }
         }
         pool_postgres.connect(function(error, connection, done) {
+            if(connection == undefined){
+                _global.sendError(res, null, "Can't connect to database");
+                done();
+                return console.log("Can't connect to database");
+            }
             connection.query(format(`SELECT * FROM student_enroll_course, students WHERE class_has_course_id = %L AND student_id = %L AND student_id = students.id`, class_has_course_id, student_id), function(error, result, fields) {
                 if (error) {
                     _global.sendError(res, null, error.message);
@@ -429,6 +449,11 @@ router.post('/delete', function(req, res, next) {
     }
     var quiz_id = req.body.quiz_id;
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         async.series([
             //Start transaction
             function(callback) {
@@ -559,6 +584,11 @@ router.post('/add', function(req, res, next) {
     var quiz_id = 0;
     var quiz_code = '';
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         async.series([
             //Start transaction
             function(callback) {
@@ -661,6 +691,11 @@ router.post('/save', function(req, res, next) {
     var class_id =0;
     var course_id = 0;
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         async.series([
             //Start transaction
             function(callback) {
@@ -676,12 +711,12 @@ router.post('/save', function(req, res, next) {
                         quiz.class_has_course_id,
                         quiz.started_at,
                         quiz.is_randomize_answers,
-                        quiz.is_randomize_questions,
+                        quiz.required_correct_answers,
                         quiz.code,
                         req.decoded.id,
                         quiz.type
                 ]];
-                connection.query(format(`INSERT INTO quiz (title,class_has_course_id,started_at,is_randomize_answers,is_randomize_questions,code,created_by,type) 
+                connection.query(format(`INSERT INTO quiz (title,class_has_course_id,started_at,is_randomize_answers,required_correct_answers,code,created_by,type) 
                     VALUES %L RETURNING id`, new_quiz), function(error, result, fields) {
                     if (error) {
                         callback(error);
@@ -905,6 +940,11 @@ router.post('/update', function(req, res, next) {
         }
     }
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         async.series([
             //Start transaction
             function(callback) {

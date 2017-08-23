@@ -122,6 +122,7 @@
                                         <tr *ngFor="let answer of question['answers']">
                                             <td>{{answer.name}} - {{answer.code}}</td>
                                             <td>{{answer.selected_option}}</td>
+                                            <td><label><i *ngIf="question['option_' + answer.selected_option.toLowerCase()] == question.correct_option" class="fa fa-check green"></i><i *ngIf="question['option_' + answer.selected_option.toLowerCase()] != question.correct_option" class="fa fa-times red"></i></label></td>
                                         </tr>
                                     </tbody>
                                 </table>

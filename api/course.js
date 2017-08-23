@@ -16,6 +16,11 @@ var teacher_list = [];
 router.get('/detail/:id', function(req, res, next) {
     var id = req.params['id'];
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         connection.query(format(`SELECT courses.*,semesters.name as semester_name, semesters.id as semester_id,programs.name as program_name,
                             (semesters.id - (SELECT MAX(id) FROM semesters)) as not_in_current_semester
             FROM courses,semesters,programs 
@@ -957,6 +962,7 @@ router.post('/class-has-course', function(req, res, next) {
 });
 
 router.post('/program-has-course', function(req, res, next) {
+    var semester_id = req.body.semester_id ? req.body.semester_id : 0;
     pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res, error.message);
@@ -978,8 +984,9 @@ router.post('/program-has-course', function(req, res, next) {
                                     courses.id = teacher_teach_course.course_id AND 
                                     teacher_teach_course.teacher_role = 0) as lecturers 
                         FROM courses, class_has_course, classes, semesters
-                        WHERE class_has_course.course_id = courses.id AND classes.id = class_has_course.class_id AND semesters.id = courses.semester_id AND courses.program_id = %L
-                        ORDER BY classes.name DESC`, program.id), function(error, result, fields) {
+                        WHERE class_has_course.course_id = courses.id AND classes.id = class_has_course.class_id AND
+                            semesters.id = courses.semester_id AND courses.program_id = %L AND semesters.id = %L
+                        ORDER BY classes.name DESC`, program.id, semester_id), function(error, result, fields) {
                     if (error) {
                         callback(error);
                     } else {
@@ -1051,7 +1058,6 @@ router.post('/teaching', function(req, res, next) {
 
 router.post('/studying', function(req, res, next) {
     var student_id = req.decoded.id;
-
     if (student_id) {
         pool_postgres.connect(function(error, connection, done) {
             if (error) {

@@ -284,11 +284,20 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
 								});
 						}else{
 							if(this.quiz['type'] == this.appService.quiz_type.academic.id){
-								this.attendance_checked_list.push({
-									id : this.student_list[i]['id'],
-									code : this.student_list[i]['code'],
-									name : this.student_list[i]['name']
-								});
+								if(this.quiz['required_correct_answers'] > check_right_answer){
+									this.attendance_not_checked_list.push({
+										id : this.student_list[i]['id'],
+										code : this.student_list[i]['code'],
+										name : this.student_list[i]['name'],
+										reason : "Not enough correct answers (" + check_right_answer + "/" + this.quiz['required_correct_answers'] + ")"
+									});
+								}else{
+									this.attendance_checked_list.push({
+										id : this.student_list[i]['id'],
+										code : this.student_list[i]['code'],
+										name : this.student_list[i]['name']
+									});
+								}
 							}else{
 								console.log(check_right_answer);
 								if(check_right_answer < this.miscellaneous_threshold){
@@ -296,7 +305,7 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
 										id : this.student_list[i]['id'],
 										code : this.student_list[i]['code'],
 										name : this.student_list[i]['name'],
-										reason : "Not enough correct answers"
+										reason : "Not enough correct answers (" + check_right_answer + "/" + this.miscellaneous_threshold + ")"
 									});
 								}else{
 									this.attendance_checked_list.push({

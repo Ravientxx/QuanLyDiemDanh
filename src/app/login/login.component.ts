@@ -16,7 +16,7 @@ export class LoginComponent implements OnInit {
             this.router.navigate(['/dashboard']);
         }
     }
-    public email :string = '';
+    public username :string = '';
     public password :string = '';
 
     public error_message: any;
@@ -27,7 +27,7 @@ export class LoginComponent implements OnInit {
     }
     public login() {
         this.authService.redirectMessage = '';
-        this.authService.login(this.email,this.password).subscribe(results => {
+        this.authService.login(this.username,this.password).subscribe(results => {
             if(results.result == 'success'){
                 this.authService.token = results.token;
                 this.authService.current_user = results.user;

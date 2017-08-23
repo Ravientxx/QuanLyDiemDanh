@@ -267,7 +267,7 @@ CREATE TABLE quiz (
   started_at timestamp with time zone DEFAULT NULL,
   is_randomize_answers boolean DEFAULT TRUE,
   is_randomize_questions boolean DEFAULT TRUE,
-  is_auto_move_through_questions boolean DEFAULT TRUE,
+  required_correct_answers int DEFAULT 0,
   is_template boolean DEFAULT FALSE,
   code varchar(7) DEFAULT NULL,
   type smallint DEFAULT NULL,

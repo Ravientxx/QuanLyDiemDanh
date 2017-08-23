@@ -24,9 +24,9 @@ export class AuthService {
     }
 
     public loginUrl = this.appConfig.host + '/authenticate/login';
-    public login(email : string, password: string): Observable < { result: string, message: string ,token: string, user: any} > {
+    public login(username : string, password: string): Observable < { result: string, message: string ,token: string, user: any} > {
         var params = {
-            'email': email,
+            'username': username,
             'password': password
         };
         return this.http.post(this.loginUrl, params)

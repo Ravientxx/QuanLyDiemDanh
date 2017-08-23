@@ -72,6 +72,11 @@ router.post('/list', function(req, res, next) {
 router.get('/detail/:id', function(req, res, next) {
     var id = req.params['id'];
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         connection.query(format(`SELECT users.*,current_courses FROM users join teachers on users.id = teachers.id WHERE users.id = %L LIMIT 1`, id), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, error.message);

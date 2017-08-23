@@ -199,8 +199,10 @@ export class CourseService {
             });
     }
     public getProgramHasCourseUrl = this.appConfig.apiHost + '/course/program-has-course';
-    public getProgramHasCourse(): Observable < { result: string,program_has_course: Array < any >, message:string } > {
-        var params = {};
+    public getProgramHasCourse(semester_id: number): Observable < { result: string,program_has_course: Array < any >, message:string } > {
+        var params = {
+            'semester_id' : semester_id
+        };
         let authToken = this.authService.token;
         let headers = new Headers();
         headers.append('x-access-token', `${authToken}`);

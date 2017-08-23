@@ -33,4 +33,12 @@ export class StatisticComponent implements OnInit {
 			this.exportModal.onOpenModal();
         },500);
 	}
+
+	public onExportAttendanceLists(){
+		this.export_type = this.appService.import_export_type.attendance_lists;
+		this.export_title = 'Export Attendance Lists';
+		setTimeout(()=>{
+			this.exportModal.onOpenModal();
+        },500);
+	}
 }

@@ -27,6 +27,11 @@ router.post('/list-by-course', function(req, res, next) {
     var classes_id = req.body.classes_id;
     pool_postgres.connect(function(error, connection, done) {
         var attendance_lists = [];
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         async.each(classes_id, function(class_id, callback) {
             connection.query(format(`SELECT students.id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name ,users.avatar
             FROM users,student_enroll_course,students,class_has_course 
@@ -122,6 +127,11 @@ router.post('/check-add-to-course', function(req, res, next) {
     var student_code = req.body.student_code;
     var student_name = req.body.student_name;
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         connection.query(format(`SELECT students.stud_id 
             FROM attendance,attendance_detail, students 
             WHERE attendance.id = attendance_detail.attendance_id AND attendance_detail.student_id = students.id AND attendance.course_id = %L AND students.stud_id = %L`, course_id, student_code), function(error, result, fields) {
@@ -171,6 +181,11 @@ router.post('/update-list-by-course', function(req, res, next) {
     }
     new_student_list = [];
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         connection.query(format(`SELECT name FROM courses WHERE id = %L LIMIT 1`, course_id), function(error, result, fields) {
             if (error) {
                 var message = error.message + ' at check valid course';
@@ -485,7 +500,11 @@ router.post('/opening-by-teacher', function(req, res, next) {
                 class_has_course.class_id = classes.id AND class_has_course.course_id = courses.id AND
                 teacher_teach_course.teacher_id = %L`;
         }
-
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         connection.query(format(query, teacher_id), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, null, 'error at get opening attendances');
@@ -524,6 +543,11 @@ router.post('/create', function(req, res, next) {
     ];
     var new_attendance_id = 0;
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         async.series([
             function(callback) {
                 connection.query('BEGIN', (error) => {
@@ -605,6 +629,11 @@ router.post('/delete', function(req, res, next) {
     }
     var attendance_id = req.body.attendance_id;
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         connection.query(format(`SELECT course_id , class_id FROM attendance WHERE id = %L`, attendance_id), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, null, 'error at get attendances info');
@@ -642,6 +671,11 @@ router.post('/close', function(req, res, next) {
     var class_id = 0;
     var absence_requests = [];
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         async.series([
             //Start transaction
             function(callback) {
@@ -832,6 +866,11 @@ router.post('/check-attendance-list', function(req, res, next) {
     var course_id = req.body.course_id;
     var class_id = req.body.class_id;
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         connection.query(format(`SELECT students.id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name ,avatar
             FROM users,student_enroll_course,students,class_has_course 
             WHERE users.id = students.id AND users.id = student_enroll_course.student_id AND student_enroll_course.class_has_course_id = class_has_course.id AND class_has_course.course_id = %L AND class_has_course.class_id = %L`, course_id, class_id), function(error, result, fields) {
@@ -911,6 +950,11 @@ router.post('/check-attendance', function(req, res, next) {
 
     var attendance_id = req.body.attendance_id;
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         if (error) {
             var message = error.message + ' at get student_list by course';
             _global.sendError(res, message);
@@ -972,6 +1016,11 @@ router.post('/update-attendance', function(req, res, next) {
 
     var attendance_id = req.body.attendance_id;
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         if (error) {
             var message = error.message + ' at get attendance data by course';
             _global.sendError(res, message);
@@ -1024,6 +1073,11 @@ router.post('/update-attendance-offline', function(req, res, next) {
     var attendance_id = 0;
     var attendance_detail = req.body.data;
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         var new_attendance = [
             [
                 course_id,
@@ -1070,6 +1124,11 @@ router.post('/list-by-student/', function(req, res, next) {
     }
     var student_id = req.body.student_id;
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         connection.query(format(`SELECT courses.code, courses.name , courses.id , class_has_course.attendance_count, class_has_course.class_id 
                 FROM users,student_enroll_course,class_has_course ,courses 
                 WHERE users.id = %L AND users.id = student_enroll_course.student_id AND student_enroll_course.class_has_course_id = class_has_course.id 
@@ -1146,6 +1205,11 @@ router.post('/generate-delegate-code', function(req, res, next) {
     var course_id = req.body.course_id;
     var class_id = req.body.class_id;
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         //check attendance is opening or not ?
         connection.query(format(`SELECT * FROM attendance WHERE course_id = %L AND class_id = %L AND closed = FALSE`, course_id, class_id), function(error, result, fields) {
             if (error) {
@@ -1228,6 +1292,11 @@ router.post('/check-delegate-code', function(req, res, next) {
 router.post('/opening-for-student', function(req, res, next) {
     var student_id = req.decoded.id;
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         if (error) {
             var message = error.message + ' at get attendance data for student';
             _global.sendError(res, message);
@@ -1278,6 +1347,11 @@ router.post('/update-interaction', function(req, res, next) {
     var attendance_id = req.body.attendance_id;
     var interaction_type = req.body.interaction_type;
     pool_postgres.connect(function(error, connection, done) {
+        if(connection == undefined){
+            _global.sendError(res, null, "Can't connect to database");
+            done();
+            return console.log("Can't connect to database");
+        }
         if (error) {
             _global.sendError(res, error.message);
             done();
