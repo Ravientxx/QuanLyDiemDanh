@@ -67,6 +67,7 @@ export class ExportModalComponent implements OnInit {
             case this.appService.import_export_type.examinees:
             case this.appService.import_export_type.attendance_summary:
             case this.appService.import_export_type.attendance_lists:
+            case this.appService.import_export_type.exceeded_absence_limit:
                 this.export_on_search = 0;
                 this.larger_modal = true;
                 this.appService.getSemesterProgramClass().subscribe(results => {
@@ -123,6 +124,9 @@ export class ExportModalComponent implements OnInit {
                 break;
             case this.appService.import_export_type.attendance_lists:
                 this.exportAttendanceLists();
+                break;
+            case this.appService.import_export_type.exceeded_absence_limit:
+                this.exportExceededAbsenceLimit();
                 break;
             default:
                 // code...
@@ -280,6 +284,27 @@ export class ExportModalComponent implements OnInit {
                 var attendance_lists = result.attendance_lists;
                 this.excelService.writeAttendanceLists(attendance_lists, selected_class_has_course);
             }, error => { this.appService.showPNotify('failure', "Server Error! Can't get attendance lists", 'error') });
+        }
+    }
+
+    public exportExceededAbsenceLimit(){
+        var selected_class_has_course_id = [];
+        var selected_class_has_course = [];
+        for(var i = 0 ; i < this.program_has_course.length; i++){
+            for(var j = 0 ; j < this.program_has_course[i].courses.length; j++){
+                if (this.program_has_course[i].courses[j].selected) {
+                    selected_class_has_course_id.push(this.program_has_course[i].courses[j].id);
+                    selected_class_has_course.push(this.program_has_course[i].courses[j]);
+                }
+            }
+        }
+        if (selected_class_has_course_id.length == 0) {
+            return;
+        } else {
+            this.studentService.exportExceededAbsenceLimit(selected_class_has_course_id).subscribe(result => {
+                var attendance_summary_lists = result.exceeded_absence_limit;
+                this.excelService.writeExceededAbsenceLimit(attendance_summary_lists, selected_class_has_course);
+            }, error => { this.appService.showPNotify('failure', "Server Error! Can't get exceeded absence limit", 'error') });
         }
     }
 }

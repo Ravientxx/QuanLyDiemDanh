@@ -33,9 +33,11 @@ router.post('/list-by-course', function(req, res, next) {
             return console.log("Can't connect to database");
         }
         async.each(classes_id, function(class_id, callback) {
-            connection.query(format(`SELECT students.id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name ,users.avatar
+            connection.query(format(`SELECT students.id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name ,users.avatar, student_enroll_course.attendance_status
             FROM users,student_enroll_course,students,class_has_course 
-            WHERE users.id = students.id AND users.id = student_enroll_course.student_id AND student_enroll_course.class_has_course_id = class_has_course.id AND class_has_course.course_id = %L AND class_has_course.class_id = %L`, course_id, class_id), function(error, result, fields) {
+            WHERE users.id = students.id AND users.id = student_enroll_course.student_id AND
+                student_enroll_course.class_has_course_id = class_has_course.id AND class_has_course.course_id = %L AND
+                class_has_course.class_id = %L`, course_id, class_id), function(error, result, fields) {
                 if (error) {
                     var message = error.message + ' at get student_list by course';
                     _global.sendError(res, message);
@@ -49,32 +51,38 @@ router.post('/list-by-course', function(req, res, next) {
                         id: student.id,
                         code: student.code,
                         name: student.name,
+                        exemption: student.attendance_status,
                         attendance_details: []
                     };
-                    connection.query(format(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type, created_at, edited_by, edited_reason, 
-                        (SELECT CONCAT(users.first_name,' ',users.last_name) FROM users WHERE users.id = edited_by) as editor
-                        FROM attendance, attendance_detail 
-                        WHERE attendance.closed = TRUE AND attendance.id = attendance_detail.attendance_id AND  course_id = %L AND student_id = %L 
-                        ORDER BY attendance_id`, course_id, student.id), function(error, result, fields) {
-                        if (error) {
-                            console.log(error.message + ' at get attendance_details');
-                            callback(error);
-                        } else {
-                            for (var i = 0; i < result.rowCount; i++) {
-                                attendance.attendance_details.push({
-                                    attendance_id: result.rows[i].attendance_id,
-                                    attendance_time: result.rows[i].attendance_time,
-                                    attendance_type: result.rows[i].attendance_type,
-                                    created_at: result.rows[i].created_at,
-                                    edited_by: result.rows[i].edited_by,
-                                    edited_reason: result.rows[i].edited_reason,
-                                    editor: result.rows[i].editor,
-                                });
+                    if(student.attendance_status == _global.attendance_status.exemption){
+                        attendance_list.push(attendance);
+                        callback();
+                    }else{
+                        connection.query(format(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type, created_at, edited_by, edited_reason, 
+                            (SELECT CONCAT(users.first_name,' ',users.last_name) FROM users WHERE users.id = edited_by) as editor
+                            FROM attendance, attendance_detail 
+                            WHERE attendance.closed = TRUE AND attendance.id = attendance_detail.attendance_id AND  course_id = %L AND student_id = %L 
+                            ORDER BY attendance_id`, course_id, student.id), function(error, result, fields) {
+                            if (error) {
+                                console.log(error.message + ' at get attendance_details');
+                                callback(error);
+                            } else {
+                                for (var i = 0; i < result.rowCount; i++) {
+                                    attendance.attendance_details.push({
+                                        attendance_id: result.rows[i].attendance_id,
+                                        attendance_time: result.rows[i].attendance_time,
+                                        attendance_type: result.rows[i].attendance_type,
+                                        created_at: result.rows[i].created_at,
+                                        edited_by: result.rows[i].edited_by,
+                                        edited_reason: result.rows[i].edited_reason,
+                                        editor: result.rows[i].editor,
+                                    });
+                                }
+                                attendance_list.push(attendance);
+                                callback();
                             }
-                            attendance_list.push(attendance);
-                            callback();
-                        }
-                    });
+                        });
+                    }
                 }, function(error) {
                     if (error) {
                         _global.sendError(res, error.message);
@@ -716,9 +724,12 @@ router.post('/close', function(req, res, next) {
             //get student who is absent
             function(callback) {
                 connection.query(format(`SELECT users.*, courses.code as course_code, courses.name as course_name, attendance.course_id, attendance.class_id 
-                    FROM courses,attendance,attendance_detail, users 
-                    WHERE attendance_id = %L AND attendance_type = %L AND users.id = student_id AND attendance.id = attendance_id AND
-                    courses.id = attendance.course_id`, attendance_id, _global.attendance_type.absent), function(error, result, fields) {
+                    FROM courses,attendance,attendance_detail, users , student_enroll_course, class_has_course
+                    WHERE attendance_id = %L AND attendance_type = %L AND users.id = attendance_detail.student_id AND attendance.id = attendance_id AND
+                    courses.id = attendance.course_id AND class_has_course.course_id = courses.id AND
+                    student_enroll_course.student_id = users.id AND
+                    student_enroll_course.class_has_course_id = class_has_course.id AND 
+                    student_enroll_course.attendance_status = %L`, attendance_id, _global.attendance_type.absent, _global.attendance_status.normal), function(error, result, fields) {
                     if (error) {
                         callback(error + ' at get absent students');
                     } else {
@@ -747,25 +758,31 @@ router.post('/close', function(req, res, next) {
                         },
                         //Check if this attendance session is absent permited
                         function(callback) {
-                            var where = format('(( attendance.created_at >= %L AND attendance.created_at < %L )',accepted_requests[0].start_date,accepted_requests[0].end_date);
-                            for(var i = 1 ; i < accepted_requests.length; i++){
-                                where += format(' OR ( attendance.created_at >= %L AND attendance.created_at < %L )',accepted_requests[i].start_date,accepted_requests[i].end_date);
+                            if(accepted_requests.length == 0){
+                                check_permited = false;
+                                student['skip_send_email'] = false;
+                                callback();
                             }
-                            where += ')';
-                            console.log(where);
-                            connection.query(format(`SELECT * FROM attendance,attendance_detail
-                                WHERE attendance.id = attendance_detail.attendance_id AND
-                                    attendance_detail.student_id = %L AND
-                                    attendance.closed = TRUE AND
-                                    attendance.id = %L AND ` + where, student.id, attendance_id), function(error, result, fields) {
-                                if (error) {
-                                    callback(error + ' at check permited_student');
-                                } else {
-                                    check_permited = true;
-                                    student['skip_send_email'] = true;
-                                    callback();
+                            else{
+                                var where = format('(( attendance.created_at >= %L AND attendance.created_at < %L )',accepted_requests[0].start_date,accepted_requests[0].end_date);
+                                for(var i = 1 ; i < accepted_requests.length; i++){
+                                    where += format(' OR ( attendance.created_at >= %L AND attendance.created_at < %L )',accepted_requests[i].start_date,accepted_requests[i].end_date);
                                 }
-                            });
+                                where += ')';
+                                connection.query(format(`SELECT * FROM attendance,attendance_detail
+                                    WHERE attendance.id = attendance_detail.attendance_id AND
+                                        attendance_detail.student_id = %L AND
+                                        attendance.closed = TRUE AND
+                                        attendance.id = %L AND ` + where, student.id, attendance_id), function(error, result, fields) {
+                                    if (error) {
+                                        callback(error + ' at check permited_student');
+                                    } else {
+                                        check_permited = true;
+                                        student['skip_send_email'] = true;
+                                        callback();
+                                    }
+                                });
+                            }
                         },
                         //Update attendance detail
                         function(callback) {
@@ -821,14 +838,14 @@ router.post('/close', function(req, res, next) {
                                 var absence = 0;
                                 for (var i = 0; i < result.rowCount; i++) {
                                     if (result.rows[i].attendance_type == _global.attendance_type.absent) absence = result.rows[i].count;
-                                    total += result.rows[i].count;
+                                    total = Math.floor(total + result.rows[i].count);
                                 }
                                 _global.sendMail(
                                     '"Giáo vụ"',
                                     student.email,
                                     'Update on your absence from ' + student.course_code + '-' + student.course_name, // Subject line
                                     'Hi,'+ student.name + '\r\n' + 
-                                    `Hi ` + student.last_name + `,\r\n\r\n Today, you were absent from the class ` + student.course_code + '-' + student.course_name + `.Currently, your absence/total is ` + absence + `/` + total + ` (` + Math.floor(100 * absence / total) + `%).` + `Please be aware that if you exceed 30% of the total attendance, you won't be able to attend the final exam.\r\n\r\n If you need help, please contact giaovu.clc@fit.hcmus.edu.vn`
+                                    `Hi ` + student.last_name + `,\r\n\r\n Today, you were absent from the class ` + student.course_code + '-' + student.course_name + `.Currently, your absences/total is ` + absence + `/` + total + ` (` + Math.floor(100 * absence / total) + `%).` + `\r\n\r\nPlease be aware that if you exceed 30% of the total attendance, you won't be able to attend the final exam. Attend more classes to decrease that percentage.\r\n\r\n If you need help, please contact giaovu.clc@fit.hcmus.edu.vn`
                                 );
                                 callback();
                             }
@@ -871,7 +888,7 @@ router.post('/check-attendance-list', function(req, res, next) {
             done();
             return console.log("Can't connect to database");
         }
-        connection.query(format(`SELECT students.id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name ,avatar
+        connection.query(format(`SELECT students.id, students.stud_id as code, CONCAT(users.first_name, ' ', users.last_name) AS name ,avatar, student_enroll_course.attendance_status
             FROM users,student_enroll_course,students,class_has_course 
             WHERE users.id = students.id AND users.id = student_enroll_course.student_id AND student_enroll_course.class_has_course_id = class_has_course.id AND class_has_course.course_id = %L AND class_has_course.class_id = %L`, course_id, class_id), function(error, result, fields) {
             if (error) {
@@ -887,6 +904,7 @@ router.post('/check-attendance-list', function(req, res, next) {
                     id: student.id,
                     code: student.code,
                     name: student.name,
+                    exemption: student.attendance_status,
                     avatar: student.avatar,
                     attendance_details: []
                 };
@@ -1129,7 +1147,7 @@ router.post('/list-by-student/', function(req, res, next) {
             done();
             return console.log("Can't connect to database");
         }
-        connection.query(format(`SELECT courses.code, courses.name , courses.id , class_has_course.attendance_count, class_has_course.class_id 
+        connection.query(format(`SELECT courses.code, courses.name , courses.id , class_has_course.attendance_count, class_has_course.class_id , student_enroll_course.attendance_status
                 FROM users,student_enroll_course,class_has_course ,courses 
                 WHERE users.id = %L AND users.id = student_enroll_course.student_id AND student_enroll_course.class_has_course_id = class_has_course.id 
                     AND class_has_course.course_id = courses.id AND courses.semester_id = (SELECT MAX(id) FROM semesters)`, student_id), function(error, result, fields) {
@@ -1147,33 +1165,39 @@ router.post('/list-by-student/', function(req, res, next) {
                     code: course.code,
                     name: course.name,
                     class_id: course.class_id,
+                    exemption : course.attendance_status,
                     attendance_count: course.attendance_count,
                     attendance_details: []
                 };
-                connection.query(format(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type ,created_at, edited_by, edited_reason, 
-                        (SELECT CONCAT(users.first_name,' ',users.last_name) FROM users WHERE users.id = edited_by) as editor
-                    FROM attendance, attendance_detail 
-                    WHERE attendance.closed = TRUE AND attendance.id = attendance_detail.attendance_id AND course_id = %L AND class_id = %L AND student_id = %L 
-                    ORDER BY attendance_id`, course.id, course.class_id, student_id), function(error, result, fields) {
-                    if (error) {
-                        console.log(error.message + ' at get attendance_details by student');
-                        callback(error);
-                    } else {
-                        for (var i = 0; i < result.rowCount; i++) {
-                            attendance.attendance_details.push({
-                                attendance_id: result.rows[i].attendance_id,
-                                attendance_time: result.rows[i].attendance_time,
-                                attendance_type: result.rows[i].attendance_type,
-                                created_at: result.rows[i].created_at,
-                                edited_by: result.rows[i].edited_by,
-                                edited_reason: result.rows[i].edited_reason,
-                                editor: result.rows[i].editor,
-                            });
+                if(course.attendance_status == _global.attendance_status.exemption){
+                    attendance_list_by_student.push(attendance);
+                    callback();
+                }else{
+                    connection.query(format(`SELECT attendance_detail.attendance_id, attendance_time, attendance_type ,created_at, edited_by, edited_reason, 
+                            (SELECT CONCAT(users.first_name,' ',users.last_name) FROM users WHERE users.id = edited_by) as editor
+                        FROM attendance, attendance_detail 
+                        WHERE attendance.closed = TRUE AND attendance.id = attendance_detail.attendance_id AND course_id = %L AND class_id = %L AND student_id = %L 
+                        ORDER BY attendance_id`, course.id, course.class_id, student_id), function(error, result, fields) {
+                        if (error) {
+                            console.log(error.message + ' at get attendance_details by student');
+                            callback(error);
+                        } else {
+                            for (var i = 0; i < result.rowCount; i++) {
+                                attendance.attendance_details.push({
+                                    attendance_id: result.rows[i].attendance_id,
+                                    attendance_time: result.rows[i].attendance_time,
+                                    attendance_type: result.rows[i].attendance_type,
+                                    created_at: result.rows[i].created_at,
+                                    edited_by: result.rows[i].edited_by,
+                                    edited_reason: result.rows[i].edited_reason,
+                                    editor: result.rows[i].editor,
+                                });
+                            }
+                            attendance_list_by_student.push(attendance);
+                            callback();
                         }
-                        attendance_list_by_student.push(attendance);
-                        callback();
-                    }
-                });
+                    });
+                }
             }, function(error) {
                 if (error) {
                     _global.sendError(res, error.message);

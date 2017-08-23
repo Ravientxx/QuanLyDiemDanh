@@ -89,7 +89,8 @@ export class AppService {
     public student_interaction_type = {answer_question: 0,discuss: 1, present: 2};
     public import_export_type = { student: 0, teacher: 1, course: 2, schedule: 3, examinees: 4, attendance_summary: 5, class:6,
         attendance_list:7,
-        attendance_lists:8
+        attendance_lists:8,
+        exceeded_absence_limit:9
     };
     public enrollment_status = { compulsory: 0, elective: 1 };
     public attendance_status = { normal: 0, exemption: 1 };

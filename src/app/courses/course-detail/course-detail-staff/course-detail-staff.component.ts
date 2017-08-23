@@ -133,6 +133,7 @@ export class CourseDetailStaffComponent implements OnInit {
                         id: this.attendance_lists[k][i].id,
                         code: this.attendance_lists[k][i].code,
                         name: this.attendance_lists[k][i].name,
+                        exemption: this.attendance_lists[k][i].exemption,
                         attendance_details: []
                     };
                     for (var j = 0; j < this.attendance_lists[k][i].attendance_details.length; j++) {
@@ -162,6 +163,7 @@ export class CourseDetailStaffComponent implements OnInit {
                         id: this.temp_attendance_lists[k][i].id,
                         code: this.temp_attendance_lists[k][i].code,
                         name: this.temp_attendance_lists[k][i].name,
+                        exemption: this.temp_attendance_lists[k][i].exemption,
                         attendance_details: []
                     };
                     for (var j = 0; j < this.temp_attendance_lists[k][i].attendance_details.length; j++) {
@@ -267,6 +269,7 @@ export class CourseDetailStaffComponent implements OnInit {
                     id: 0,
                     code: this.new_code,
                     name: this.new_name,
+                    exemption: this.appService.attendance_status.normal,
                     attendance_details: []
                 };
                 for (var j = 0; j < this.temp_attendance_lists[this.selected_class_index][0].attendance_details.length; j++) {
@@ -303,6 +306,7 @@ export class CourseDetailStaffComponent implements OnInit {
             this.temp_attendance_lists[this.selected_class_index][i].id = this.temp_attendance_lists[this.selected_class_index][i+1].id;
             this.temp_attendance_lists[this.selected_class_index][i].code = this.temp_attendance_lists[this.selected_class_index][i+1].code;
             this.temp_attendance_lists[this.selected_class_index][i].name = this.temp_attendance_lists[this.selected_class_index][i+1].name;
+            this.temp_attendance_lists[this.selected_class_index][i].exemption = this.temp_attendance_lists[this.selected_class_index][i+1].exemption;
             for(var j = 0 ;j < this.temp_attendance_lists[this.selected_class_index][i].attendance_details.length; j++){
                 this.temp_attendance_lists[this.selected_class_index][i].attendance_details[j].attendance_id =  this.temp_attendance_lists[this.selected_class_index][i+1].attendance_details[j].attendance_id;
                 this.temp_attendance_lists[this.selected_class_index][i].attendance_details[j].attendance_type =  this.temp_attendance_lists[this.selected_class_index][i+1].attendance_details[j].attendance_type;
@@ -351,6 +355,7 @@ export class CourseDetailStaffComponent implements OnInit {
                     id: 0,
                     code: attendance_list[i].code,
                     name: attendance_list[i].name,
+                    exemption : attendance_list[i].exemption,
                     attendance_details: []
                 };
                 if(temp_attendance_list.length > 0 && temp_attendance_list[0].attendance_details.length > 0){

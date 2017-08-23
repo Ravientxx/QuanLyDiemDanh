@@ -63,6 +63,7 @@ export class CheckAttendanceStudentComponent implements OnInit, OnDestroy {
                     id : this.check_attendance_list[i].id,
                     code : this.check_attendance_list[i].code,
                     name : this.check_attendance_list[i].name,
+                    exemption : this.check_attendance_list[i].exemption,
                     avatar : this.check_attendance_list[i].avatar,
                     attendance_details : temp_attendance_details
                 });
@@ -87,6 +88,7 @@ export class CheckAttendanceStudentComponent implements OnInit, OnDestroy {
                     id : this.check_attendance_list[i].id,
                     code : this.check_attendance_list[i].code,
                     name : this.check_attendance_list[i].name,
+                    exemption : this.check_attendance_list[i].exemption,
                     avatar : this.check_attendance_list[i].avatar,
                     attendance_details : temp_attendance_details
                 });
@@ -96,6 +98,7 @@ export class CheckAttendanceStudentComponent implements OnInit, OnDestroy {
             this.check_attendance_list[i].id = temp_check_attendance_list[i].id;
             this.check_attendance_list[i].code = temp_check_attendance_list[i].code;
             this.check_attendance_list[i].name = temp_check_attendance_list[i].name;
+            this.check_attendance_list[i].exemption = temp_check_attendance_list[i].exemption;
             this.check_attendance_list[i].avatar = temp_check_attendance_list[i].avatar;
             for(var j = 0 ; j < temp_check_attendance_list[i].attendance_details.length; j++){
                 this.check_attendance_list[i].attendance_details[j].attendance_id = temp_check_attendance_list[i].attendance_details[j].attendance_id;

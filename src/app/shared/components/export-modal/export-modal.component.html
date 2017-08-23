@@ -7,7 +7,7 @@
                 </div>
                 <div class="row modal-body">
                     <div class="col-sm-6">
-                        <div *ngIf="export_type != appService.import_export_type.examinees && export_type != appService.import_export_type.attendance_summary && export_type != appService.import_export_type.attendance_lists" class="radio">
+                        <div *ngIf="export_type != appService.import_export_type.examinees && export_type != appService.import_export_type.attendance_summary && export_type != appService.import_export_type.attendance_lists && export_type != appService.import_export_type.exceeded_absence_limit" class="radio">
                             <label>
                                 <input type="radio" name="optradio" [value]="1" [(ngModel)]="export_on_search">Export based on Search results</label>
                         </div>
@@ -21,7 +21,7 @@
                             <input placeholder="File name" class="form-control" [(ngModel)]="file_name" />
                         </div>
                     </div>
-                    <div *ngIf="!export_on_search && (export_type == appService.import_export_type.examinees || export_type == appService.import_export_type.attendance_summary || export_type == appService.import_export_type.attendance_lists)">
+                    <div *ngIf="!export_on_search && (export_type == appService.import_export_type.examinees || export_type == appService.import_export_type.attendance_summary || export_type == appService.import_export_type.attendance_lists || export_type == appService.import_export_type.exceeded_absence_limit)">
                         <div class="col-sm-6 form-horizontal">
                             <div class="col-sm-6">
                                 <h4 class="pull-right">Semester : </h4>

@@ -155,8 +155,10 @@ export class DashboardTeacherComponent implements OnInit, OnDestroy {
             	this.appService.showPNotify(this.apiResult,this.apiResultMessage,this.apiResult == 'success' ? 'success' : 'error');
             }
     		this.teaching_courses = result.courses;
-
-			this.getOpeningAttendance();
+            if(this.teaching_courses && this.teaching_courses.length > 0){
+                this.getOpeningAttendance();
+            }
+			
     	},error=>{this.appService.showPNotify('failure',"Server Error! Can't get teaching course",'error');});
     }
     public onChangeProgram(){

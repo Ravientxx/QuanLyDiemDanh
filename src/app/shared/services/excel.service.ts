@@ -898,4 +898,60 @@ export class ExcelService {
             }
         });
     }
+
+    public writeExceededAbsenceLimit(student_lists: any, class_has_courses: any) {
+        var zip = new JSZip();
+        Async.eachOf(student_lists, function(student_list,index,callback){
+            var class_has_course = class_has_courses[index];
+            XlsxPopulate.fromBlankAsync()
+            .then(workbook => {
+                workbook.sheet(0).cell("A1").value('Danh Sách Sinh Viên Vượt Quá Số Buổi Vắng Cho Phép Môn ' + class_has_course.code + ' - ' + class_has_course.name);
+                workbook.sheet(0).cell("A2").value("Học kỳ: " + class_has_course.semester);
+                workbook.sheet(0).cell("A3").value('Giảng viên: ' + class_has_course.lecturers);
+                
+                workbook.sheet(0).cell("A5").value("STT").style("border", true);
+                workbook.sheet(0).cell("B5").value("MSSV").style("border", true);
+                workbook.sheet(0).cell("C5").value("Họ SV").style("border", true);
+                workbook.sheet(0).cell("D5").value("Tên SV").style("border", true);
+                workbook.sheet(0).cell("E5").value("Số buổi vắng").style("border", true);
+                workbook.sheet(0).cell("F5").value("Số % buổi vắng").style("border", true);
+
+                for (var i = 0; i < student_list.length; i++) {
+                    workbook.sheet(0).cell("A" + Math.floor(i + 6)).value(i + 1).style("border", true);
+                    workbook.sheet(0).cell("B" + Math.floor(i + 6)).value(student_list[i].student_code).style("border", true);
+                    workbook.sheet(0).cell("C" + Math.floor(i + 6)).value(student_list[i].first_name).style("border", true);
+                    workbook.sheet(0).cell("D" + Math.floor(i + 6)).value(student_list[i].last_name).style("border", true);
+                    if(student_list[i].exemption){
+                        workbook.sheet(0).cell("E" + Math.floor(i + 6)).value('Miễn điểm danh').style("border", true).style("fontColor",'ff0000');
+                        workbook.sheet(0).range("E" + Math.floor(i + 6) + ":" + "F" + Math.floor(i + 6)).merged(true);
+                    }else{
+                        if(student_list[i].absent_percentage > 30){
+                            workbook.sheet(0).cell("E" + Math.floor(i + 6)).value(student_list[i].absent_count).style("border", true).style("fontColor",'ff0000');
+                            workbook.sheet(0).cell("F" + Math.floor(i + 6)).value(student_list[i].absent_percentage + '%').style("border", true).style("fontColor",'ff0000');
+                        }
+                        else{
+                            workbook.sheet(0).cell("E" + Math.floor(i + 6)).value(student_list[i].absent_count).style("border", true);
+                            workbook.sheet(0).cell("F" + Math.floor(i + 6)).value(student_list[i].absent_percentage + '%').style("border", true);
+                        }
+                    }
+                }
+
+                const range = workbook.sheet(0).range("A1:G"+Math.floor(student_list.length+6));
+                return workbook.outputAsync()
+                    .then(function (blob) {
+                        zip.file(class_has_course.code + ' - ' + class_has_course.name + ' - ' + class_has_course.class_name + ".xlsx", blob);
+                        callback();
+                    });
+            });
+        }, function(error) {
+            if (error) {
+                console.log(error);
+            } else {
+                zip.generateAsync({ type: "blob" })
+                .then(function(content) {
+                    FileSaver.saveAs(content, "exceeded_absence_limit.zip");
+                });  
+            }
+        });
+    }
 }
