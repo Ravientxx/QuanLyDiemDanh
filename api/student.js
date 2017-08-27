@@ -1214,4 +1214,33 @@ router.post('/list-by-course', function(req, res, next) {
             });
     });
 });
+
+router.post('/teaching_teacher_list', function(req, res, next) {
+    pool_postgres.connect(function(error, connection, done) {
+        if (error) {
+            _global.sendError(res, error.message);
+            done();
+            return console.log(error);
+        }
+        connection.query(format(`SELECT users.id, CONCAT(users.first_name, ' ', users.last_name, ' (', users.email, ')') AS name
+            FROM courses , student_enroll_course , class_has_course , teacher_teach_course , users
+            WHERE courses.id = class_has_course.course_id AND
+            student_enroll_course.class_has_course_id = class_has_course.id AND
+            student_enroll_course.student_id = %L AND
+            teacher_teach_course.teacher_id = users.id AND
+            teacher_teach_course.course_id = courses.id `, req.decoded.id), function(error, result, fields) {
+                if (error) {
+                    _global.sendError(res, null ,error.message + "at get student's courses");
+                    done();
+                    return console.log(error.message + "at get student's courses");
+                } else {
+                    res.send({
+                        result: 'success',
+                        teacher_list: result.rows
+                    });
+                    done();
+                }
+            });
+    });
+});
 module.exports = router;

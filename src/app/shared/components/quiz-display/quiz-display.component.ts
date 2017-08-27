@@ -43,6 +43,7 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
 	public student_list = [];
 	public attendance_checked_list = [];
 	public attendance_not_checked_list = [];
+	public not_participated_list = [];
 	public miscellaneous_threshold = 0;
 	public is_save_quiz_error = false;
 
@@ -267,11 +268,10 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
 						}
 					}
 					if(check_no_participated == this.quiz['participants']['length']){
-						this.attendance_not_checked_list.push({
+						this.not_participated_list.push({
 							id : this.student_list[i]['id'],
 							code : this.student_list[i]['code'],
 							name : this.student_list[i]['name'],
-							reason : 'Not participated'
 						});
 					}else{
 						if(this.quiz['questions']['length'] == check_no_answer){
@@ -299,7 +299,6 @@ export class QuizDisplayComponent implements OnInit,OnDestroy {
 									});
 								}
 							}else{
-								console.log(check_right_answer);
 								if(check_right_answer < this.miscellaneous_threshold){
 									this.attendance_not_checked_list.push({
 										id : this.student_list[i]['id'],

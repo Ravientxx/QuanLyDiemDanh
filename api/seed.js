@@ -1128,18 +1128,17 @@ var insert_attendance_detail = [
     [4, 134, 1],
     [4, 135, 0],
 ];
-//[from_id, to_id, title, content, type, read, replied]
+//[from_id, to_id, title, content, category, type, read, replied]
 var insert_feeback = [
-    [null, null, 'Phòng học kém chất lượng', 'Máy lạnh nóng quớ',                         3, false, false],//1
-    [171,     1, 'Thầy dạy quá nhanh',       'Thầy có thể dạy chậm lại cho em dễ hiểu ?', 1, false, false],//2
-    [171,     2, 'Cô hớt tóc mới',           'Tóc mới của cô làm em khó tập trung quá!',  1, false, false],//3
-    [171,  null, 'Ổ điện hỏng',              'Ổ điện dãy giữa phòng I44 bị hỏng',         1, true, true],//4
-    [171,  null, 'Lớp 13CLC hư',             'Lớp 13CLC nói chuyện quá nhiều trong giờ',  1, true, true],//5
-    [null, null, 'Phòng học chất lượng thấp','Khong co may lanh',                         3, false, false],//6
-    [171,     1, 'Thầy dạy quá khó hiểu',    'Thầy có thể dạy chậm lại cho em dễ hiểu ?',  1, false, false],//7
-    [171,     2, 'Cô hay đến lớp trễ',       'Tóc mới của cô làm em khó tập trung quá!',  1, false, false],//8
-    [1,    null, 'Ổ điện không mở được',     'Cô hãy fix giúp tụi em',                    1, true, true],//9
-    [1,    null, 'Lớp 13CLC cúp học cả lớp', 'Lớp 13CLC nói chuyện quá ',                 1, true, true]//10
+    [null, null, 'Phòng học kém chất lượng', 'Máy lạnh nóng quớ',                         2, 3, false, false],//1
+    [171,     1, 'Thầy dạy quá nhanh',       'Thầy có thể dạy chậm lại cho em dễ hiểu ?', 1,1, false, false],//2
+    [171,  null, 'Ổ điện hỏng',              'Ổ điện dãy giữa phòng I44 bị hỏng',         2,1, true, true],//3
+    [171,  null, 'Lớp 13CLC hư',             'Lớp 13CLC nói chuyện quá nhiều trong giờ',  1,1, true, true],//4
+    [null, null, 'Phòng học chất lượng thấp','Khong co may lanh',                         2,3, false, false],//5
+    [171,     1, 'Thầy dạy quá khó hiểu',    'Thầy có thể dạy chậm lại cho em dễ hiểu ?',  1,1, false, false],//6
+    [171,     2, 'Cô hay đến lớp trễ',       'Tóc mới của cô làm em khó tập trung quá!',  1,1, false, false],//7
+    [1,    null, 'Ổ điện không mở được',     'Cô hãy fix giúp tụi em',                    2,1, true, true],//8
+    [1,    null, 'Lớp 13CLC cúp học cả lớp', 'Lớp 13CLC nói chuyện quá ',                 1,1, true, true]//9
 ];
 //[title, class_has_course_id, created_by,is_template]
 var insert_quiz = [
@@ -1293,7 +1292,7 @@ var seeding_postgres = function(res) {
                 });
             },
             function(callback) {
-                connection.query(format('INSERT INTO feedbacks (from_id, to_id, title, content, type, read, replied) VALUES %L', insert_feeback), function(error, results, fields) {
+                connection.query(format('INSERT INTO feedbacks (from_id, to_id, title, content, category, type, read, replied) VALUES %L', insert_feeback), function(error, results, fields) {
                     if (error) {
                         callback(error);
                     } else {

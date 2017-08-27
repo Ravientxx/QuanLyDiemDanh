@@ -276,9 +276,9 @@ router.post('/add', function(req, res, next) {
                             var class_has_course = [[
                                 _class.classId,
                                 new_course_id,
-                                _class.schedule
+                                new_schedules
                             ]];
-                            connection.query(format(`INSERT INTO class_has_course VALUES %L RETURNING id`, class_has_course), function(error, result, fields) {
+                            connection.query(format(`INSERT INTO class_has_course (class_id, course_id, shcedules) VALUES %L RETURNING id`, class_has_course), function(error, result, fields) {
                                 if (error) {
                                     console.log(error.message + ' at insert class_has_course');
                                     callback(error);

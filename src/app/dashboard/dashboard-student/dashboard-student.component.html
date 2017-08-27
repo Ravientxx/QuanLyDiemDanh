@@ -59,10 +59,47 @@
         </div>
     </div>
 </div>
+<div class="col-xs-12" *ngIf="opening_attendance_for_student.length > 0">
+    <div class="x_panel">
+        <div class="x_title">
+            <h3>Courses with Opening Attendance</h3>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <div class="row">
+                <table class="table table-bordered text-center">
+                    <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th>Attendance Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let course of opening_attendance_for_student;let i = index">
+                            <td>{{course.code}} - {{course.name}}</td>
+                            <ng-container *ngIf="course.exemption">
+                                <td class="gray_background" colspan="2" style="font-weight: bold;">Exempted</td>
+                            </ng-container>
+                            <ng-container *ngIf="!course.exemption">
+                                <td *ngIf="course.attendance_type == appService.attendance_type.absent"><label class="red_text">Not checked</label></td>
+                                <td *ngIf="course.attendance_type != appService.attendance_type.absent"><label class="green_text">{{course.checked_by}}</label></td>
+                                <td *ngIf="course.attendance_type == appService.attendance_type.absent"><button type="button" class="btn btn-primary btn-round" (click)="onRequestToBeChecked(course)">Request to be checked</button></td>
+                            </ng-container>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="col-xs-12">
     <div class="x_panel">
         <div class="x_title">
-            <h3>Attendance Progression</h3>
+            <ng-template #howto>
+                <div>To calculate the absence percentage, You divide the total number of attendances (white-box) for the number of absences (empty white-box) and multiply by 100.</div>
+            </ng-template>
+            <h3>Attendance Progression <small [tooltip]="howto" container="body"><a style="text-decoration: underline">(How to calculate % absences?)</a></small></h3>
             <div class="clearfix"></div>
         </div>
         <div class="x_content">

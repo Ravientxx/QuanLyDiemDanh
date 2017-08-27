@@ -209,4 +209,49 @@ export class AttendanceService {
                 return Observable.throw(error || 'Server error');
             });
     }
+
+    public getOpeningAttendanceForStudentUrl = this.appConfig.apiHost + '/attendance/opening-for-student';
+    public getOpeningAttendanceForStudent(student_id: number): Observable < { result: string, opening_attendance_for_student: Array<any>, message:string} > {
+        var params = {
+            'student_id': student_id
+        };
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.getOpeningAttendanceForStudentUrl,params,options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => {
+                if (error.status == 401) {
+                    this.authService.tokenExpired(this.router.url);
+                }
+                //this.authService.tokenExpired(this.router.url);
+                return Observable.throw(error || 'Server error');
+            });
+    }
+
+    public requestToBeCheckAttendanceUrl = this.appConfig.apiHost + '/attendance/request_to_be_check_attendance';
+    public requestToBeCheckAttendance(student_id: number,course_id:number): Observable < { result: string, message:string} > {
+        var params = {
+            'student_id': student_id,
+            'course_id': course_id
+        };
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.requestToBeCheckAttendanceUrl,params,options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => {
+                if (error.status == 401) {
+                    this.authService.tokenExpired(this.router.url);
+                }
+                //this.authService.tokenExpired(this.router.url);
+                return Observable.throw(error || 'Server error');
+            });
+    }
 }
