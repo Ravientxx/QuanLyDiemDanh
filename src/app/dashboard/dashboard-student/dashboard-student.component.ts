@@ -205,7 +205,7 @@ export class DashboardStudentComponent implements OnInit {
     }
 
     public onRequestToBeChecked(course){
-    	this.attendanceService.requestToBeCheckAttendance(this.authService.current_user.id,course.id,course.class_id).subscribe(result=>{
+    	this.attendanceService.requestToBeCheckAttendance(this.authService.current_user.id,course.id).subscribe(result=>{
     		if(result.result == 'success'){
     			this.appService.showPNotify('success', result.message, 'success');
     		}else{
