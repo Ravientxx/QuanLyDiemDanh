@@ -101,9 +101,11 @@ CREATE TABLE feedbacks (
   to_id int DEFAULT NULL,
   title varchar(50) NOT NULL,
   content varchar(255) DEFAULT NULL,
+  category smallint DEFAULT 0,
   type smallint DEFAULT 0,
   read boolean DEFAULT FALSE,
   replied boolean DEFAULT FALSE,
+  replied_at timestamp with time zone DEFAULT NULL,
   created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id)
 );
@@ -311,7 +313,7 @@ DROP TABLE IF EXISTS notifications;
 CREATE TABLE notifications (
   id serial NOT NULL,
   to_id int DEFAULT NULL,
-  from_id int NOT NULL,
+  from_id int DEFAULT NULL,
   message text DEFAULT NULL,
   object_id int NOT NULL,
   type smallint DEFAULT NULL,

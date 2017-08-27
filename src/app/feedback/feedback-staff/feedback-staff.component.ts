@@ -12,7 +12,7 @@ export class FeedbackStaffComponent implements OnInit {
 
     }
     public getFeedbacks(){
-        this.feebackService.getFeedbacks(this.search_text,this.selected_role,this.pageNumber, this.itemsPerPage).subscribe(result=>{
+        this.feebackService.getFeedbacks(this.search_text,this.selected_category,this.selected_role, this.selected_status, this.pageNumber, this.itemsPerPage).subscribe(result=>{
             this.feedbacks = result.feedbacks;
             this.totalItems = result.total_items;
         },error=>{this.appService.showPNotify('failure', "Server Error! Can't get feedbacks", 'error');});
@@ -24,7 +24,7 @@ export class FeedbackStaffComponent implements OnInit {
     public roles = [
         {
             id: 0,
-            name: 'All'
+            name: 'All roles'
         },
         {
             id: 1,
@@ -41,6 +41,8 @@ export class FeedbackStaffComponent implements OnInit {
     ];
 
     public search_text = '';
+    public selected_status = 0;
+    public selected_category = 0;
     public selected_role = 0;
     public selected_feedback;
     public feedback_title = '';

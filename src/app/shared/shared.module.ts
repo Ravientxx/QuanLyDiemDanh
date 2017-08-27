@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TabsModule,TooltipModule } from 'ngx-bootstrap';
 import { QRCodeModule } from 'angular2-qrcode';
-
+import {TranslateModule} from '@ngx-translate/core';
 import { LocalStorageModule } from 'angular-2-local-storage';
 import {FileUploadModule} from "ng2-file-upload";
 import { AppConfig } from './config'
@@ -83,7 +83,8 @@ export {NotificationService};
             storageType: 'localStorage'
         }),
     FileUploadModule,
-    TooltipModule.forRoot()
+    TooltipModule.forRoot(),
+    TranslateModule
   ],
   declarations: [
     FooterComponent,
@@ -111,7 +112,8 @@ export {NotificationService};
     SendFeedbackModalComponent,
     ExportModalComponent,
     QRCodeComponent,
-    QuizDisplayComponent
+    QuizDisplayComponent,
+    TranslateModule
   ],  
   providers: [
     AppService,

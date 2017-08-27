@@ -10,6 +10,8 @@ var nodemailer = require('nodemailer');
 const pool_postgres = new pg.Pool(_global.db_postgres);
 
 router.post('/list', function(req, res, next) {
+    var category = req.body.category ? req.body.category : 0;
+    var status = req.body.status ? req.body.status : 0;
     var role_id = req.body.role_id ? req.body.role_id : 0;
     var search_text = req.body.search_text ? req.body.search_text : '';
     var page = req.body.page != null ? req.body.page : _global.default_page;
@@ -20,12 +22,15 @@ router.post('/list', function(req, res, next) {
             done();
             return console.log("Can't connect to database");
         }
-        var query = `SELECT id, title, content, replied, feedbacks.read, created_at , 
+        var query = format(`SELECT id, title, content, replied, feedbacks.read, created_at , 
             (SELECT CONCAT(users.first_name,' ',users.last_name,E'\r\n',users.email) FROM users WHERE users.id = feedbacks.from_id) as _from, 
             (SELECT CONCAT(first_name,' ',last_name) FROM users WHERE users.id = feedbacks.to_id) as _to 
-            FROM feedbacks`;
+            FROM feedbacks WHERE to_id IS NULL AND replied = %L`, status);
         if(role_id != 0){
-            query += ' WHERE type = ' + role_id;
+            query += ' AND type = ' + role_id;
+        }
+        if(category != 0){
+            query += ' AND category = ' + category;
         }
         query += ' ORDER BY feedbacks.read , feedbacks.created_at';
         connection.query(query,function(error, result, fields) {
@@ -98,6 +103,14 @@ router.put('/read', function(req, res, next) {
 });
 
 router.post('/send', function(req, res, next) {
+    if (req.body.to_id == undefined) {
+        _global.sendError(res, null, "Receiver is required");
+        return;
+    }
+    if (req.body.category == undefined || req.body.category == 0) {
+        _global.sendError(res, null, "Category is required");
+        return;
+    }
     if (req.body.title == undefined || req.body.title == '') {
         _global.sendError(res, null, "title is required");
         return;
@@ -106,47 +119,77 @@ router.post('/send', function(req, res, next) {
         _global.sendError(res, null, "content is required");
         return;
     }
+    var from_id = (req.body.isAnonymous ? null : req.decoded.id);
+    var to_id = (req.body.to_id != 0 ? req.body.to_id : null);
     var feedback = [[
+        to_id,
         req.body.title,
         req.body.content,
-        (req.body.isAnonymous ? null : req.decoded.id),
+        req.body.category,
+        from_id,
         (req.body.isAnonymous ? 3 : (req.decoded.role_id == _global.role.student ? 1 : 2)),
     ]];
     pool_postgres.connect(function(error, connection, done) {
         if (error) {
-            _global.sendError(res,null,error);
+            _global.sendError(res,null,error.message);
             done();
-                return console.log(error);
+            return console.log(error);
         }
-        connection.query(format(`INSERT INTO feedbacks (title,content,from_id,type) VALUES %L RETURNING id`,feedback),function(error, result, fields) {
+        connection.query(format(`INSERT INTO feedbacks (to_id,title,content,category,from_id,type) VALUES %L RETURNING id`,feedback),function(error, result, fields) {
             if (error) {
-                _global.sendError(res,null,error);
+                _global.sendError(res,null,error.message);
                 done();
                 return console.log(error);
             }
-            connection.query(format(`INSERT INTO notifications (from_id,message,object_id,type) VALUES %L RETURNING id`, [[
-                    req.decoded.id,
-                    'sent a feedback',
-                    result.rows[0].id,
-                    _global.notification_type.send_feedback
-                ]]), function(error, result, fields) {
-                if (error) {
-                    _global.sendError(res,null,error);
+            if(from_id){
+                connection.query(format(`INSERT INTO notifications (to_id,message,object_id,type) VALUES %L RETURNING id`, [[
+                        to_id,
+                        'sent a feedback',
+                        result.rows[0].id,
+                        _global.notification_type.send_feedback
+                    ]]), function(error, result, fields) {
+                    if (error) {
+                        _global.sendError(res,null,error.message);
+                        done();
+                        return console.log(error);
+                    }
+                    var socket = req.app.get('socket');
+                    socket.emit('notificationPushed', {'to_id':to_id});
+                    res.send({ result: 'success', message: 'Feedback sent successfully'});
                     done();
-                    return console.log(error);
-                }
-                res.send({ result: 'success', message: 'Feedback sent successfully'});
-                done();
-            });
+                });
+            }else{
+                connection.query(format(`INSERT INTO notifications (to_id,from_id,message,object_id,type) VALUES %L RETURNING id`, [[
+                        to_id,
+                        req.decoded.id,
+                        'sent a feedback',
+                        result.rows[0].id,
+                        _global.notification_type.send_feedback
+                    ]]), function(error, result, fields) {
+                    if (error) {
+                        _global.sendError(res,null,error.message);
+                        done();
+                        return console.log(error);
+                    }
+                    var socket = req.app.get('socket');
+                    socket.emit('notificationPushed', {'to_id':to_id});
+                    res.send({ result: 'success', message: 'Feedback sent successfully'});
+                    done();
+                });
+            }
         });
     });
 });
 
 router.post('/history', function(req, res, next) {
     var user_id = req.decoded.id;
+    var from_to = req.body.from_to;
     var search_text = req.body.search_text ? req.body.search_text : '';
     var page = req.body.page != null ? req.body.page : _global.default_page;
     var limit = req.body.limit != null ? req.body.limit : _global.detail_limit;
+    var status = req.body.status ? req.body.status : 0;
+    var category = req.body.category ? req.body.category : 0;
+
     pool_postgres.connect(function(error, connection, done) {
         if (error) {
             _global.sendError(res,null,error);
@@ -154,14 +197,19 @@ router.post('/history', function(req, res, next) {
             return console.log(error);
         }
 
-        var query = `SELECT id, title, content, feedbacks.read, created_at as time, replied FROM feedbacks 
-        WHERE from_id = %L ORDER BY feedbacks.read, feedbacks.created_at DESC`;
-
-        connection.query(query,function(error, result, fields) {
-            
-            done();
-        });
-        connection.query(format(query, user_id), function(error, result, fields) {
+        var query = '';
+        if(from_to == 0){
+            query = `SELECT * , (SELECT CONCAT(first_name,' ',last_name) FROM users WHERE users.id = feedbacks.to_id) as _to  FROM feedbacks
+        WHERE from_id = %L AND replied = %L `;
+        }else{
+            query = `SELECT *, (SELECT CONCAT(users.first_name,' ',users.last_name,E'\r\n',users.email) FROM users WHERE users.id = feedbacks.from_id) as from FROM feedbacks 
+        WHERE to_id = %L AND replied = %L `;
+        }
+        if(category != 0){
+            query += ' AND category = ' + category ;
+        }
+        query += ` ORDER BY feedbacks.read, feedbacks.created_at DESC`;
+        connection.query(format(query,user_id,status), function(error, result, fields) {
             if (error) {
                 _global.sendError(res, null, error);
                 done();
@@ -169,6 +217,11 @@ router.post('/history', function(req, res, next) {
             }
 
             var feedbacks = result.rows;
+            for(var i = 0 ; i < feedbacks.length; i++){
+                if(feedbacks[i]._to == null){
+                    feedbacks[i]._to = 'Giáo vụ';
+                }
+            }
             var search_list = [];
             if (search_text == null) {
                 search_list = feedbacks;
@@ -260,6 +313,8 @@ router.post('/send-reply', function(req, res, next) {
                             res.send({ result: 'failure', message: 'Reply Failed' });
                             done();
                         } else {
+                            var socket = req.app.get('socket');
+                            socket.emit('notificationPushed', {'to_id':reply_to});
                             res.send({ result: 'success', message: 'Replied Successfully' });
                             done();
                         }

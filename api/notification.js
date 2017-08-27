@@ -73,7 +73,6 @@ router.post('/read', function(req, res, next) {
             }
             res.send({
                 result: 'success',
-                notifications: notifications
             });
             done();
         };

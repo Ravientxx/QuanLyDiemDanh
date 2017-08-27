@@ -10,8 +10,18 @@
                     <input placeholder="Search" class="form-control" [(ngModel)]="search_text" (ngModelChange)="onSearchChange()" />
                 </div>
                 <div class="col-xs-2">
-                    <select class="form-control" [(ngModel)]="selected_role" (ngModelChange)="onChangeRole()">
+                    <select class="form-control" [(ngModel)]="selected_category" (ngModelChange)="getFeedbacks()">
+                        <option *ngFor="let category of appService.feedback_categories" [value]="category.id">{{category.title}}</option>
+                    </select>
+                </div>
+                <div class="col-xs-2">
+                    <select class="form-control" [(ngModel)]="selected_role" (ngModelChange)="getFeedbacks()">
                         <option *ngFor="let role of roles" [value]="role.id">{{role.name}}</option>
+                    </select>
+                </div>
+                <div class="col-xs-2">
+                    <select class="form-control" [(ngModel)]="selected_status" (ngModelChange)="getFeedbacks()">
+                        <option *ngFor="let status of appService.feedback_status" [value]="status.id">{{status.title}}</option>
                     </select>
                 </div>
             </div>

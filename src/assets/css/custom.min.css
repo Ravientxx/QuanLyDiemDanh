@@ -618,7 +618,7 @@ body .container.body .right_col {
 .top_nav .nav .open>a:focus,
 .top_nav .nav .open>a:hover,
 .top_nav .nav>li>a:focus
-/*.top_nav .nav>li>a:hover*/ {
+.top_nav .nav>li>a:hover {
     background: #D9DEE4
 }
 

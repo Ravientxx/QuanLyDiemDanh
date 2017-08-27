@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, LOCALE_ID } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HttpModule } from '@angular/http';
+import { HttpModule, Http } from '@angular/http';
 import { RouterModule, Routes } from '@angular/router';
 import { FileUploadModule } from "ng2-file-upload";
 import { AppComponent } from './app.component';
@@ -11,6 +11,9 @@ import { ForgotPasswordComponent } from './forgot-password/forgot-password.compo
 import { RegisterComponent } from './register/register.component';
 import { SharedModule, PageNotFoundComponent, QRCodeComponent, AuthService, AuthGuardService,QuizDisplayComponent } from './shared/shared.module';
 
+import {TranslateModule, TranslateLoader } from '@ngx-translate/core';
+import {TranslateHttpLoader} from '@ngx-translate/http-loader';
+import {HttpClientModule, HttpClient} from '@angular/common/http';
 
 const ROUTES = [
     { path: '', loadChildren: 'app/layout/layout.module#LayoutModule' }, 
@@ -23,6 +26,10 @@ const ROUTES = [
     { path: '**', component: PageNotFoundComponent },
 
 ];
+
+export function HttpLoaderFactory(http: HttpClient) {
+    return new TranslateHttpLoader(http, './assets/i18n/', '.json');
+}
 
 @NgModule({
     declarations: [
@@ -37,8 +44,16 @@ const ROUTES = [
         FormsModule,
         HttpModule,
         FileUploadModule,
+        HttpClientModule,
         SharedModule,
         RouterModule.forRoot(ROUTES), // Add routes to the app
+        TranslateModule.forRoot({
+            loader: {
+                provide: TranslateLoader,
+                useFactory: HttpLoaderFactory,
+                deps: [HttpClient]
+            }
+        })
     ],
     providers: [
         { provide: LOCALE_ID, useValue: "vi-VN" },

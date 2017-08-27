@@ -48,6 +48,7 @@
                                     <div class="thumbnail" style="height: 190px">
                                         <ng-template #tolTemplate1>
                                             <div>Method : {{student.attendance_details[student.attendance_details.length-1].method}}</div>
+                                            <div>Checked at : {{student.attendance_details[student.attendance_details.length-1].attendance_time | date:'short'}}</div>
                                         </ng-template>
                                         <div class="image" (click)="onAttendanceCheckClick(i,student.attendance_details.length-1)" [tooltip]="tolTemplate1" container="body">
                                             <div class="checked_overlay" *ngIf="student.attendance_details[student.attendance_details.length-1].attendance_type"><i [ngClass]="['fa avatar_check', student.attendance_details[student.attendance_details.length-1]['icon']]"></i></div>

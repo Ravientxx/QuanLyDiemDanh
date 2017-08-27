@@ -12,11 +12,13 @@ export class FeedbackService {
     // Resolve HTTP using the constructor
     public constructor(public  http: Http,public  appService: AppService,public  appConfig:AppConfig, public  authService: AuthService,public  router:Router) {}
 
-    public  getFeedbacksUrl = this.appConfig.apiHost + '/feedback/list';
-    public getFeedbacks(search_text:string, role_id: number, page: number = 1, limit: number = -1): Observable < { result: string,total_items: number, feedbacks: Array<any>, message:string} > {
+    public getFeedbacksUrl = this.appConfig.apiHost + '/feedback/list';
+    public getFeedbacks(search_text:string, category: number, role_id: number, status: number, page: number = 1, limit: number = -1): Observable < { result: string,total_items: number, feedbacks: Array<any>, message:string} > {
         var params = {
             'search_text': search_text,
+            'category' : category,
             'role_id' : role_id,
+            'status' : status,
             'page': page,
             'limit': limit,
         };
@@ -58,9 +60,11 @@ export class FeedbackService {
             });
     }
 
-    public  sendFeedbacksUrl = this.appConfig.apiHost + '/feedback/send';
-    public sendFeedbacks(title: string, content:string, isAnonymous: boolean): Observable < { result: string, message:string} > {
+    public sendFeedbacksUrl = this.appConfig.apiHost + '/feedback/send';
+    public sendFeedbacks(to_id:number, title: string, category:number, content:string, isAnonymous: boolean): Observable < { result: string, message:string} > {
         var params = {
+            'to_id' : to_id,
+            'category' : category,
             'title' : title,
             'content' :content,
             'isAnonymous': isAnonymous
@@ -82,9 +86,12 @@ export class FeedbackService {
             });
     }
 
-    public  getFeedbackHistoryUrl = this.appConfig.apiHost + '/feedback/history';
-    public getFeedbackHistory(search_text:string, page: number = 1, limit: number = -1): Observable < { result: string,total_items: number, feedbacks: Array<any>, message:string} > {
+    public getFeedbackHistoryUrl = this.appConfig.apiHost + '/feedback/history';
+    public getFeedbackHistory(from_to : number,search_text:string, category:number, status : number, page: number = 1, limit: number = -1): Observable < { result: string,total_items: number, feedbacks: Array<any>, message:string} > {
         var params = {
+            'from_to' : from_to,
+            'category' : category,
+            'status' : status,
             'search_text': search_text,
             'page': page,
             'limit': limit,

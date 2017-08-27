@@ -40,6 +40,8 @@ module.exports = {
         send_absence_request:2,
         accept_absence_request:3,
         reject_absence_request:4,
+        open_attendance:5,
+        request_to_be_check_attendance:6,
     },
     attendance_type:{
         permited_absent: -1,
@@ -56,6 +58,15 @@ module.exports = {
     attendance_status:{
         normal: 0,
         exemption: 1,
+    },
+    feedback_status:{
+        pending: 0,
+        replied: 1,
+    },
+    feedback_categories:{
+        all: 0,
+        academic: 1,
+        facility: 2,
     },
     role: {
         admin: 4,

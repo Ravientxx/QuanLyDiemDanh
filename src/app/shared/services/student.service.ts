@@ -339,4 +339,24 @@ export class StudentService {
                 return Observable.throw(error || 'Server error');
             });
     }
+
+    public getTeachingTeacherListUrl = this.appConfig.apiHost + '/student/teaching_teacher_list';
+    public getTeachingTeacherList(): Observable < { result: string, total_items: number, teacher_list: Array<any>, message:string } > {
+        var params = {};
+        let authToken = this.authService.token;
+        let headers = new Headers();
+        headers.append('x-access-token', `${authToken}`);
+        let options = new RequestOptions({ headers: headers });
+        return this.http.post(this.getTeachingTeacherListUrl, params,options)
+            // ...and calling .json() on the response to return data
+            .map((res: Response) => res.json())
+            //...errors if any
+            .catch((error: any) => {
+                if (error.status == 401) {
+                    this.authService.tokenExpired(this.router.url);
+                }
+                //this.authService.tokenExpired(this.router.url);
+                return Observable.throw(error || 'Server error');
+            });
+    }
 }

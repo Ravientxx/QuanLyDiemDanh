@@ -10,6 +10,30 @@ declare var jQuery: any;
 export class AppService {
 
     constructor(public http: Http, public appConfig: AppConfig, public authService: AuthService, public router: Router) {}
+    public feedback_status = [
+        {
+            id: 0,
+            title: 'Pending'
+        },
+        {
+            id: 1,
+            title: 'Replied'
+        }
+    ];
+    public feedback_categories = [
+        {
+            id: 0,
+            title: 'All categories'
+        },
+        {
+            id: 1,
+            title: 'Academic'
+        },
+        {
+            id: 2,
+            title: 'Facility'
+        }
+    ];
     public student_status = {
         active: {
             id: 0,
@@ -84,6 +108,8 @@ export class AppService {
         send_absence_request:2,
         accept_absence_request:3,
         reject_absence_request:4,
+        open_attendance:5,
+        request_to_be_check_attendance:6,
     };
     public default_avatar = 'http://i.imgur.com/FTa2JWD.png';
     public student_interaction_type = {answer_question: 0,discuss: 1, present: 2};
