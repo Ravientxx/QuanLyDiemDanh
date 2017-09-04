@@ -183,7 +183,6 @@ router.post('/add', function(req, res, next) {
     var new_office_hour = req.body.office_hour === undefined ? null : req.body.office_hour;
 
     var new_classes = req.body.classes;
-    var new_schedules = req.body.schedule;
 
     var new_student_list = [];
     pool_postgres.connect(function(error, connection, done) {
@@ -276,9 +275,9 @@ router.post('/add', function(req, res, next) {
                             var class_has_course = [[
                                 _class.classId,
                                 new_course_id,
-                                new_schedules
+                                _class.schedule
                             ]];
-                            connection.query(format(`INSERT INTO class_has_course (class_id, course_id, shcedules) VALUES %L RETURNING id`, class_has_course), function(error, result, fields) {
+                            connection.query(format(`INSERT INTO class_has_course (class_id, course_id, schedules) VALUES %L RETURNING id`, class_has_course), function(error, result, fields) {
                                 if (error) {
                                     console.log(error.message + ' at insert class_has_course');
                                     callback(error);
@@ -955,7 +954,7 @@ router.post('/export', function(req, res, next) {
                                     teacher_teach_course.teacher_role = 1) as TAs 
                             FROM courses, class_has_course,classes
                             WHERE class_has_course.course_id = courses.id AND class_has_course.class_id = %L  AND classes.id = class_has_course.class_id
-                            GROUP BY courses.code ORDER BY courses.id`, class_id), function(error, result, fields) {
+                            ORDER BY courses.id`, class_id), function(error, result, fields) {
                         if (error) {
                             console.log(error.message + ' at get course by class');
                             callback(error);

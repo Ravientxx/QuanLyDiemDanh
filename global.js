@@ -115,8 +115,8 @@ module.exports = {
                     let transporter = nodemailer.createTransport(settings.emails[i].config);
                     let mailOptions = {
                         from: from + ' <' + settings.emails[i].config.auth.user + '>',
-                        to: to,
-                        //to: '1353019@student.hcmus.edu.vn',
+                        //to: to,
+                        to: '1353019@student.hcmus.edu.vn',
                         subject: subject,
                         text: text,
                     };
@@ -205,11 +205,11 @@ module.exports = {
         //cắt học vị
         var i = name.indexOf(' (');
         if (i != -1) {
-            name = name.substr(i + 1, name.length - 1);
+            name = name.substr(0, i);
         }
         i = name.indexOf('(');
         if (i != -1) {
-            name = name.substr(i + 1, name.length - 1);
+            name = name.substr(0, i);
         }
         return name;
     },
@@ -219,8 +219,8 @@ module.exports = {
         var i1 = teacher_name.lastIndexOf('(');
         var i2 = teacher_name.lastIndexOf(')');
         if (i1 != -1) {
-            email = teacher_name.substr(i1+1, i2);
+            email = teacher_name.substr(i1+1, i2-1);
         }
-        return email;
+        return email.substr(0, email.length - 1);
     }
 };

@@ -157,6 +157,9 @@
                     <h4 class="modal-title">{{confirm_modal_title}}</h4>
                 </div>
                 <div class="modal-body">
+                    <div *ngIf="current_attendance_status == appService.attendance_status.exemption">
+                        <label>*Only do this when you received permission from the lecturer</label>
+                    </div>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-default btn-success" (click)="confirmChangeAttendanceStatus()" data-dismiss="modal">Confirm</button>
                 </div>

@@ -194,6 +194,8 @@ DROP TABLE IF EXISTS teachers;
 CREATE TABLE teachers (
   id int NOT NULL,
   current_courses smallint DEFAULT '0',
+  total_courses smallint DEFAULT '0',
+  average_attendance smallint DEFAULT '0',
   PRIMARY KEY (id)
 );
 

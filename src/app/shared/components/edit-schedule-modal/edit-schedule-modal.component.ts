@@ -58,7 +58,7 @@ export class EditScheduleModalComponent implements OnInit {
         this.current_class_id = 0;
         this.initSessions();
         for(var i = 0 ; i < this.classes.length; i++){
-        	if(this.classes[i].schedules == '')
+        	if(this.classes[i].schedules == undefined || this.classes[i].schedules == '')
         		continue;
         	var schedule = this.classes[i].schedules.split(';');
 	        for (var j = 0; j < schedule.length; j++) {

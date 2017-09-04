@@ -20,9 +20,7 @@
                                     <label class="control-label col-md-3 col-sm-3 col-xs-12"> Receiver* </label>
                                     <div class="col-md-9 col-sm-9 col-xs-12">
                                         <select class="form-control" name="receiver" [(ngModel)]="selected_receiver">
-                                            <ng-container *ngFor="let receiver of receivers">
-                                                <option *ngIf="receiver.id > 0" [value]="receiver.id">{{receiver.title}}</option>
-                                            </ng-container>
+                                            <option *ngFor="let receiver of receivers" [value]="receiver.id">{{receiver.title}}</option>
                                         </select>
                                     </div>
                                 </div>
@@ -39,7 +37,9 @@
                                 <label class="control-label col-md-3 col-sm-3 col-xs-12"> Category* </label>
                                 <div class="col-md-9 col-sm-9 col-xs-12">
                                     <select class="form-control" name="category" [(ngModel)]="selected_category">
-                                        <option *ngFor="let category of appService.feedback_categories" [value]="category.id">{{category.title}}</option>
+                                        <ng-container *ngFor="let category of appService.feedback_categories">
+                                            <option *ngIf="category.id > 0" [value]="category.id">{{category.title}}</option>
+                                        </ng-container>
                                     </select>
                                 </div>
                             </div>

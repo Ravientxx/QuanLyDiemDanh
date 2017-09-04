@@ -29,7 +29,7 @@ export class SendFeedbackModalComponent implements OnInit {
     ];
     public selected_receiver = 0;
     public selected_teacher = 0;
-    public selected_category = 0;
+    public selected_category = 1;
     public apiResult: string;
     public apiResultMessage: string;
     public onOpenModal() {

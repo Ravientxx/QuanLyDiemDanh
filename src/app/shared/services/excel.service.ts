@@ -137,15 +137,15 @@ export class ExcelService {
                 workbook.sheet(0).cell("A7").value('Giảng viên: ' + class_has_course.lecturers);
                 workbook.sheet(0).cell("H7").value('Phòng: ');
                 
-                workbook.sheet(0).cell("A8").value("STT").style("border", true);
-                workbook.sheet(0).cell("B8").value("MSSV").style("border", true);
-                workbook.sheet(0).cell("C8").value("Họ SV").style("border", true);
-                workbook.sheet(0).cell("D8").value("Tên SV").style("border", true);
-                workbook.sheet(0).cell("E8").value("Số tờ").style("border", true);
-                workbook.sheet(0).cell("F8").value("Ký tên").style("border", true);
-                workbook.sheet(0).cell("G8").value("Điểm CK").style("border", true);
-                workbook.sheet(0).cell("H8").value("Điểm TK").style("border", true);
-                workbook.sheet(0).cell("I8").value("Ghi chú").style("border", true);
+                workbook.sheet(0).cell("A9").value("STT").style("border", true);
+                workbook.sheet(0).cell("B9").value("MSSV").style("border", true);
+                workbook.sheet(0).cell("C9").value("Họ SV").style("border", true);
+                workbook.sheet(0).cell("D9").value("Tên SV").style("border", true);
+                workbook.sheet(0).cell("E9").value("Số tờ").style("border", true);
+                workbook.sheet(0).cell("F9").value("Ký tên").style("border", true);
+                workbook.sheet(0).cell("G9").value("Điểm CK").style("border", true);
+                workbook.sheet(0).cell("H9").value("Điểm TK").style("border", true);
+                workbook.sheet(0).cell("I9").value("Ghi chú").style("border", true);
 
                 for (var i = 0; i < student_list.length; i++) {
                     workbook.sheet(0).cell("A" + Math.floor(i + 10)).value(i + 1).style("border", true);
@@ -451,13 +451,15 @@ export class ExcelService {
                     var session = cells[i][j].split('\r\n');
                     for(var k = 0; k < session.length; k++){
                         for(var l = 0; l < schedule['course_list'].length; l++){
-                            var code = session[k].split('-')[0];
-                            var class_name = session[k].split('-')[1];
+                            var session_array = session[k].split('-');
+                            var code = session_array[0];
+                            var class_name = session_array[1];
+                            var new_session =  Math.floor((i - 4) + (j - 1) * 4) + '-' + session_array[2] + '-' + session_array[3];
                             if(schedule['course_list'][l].code == code && schedule['course_list'][l].class_name == class_name){
                                 if(schedule['course_list'][l].schedules == '')
-                                    schedule['course_list'][l].schedules = session[k];
+                                    schedule['course_list'][l].schedules = new_session;
                                 else
-                                    schedule['course_list'][l].schedules += ';' + session[k];
+                                    schedule['course_list'][l].schedules += ';' + new_session;
                             }
                         }
                     }
@@ -791,7 +793,7 @@ export class ExcelService {
                         }
                     }
                     for(;j < 22; j++){
-                        workbook.sheet(0).cell(cell[j] + Math.floor(i + 5)).value('A').style("border", true).style("fontColor",'ff0000').style("bold",true);
+                        workbook.sheet(0).cell(cell[j] + Math.floor(i + 5)).value('').style("border", true);
                     }
                 }
                 workbook.sheet(0).range("D4:E4").merged(true).style("border", true);
@@ -854,18 +856,17 @@ export class ExcelService {
                         var cell = ['D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y'];
                         for(j = 0 ; j < student_list[i].attendance_details.length; j++){
                             if(student_list[i].attendance_details[j].attendance_type > 0){
-                                workbook.sheet(0).cell(cell[j] + Math.floor(i + 5)).value('X').style("border", true).style("bold",true);
+                                workbook.sheet(0).cell(cell[j] + Math.floor(i + 6)).value('X').style("border", true).style("bold",true);
                             }else{
                                 if(student_list[i].attendance_details[j].attendance_type == 0){
-                                    workbook.sheet(0).cell(cell[j] + Math.floor(i + 5)).value('A').style("border", true).style("fontColor",'ff0000').style("bold",true);
+                                    workbook.sheet(0).cell(cell[j] + Math.floor(i + 6)).value('A').style("border", true).style("fontColor",'ff0000').style("bold",true);
                                 }else{
-                                    workbook.sheet(0).cell(cell[j] + Math.floor(i + 5)).value('P').style("border", true).style("bold",true);
+                                    workbook.sheet(0).cell(cell[j] + Math.floor(i + 6)).value('P').style("border", true).style("bold",true);
                                 }
                             }
                         }
-                        console.log('abc');
                         for(;j < 22; j++){
-                            workbook.sheet(0).cell(cell[j] + Math.floor(i + 5)).value('A').style("border", true).style("fontColor",'ff0000').style("bold",true);
+                            workbook.sheet(0).cell(cell[j] + Math.floor(i + 6)).value('').style("border", true);
                         }
                     }
                 }

@@ -411,10 +411,12 @@ router.post('/import', function(req, res, next) {
                                     function(callback){
                                         var lecturers = course.lecturers.split('\r\n');
                                         var teachers = [];
+                                        var name;
                                         for(var i = 0 ; i < lecturers.length; i++){
-                                            var name = _global.removeExtraFromTeacherName(lecturers[i]);
-                                            var email = _global.getEmailFromTeacherName(name);
-                                            name = _global.removeEmailTeacherName(name);
+                                            // var name = _global.removeExtraFromTeacherName(lecturers[i]);
+                                            //var email = _global.getEmailFromTeacherName(name);
+                                            var email = _global.getEmailFromTeacherName(lecturers[i]);
+                                            name = _global.removeEmailTeacherName(lecturers[i]);
                                             teachers.push({
                                                 first_name : _global.getFirstName(name),
                                                 last_name : _global.getLastName(name),
@@ -422,12 +424,13 @@ router.post('/import', function(req, res, next) {
                                                 role : _global.lecturer_role
                                             });
                                         }
-                                        if(course.tas != undefined){
-                                            var tas = course.tas.split('\r\n');
+                                        if(course.TAs != undefined){
+                                            var tas = course.TAs.split('\r\n');
                                             for(var i = 0 ; i < tas.length; i++){
-                                                var name = _global.removeExtraFromTeacherName(lecturers[i]);
-                                                var email = _global.getEmailFromTeacherName(name);
-                                                name = _global.removeEmailTeacherName(name);
+                                                // var name = _global.removeExtraFromTeacherName(lecturers[i]);
+                                                //var email = _global.getEmailFromTeacherName(name);
+                                                var email = _global.getEmailFromTeacherName(tas[i]);
+                                                name = _global.removeEmailTeacherName(tas[i]);
                                                 teachers.push({
                                                     first_name : _global.getFirstName(name),
                                                     last_name : _global.getLastName(name),
@@ -549,7 +552,7 @@ router.post('/import', function(req, res, next) {
                                             if (error) callback(error + ' at get class_id');
                                             else {
                                                 var class_id = result.rows[0].id;
-                                                connection.query(format(`UPDATE class_has_course SET schedules = %L WHERE class_id = %L AND course_id = $L`, course.schedules, class_id, course_id), function(error, result, fields) {
+                                                connection.query(format(`UPDATE class_has_course SET schedules = %L WHERE class_id = %L AND course_id = %L`, course.schedules, class_id, course_id), function(error, result, fields) {
                                                     if (error) callback(error + ' at update class_has_course');
                                                     else callback();
                                                 });
